@@ -7,9 +7,10 @@
 ;(function($,window) {
 
 	var self,
-	 	_defaults = {},		// bxSlider
 		_configured = {},	// passed in options
 		current = {},		// _defaults + _configured
+		_defaults = {},		// bxSlider factory settings
+		_touched,			// record keys of fields altered until a save
 		opts = {};			// opts == current at start up (diverges as user changes settings)
 	
 	var SlideShow = function( options ) {
@@ -35,6 +36,8 @@
 			
 			// duplicate starting config as current config - this gets changes by user
 			this.current = $.extend( {}, this._defaults, options );
+			
+			this._touched = [];
 			
 			// bind the html form fields to this.current fields
 			var p;
@@ -83,17 +86,27 @@
 			var keys = [];
 			for( p in self.opts ) {
 				if( typeof p !== 'function' ) {
-				//	console.log( p +': ' + self.opts[p] + ' <=> ' + self.current[p] );
-				
-					if( self.opts[p] != self.current[p]) {
+					if( self.opts[p] !== self.current[p]) {
 						keys.push(p);
-				//		console.log( p + ' has changed' );
 						changed[p] = self.current[p];
+					}
+					else {
+						var i;
+						for( i in self._touched ) {
+							if( typeof i !== 'function' ){	
+								if( i == p ) {
+									keys.push(p);
+									changed[p] = self.current[p];
+									break;
+								}
+							}
+						}
 					}
 				}
 			}
+		
 			// if changed is still an empty object ... 
-			if( changed === {} ) {
+			if( changed === {} || keys.length === 0 ) {
 			//	console.log( 'nothing has changed' );
 				return false;
 			}
@@ -103,17 +116,31 @@
 			// because the exact changes are arbitrary, pass the array of keys as well 
 			changed['keys']   = JSON.stringify(keys); 
 			
+			
 			$.post( ajaxurl, changed ).complete(function(r) {
 				var res = JSON.parse(r.responseText);
 				alert( res.feedback );
+				
+				self._touched = [];
+				
 			});
 		},
 		
+		touched: function( id ) {
+			this._touched.push( id );
+		//	console.log( this._touched );
+		},
+		
 		set_current_value: function() {
+		
 			// update self.current to reflect the user's changes
 			var id = this.getAttribute('name');
-			self.current[id] = this.value;
-			console.log( id + ': ' + self.current[id] );
+			var val = this.value;
+			if( val == '' ) {
+				val = 'empty';
+			}
+			self.current[id] = val; 
+			self.touched( id );
 		}
 				
 		

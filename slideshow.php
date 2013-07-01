@@ -65,6 +65,118 @@ class Slideshow {
 	}
 	
 	
+	private function parseSlideshowDefaults() {
+	
+		$lines = file( dirname(__FILE__).'/inc/default-settings.js');
+		
+		$out = array();
+		$_fmt = '<tr><th>%s</th><td>%s</td><td>%s</td></tr>';
+		
+		foreach( $lines as $l ) 
+		{
+			/// skip lines
+			if( FALSE !== strpos($l,'/*') ) {
+				continue;
+			}
+			if( FALSE !== (strpos($l,' ')==0) ) {
+				continue;
+			}
+			
+			// Headers
+			if( FALSE !== strpos($l, '//') ) {
+				list($j,$h) = explode('//',$l);
+				$out[] = '<tr><th><h3>'.$h.'</h3></th><td>Current value</td><td>Default</td></tr>';
+				continue;
+			}
+	
+			list($t,$s) = explode(": ",rtrim($l,",\n "));
+			
+			$widget = array();
+			$_opt = get_option('_slideshow_'.$t);
+			$default = '';
+			
+			if( FALSE !== strpos($s,',')) {
+				// multiple term radio
+				$s = str_replace(array('"',"'"),array('',''),$s);
+				$pcs = explode(',',$s);
+				$default = $pcs[0];
+				$actual = (!empty($_opt) ? $_opt: $default);
+				
+				for( $i=0; $i < count($pcs); $i++ ) {
+					$id = $t.$i;
+					$checked = '';
+					if( $actual == $pcs[$i] ) {
+						$checked = ' checked="checked"';
+					}
+					$widget[] = sprintf('<input type="radio" id="%s" name="%s" value="%s"%s>',$id,$t,$pcs[$i],$checked);
+					$widget[] = sprintf('<label for="%s">%s</label>', $id,$pcs[$i]);
+				}
+			}
+			else if( FALSE !== strpos($s,'true')) {
+				// binary radio T/f
+				$default = 'true';
+				$actual = (!empty($_opt) ? $_opt: $default);
+				
+				$checked = '';
+				if( $actual == 'true' ) {
+					$checked = ' checked="checked"';
+				}
+				$widget[] = sprintf('<input type="radio" id="%s-t" name="%s" value="true"%s>',$t,$t,$checked);
+				$widget[] = sprintf('<label for="%s-t">true</label>',$t);
+				
+				$checked = '';
+				if( $actual == 'false' ) {
+					$checked = ' checked="checked"';
+				}
+				$widget[] = sprintf('<input type="radio" id="%s-f" name="%s" value="false"%s>',$t,$t,$checked);
+				$widget[] = sprintf('<label for="%s-f">false</label>',$t);
+				
+			}
+			else if( FALSE !== strpos($s,'false')) {
+				// binary radio t/F
+				$default = 'false';
+				$actual = (!empty($_opt) ? $_opt: $default);
+				
+				$checked = '';
+				if( $actual == 'true' ) {
+					$checked = ' checked="checked"';
+				}
+				$widget[] = sprintf('<input type="radio" id="%s-t" name="%s" value="true"%s>',$t,$t,$checked);
+				$widget[] = sprintf('<label for="%s-t">true</label>',$t);
+				
+				$checked = '';
+				if( $actual == 'false' ) {
+					$checked = ' checked="checked"';
+				}
+				$widget[] = sprintf('<input type="radio" id="%s-f" name="%s" value="false"%s>',$t,$t,$checked);
+				$widget[] = sprintf('<label for="%s-f">false</label>',$t);
+				
+			}
+			else if( FALSE !== strpos($s,"'")) {
+				// quoted string value - strip quotes
+				$default = str_replace(array('"',"'"),array('',''),$s);
+				$actual = (!empty($_opt) ? $_opt: $default);
+								
+				$widget[] = sprintf('<input type="text" id="%s" name="%s" value="%s">',$t,$t,$actual);
+
+			}
+			else {
+				// text field
+				$default = $s;
+				$actual = (!empty($_opt) ? $_opt: $default);
+				
+				$widget[] = sprintf('<input type="text" id="%s" name="%s" value="%s">',$t,$t,$actual);
+
+			}	
+			
+			$out[] = sprintf($_fmt,$t,implode("&nbsp;&nbsp;",$widget),$default);
+		}
+		
+		return implode("\n",$out);
+	}
+		
+	
+
 	public function slideshow_admin_settings_page() {
 				
 	//	error_log(__FUNCTION__);
@@ -82,98 +194,8 @@ class Slideshow {
 		
 		$out[] = '<table class="form-table">';
 		
-		
-		global $wpdb;
-		$sql = sprintf("SELECT * FROM $wpdb->options WHERE option_name LIKE '_%s_%%'",$this->slug);
-		$res = $wpdb->get_results($sql);
-		$_options = array();
-		foreach( $res as $r ) {
-			$_options[$r->option_name] = $r->option_value;
-		}
-				
-		$lines = file( dirname(__FILE__).'/inc/default-settings.js');
-		
-		$fmt = '<tr><th>%s</th><td>%s</td><td>%s</td></tr>';
-		foreach( $lines as $l ) {
-		
-			/// skip lines
-			if( FALSE !== strpos($l,'/*') ) {
-				continue;
-			}
-			if( FALSE !== (strpos($l,' ')==0) ) {
-				continue;
-			}
-			
-			// Headers
-			if( FALSE !== strpos($l, '//') ) {
-				list($j,$h) = explode('//',$l);
-				$out[] = '<tr><th><h3>'.$h.'</h3></th><td>Current</td><td>Default</td></tr>';
-				continue;
-			}
-	
-			list($t,$s) = explode(": ",rtrim($l,",\n "));
-			
-			$opt = 'NOOPT';
-			$k = '_'.$this->slug.'_'.$t;
-			if ( array_key_exists($k,$_options) ) {
-				$opt = $_options[$k];
-			}
-			
-			if( FALSE !== strpos($s,',')) {
-				// multiple term radio
-				$b = array();
-				$default = '';
-				$pcs = explode(',',$s);
-				for( $i=0;$i<count($pcs); $i++ ) {
-					$p = str_replace("'",'',$pcs[$i]);					
+		$out[] = Slideshow::parseSlideshowDefaults();
 					
-					if($opt!=='NOOPT' && $opt == $p ) {
-						$b[] = sprintf('<input type="radio" name="%s" id="%s%d" value="%s" checked="checked">',$t,$t,$i,$p);	
-					}
-					else {
-						$b[] = sprintf('<input type="radio" name="%s" id="%s%d" value="%s"%s>',$t,$t,$i,$p,(($i==0)?' checked="checked"':''));
-					}
-				
-					if( $i == 0 ) {
-						$default = $p;
-					}
-					$b[] = sprintf('<label for="%s%d">%s</label>',$t,$i,$p);	
-				}
-				$out[] = sprintf($fmt, $t, implode("\n",$b), $default);
-				
-			}
-			else if( FALSE !== strpos($s,'true')) {
-				// radio group: default true
-				$b = array();
-				$b[] = sprintf('<input type="radio" name="%s" id="%s-t" value="true" checked="checked">',$t,$t);
-				$b[] = sprintf('<label for="%s-t">true</label>',$t);
-				$b[] = sprintf('<input type="radio" name="%s" id="%s-f" value="false">',$t,$t);
-				$b[] = sprintf('<label for="%s-f">false</label>',$t);
-				$out[] = sprintf($fmt, $t, implode("\n",$b), 'true');
-			}
-			else if( FALSE !== strpos($s,'false')) {
-				// radio group: default false
-				$b = array();
-				$b[] = sprintf('<input type="radio" name="%s" id="%s-t" value="true">',$t,$t);
-				$b[] = sprintf('<label for="%s-t">true</label>',$t);
-				$b[] = sprintf('<input type="radio" name="%s" id="%s-f" value="false" checked="checked">',$t,$t);
-				$b[] = sprintf('<label for="%s-f">false</label>',$t);
-				$out[] = sprintf($fmt, $t, implode("\n",$b), 'false');
-			}
-			else if( FALSE !== strpos($s,"'")) {
-				// quoted string value - strip quotes
-				$s = str_replace("'",'',$s);
-				$i = sprintf('<input type="text" name="%s" id="%s" value="%s">',$t,$t,$s);
-				$out[] = sprintf($fmt, $t, $i, $s );
-			}
-			else {
-				// text field
-				$i = sprintf('<input type="text" name="%s" id="%s" value="%s">',$t,$t,$s);
-				$out[] = sprintf($fmt, $t, $i, $s);
-			}
-			
-		}
-			
 		$out[] = '</table>';
 		
 		$out[] = '<p class="submit">';
@@ -182,6 +204,7 @@ class Slideshow {
 		
 		echo implode("\n",$out);
 	}
+	
 	
 	
 	public function slideshow_settings_save_changes() {
