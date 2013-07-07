@@ -1,9 +1,91 @@
 /**
- * @package SlideshowSetup
+ * @package Slideshow Setup 
  * @copyright BC Libraries Coop 2013
  *
  **/
- 
+
+;(function($,window) {
+
+	var self,
+		_configured = {},	// passed in options
+		opts = {};			// opts == current at start up (diverges as user changes settings)
+	
+	var SlideShowSetup = function( options ) {
+		this.init( options );
+	}
+	
+	SlideShowSetup.prototype  =  {
+	
+		init: function( options ) {
+			
+			self = this;
+		},
+		
+		dragstart: function( evt, ui ) {
+			
+		},
+		
+		dragstop: function( evt, ui ) {
+			
+			var d = $(this);
+			
+		//	console.log( d.data('img-id') + ': ' + ui.position.left + ', ' + ui.position.top  );
+			
+		},
+		
+		dropped: function( evt, ui ) {
+		
+			var dropzone = $(this).attr('id');
+			var d = ui.draggable;
+			
+			var id = d.data('img-id');
+			var cap = d.data('img-caption');
+
+		//	console.log( 'caption ' + cap );
+		//	console.log( 'dropped object id ' + id );
+
+			var t = $('#thumb'+id);
+			var src = t.attr('src');
+			
+			var img = $('<img src="'+src+'" class="selected" id="selected'+d+'">');
+			
+			$('#'+ dropzone).empty().append( img );
+			$('#'+ dropzone).next().empty().text( cap );
+			
+		//	console.log( 'droppped on ' + dropzone );
+			
+		},
+		
+		over_drop: function( evt, ui ) {
+			console.log( 'over drop zone' );
+		},
+		
+		drag_representation: function( evt ) {
+		
+			var d = $(this).data('img-id');
+			var t = $('#slotview'+d);
+			var src = t.attr('src');
+			console.log( src );
+			var img = $('<img src="'+src+'" class="slotview" height="49" id="slotcopy'+d+'">');
+			return $('<div class="slideshow-drag-helper draggable"></div>').append(img.show());
+		}
+		
+	}
+	
+	$.fn.coop_slideshow_setup = function(opts) {
+		//alert('here');
+		return new SlideShowSetup(opts);
+	} 
+
+}(jQuery,window));
+			
+
+/**
+ * @package Slideshow Settings
+ * @copyright BC Libraries Coop 2013
+ *
+ **/
+
 ;(function($,window) {
 
 	var self,
@@ -13,11 +95,11 @@
 		_touched,			// record keys of fields altered until a save
 		opts = {};			// opts == current at start up (diverges as user changes settings)
 	
-	var SlideShow = function( options ) {
+	var SlideShowSettings = function( options ) {
 		this.init( options );
 	}
 	
-	SlideShow.prototype  =  {
+	SlideShowSettings.prototype  =  {
 	
 		init: function( options ) {
 			
@@ -78,7 +160,7 @@
 		save_changes: function() {
 			
 			// save button has been clicked 
-			console.log( 'save button has been clicked ' );
+		//	console.log( 'save button has been clicked ' );
 			
 			// determine which settings are now different ( 
 			var p;
@@ -142,13 +224,11 @@
 			self.current[id] = val; 
 			self.touched( id );
 		}
-				
-		
 	}
 	
-	$.fn.coop_slideshow = function(opts) {
+	$.fn.coop_slideshow_settings = function(opts) {
 		//alert('here');
-		return new SlideShow(opts);
+		return new SlideShowSettings(opts);
 	} 
 
 }(jQuery,window));
@@ -156,6 +236,22 @@
 
 jQuery().ready(function(){
 	
-	window.coop_slideshow = jQuery().coop_slideshow();
+	window.coop_slideshow_settings = jQuery().coop_slideshow_settings();
+	
+	window.slideshow_setup = jQuery().coop_slideshow_setup();
+	
+	jQuery('.draggable').draggable({ cursor:'move', 
+									 stack:	'.slide', 
+									/*  snap:	'.snappable',  */
+									 start: slideshow_setup.dragstart, 
+									 stop:  slideshow_setup.dragstop,
+									 helper: slideshow_setup.drag_representation
+								});
+									 
+	jQuery('.droppable').droppable({ drop:  slideshow_setup.dropped,
+									 over:  slideshow_setup.over_drop,
+									 out:   slideshow_setup.leave_drop,
+									 hoverClass: 'drop_highlight' 
+								});
 	
 });
