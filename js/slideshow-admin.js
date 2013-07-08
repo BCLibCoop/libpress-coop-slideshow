@@ -21,6 +21,56 @@
 			self = this;
 		},
 		
+		add_text_only_slide: function() {
+			
+			var slideshow_collection_name = $('.slideshow-collection-name').val();
+			var slideshow_id = $('#slideshow_select').val();
+			
+			if( slideshow_collection_name == '' && null == slideshow_id ) {
+				alert( 'Whoops! You need to name the slideshow first.' );
+				$('.slideshow-collection-name').focus();
+				return false;
+			}
+				
+			var title = $('#slideshow-text-slide-heading').val();
+			var content = $('#slideshow-text-slide-content').val();
+			
+			if( title == '' || content == '' ) {
+				alert( 'You must enter a title and a message' );
+				return false;
+			}
+			
+			var data = {
+				action: 'slideshow_add_text_slide',
+				slideshow_name: slideshow_collection_name,
+				slideshow_id: slideshow_id,
+				title: title,
+				content: content
+			};
+			
+			$.post( ajaxurl, data ).complete( function(r) {
+				var res = JSON.parse(r.responseText);
+				
+				if( res.result === 'success' ) {
+					alert( 'Text slide saved' );
+					self.clear_text_slide_form();
+					var id = res.slide_id;
+					self.place_text_slide(id,title,content);
+				}
+				else {
+					alert( 'Unable to save the text slide.' );
+					$('#slideshow-text-slide-heading').focus();
+				}
+			});
+
+		},
+		
+		clear_text_slide_form: function() {
+			$('#slideshow-text-slide-heading').empty().val('');
+			$('#slideshow-text-slide-content').empty().val('');
+			// maybe URL subform too 
+		},
+			
 		dragstart: function( evt, ui ) {
 			
 		},
@@ -46,8 +96,10 @@
 
 			var t = $('#thumb'+id);
 			var src = t.attr('src');
+			var w = t.attr('width');
+			var h = t.attr('height');
 			
-			var img = $('<img src="'+src+'" class="selected" id="selected'+d+'">');
+			var img = $('<img src="'+src+'" class="selected" id="selected'+d+'" width="' + w + '" height="' + h + '">');
 			
 			$('#'+ dropzone).empty().append( img );
 			$('#'+ dropzone).next().empty().text( cap );
@@ -68,7 +120,60 @@
 			console.log( src );
 			var img = $('<img src="'+src+'" class="slotview" height="49" id="slotcopy'+d+'">');
 			return $('<div class="slideshow-drag-helper draggable"></div>').append(img.show());
+		},
+		
+		past_slideshow_selected: function() {
+		
+			console.log( $(this) );
+			var opt = $('#slideshow_select option').filter(':selected');
+				
+			$('.slideshow-collection-name').val( $(opt).text() );
+			
+		},
+		
+		place_slide_text: function( id, title, content ) {
+			
+		},
+		
+		precheck_slideshow_name: function() {
+			
+			var data = {
+				action: 'precheck_slideshow_collection_name',
+				slideshow_name: $('.slideshow-collection-name').val()
+			};
+			
+			$.post( ajaxurl, data ).complete(function(r){
+				var res = JSON.parse(r.responseText);
+				if( res.result == 'found' ) {
+					// not okay to use if keyed into field
+					alert( 'A collection already exists with that name.' );
+					$('.slideshow-collection-name').focus();
+				}
+				else {
+					// okay to use if newly created
+					self.show_checkmark();
+				}
+				
+			});
+				
+		},
+		
+		
+		/**
+		*	image-click handler to set the layout style
+		*	radio buttons when a graphic is clicked.
+		**/
+		set_layout_control: function() {
+			var t = $(this);
+			var id = t.data('id');
+			console.log( id );
+			$('#'+id).click();
+		},
+		
+		show_checkmark: function() {
+			alert( 'show checkmark in the right hand edge of the Collection name field' );
 		}
+		
 		
 	}
 	
@@ -253,5 +358,15 @@ jQuery().ready(function(){
 									 out:   slideshow_setup.leave_drop,
 									 hoverClass: 'drop_highlight' 
 								});
+	jQuery('.slideshow-control-img').click( slideshow_setup.set_layout_control );
+	
+	jQuery('.slideshow-collection-name').blur( slideshow_setup.precheck_slideshow_name );
+	
+	jQuery("#slideshow_select").chosen().change( slideshow_setup.past_slideshow_selected );
+	jQuery('.slideshow-text-slide-save-btn').click( function(event) {
+			event.stopPropagation();
+			slideshow_setup.add_text_only_slide()
+		});
+	
 	
 });

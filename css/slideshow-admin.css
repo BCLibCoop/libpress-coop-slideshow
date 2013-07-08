@@ -1,10 +1,17 @@
-.slideshow-set-name {
+.slideshow-collection-name {
 	font-size: 2em;
-	width: 40%;
+	width: 45%;
 	margin-bottom: 10px;
 }
 
+.slideshow_select {
+	width: 45%;
+	margin-bottom: 10px;
+}
+
+
 table.slideshow-drag-drop-layout {
+	margin-top: 10px;
 	width: 95%;
 /*	border: thin solid #ccf; */
 }
@@ -23,6 +30,7 @@ td.slideshow-gutter {
 
 table.slideshow-droppable-rows {
 	border-collapse: separate;
+	border-spacing: 6px;
 	width: 100%;
 	overflow: scroll;
 }
@@ -32,45 +40,58 @@ tr.snaprow {
 	border: thin solid #ccc;
 }
 
+table.slideshow-droppable-rows th {
+	text-align: left; 
+}
+
 td.thumbbox {
 	height: 50px;
 	width: 50px;
 	text-align: center;
 	vertical-align: middle;
-	margin: 3px;
 	border: thin solid #ccc;
 }
+
+td.thumbbox img {
+	margin: auto auto;
+}
+
+
 td.slideshow-caption-title {
 	height: 50px;
 	width: 45%;
-	text-align: center;
+	text-align: left;
 	vertical-align: middle;
 	margin: 3px;
 	border: thin solid #ccc;
+	padding: 6px;
 }
 td.slideshow-slide-link {
 	height: 50px;
 	width: 45%;
-	text-align: center;
+	text-align: left;
 	vertical-align: middle;
 	margin: 3px;
 	border: thin solid #ccc;
+	padding: 6px;
 }
 
 .drop_highlight {
 	box-shadow: inset 0px 0px 10px rgba(250,150,150,0.5);
 }
 
+
+h3.slideshow-runtime-heading {
+	margin-left: 10px;
+}
 div.slideshow-runtime-information {
 	
-	height: 160px;
-	width: 90%;
+	height: 100px;
+	width: 96%;
 	border: thin solid #eee;
-	margin: 40px auto;
+	margin: 10px auto;
 	
 }
-
-
 
 
 table.slideshow-drag-table {
