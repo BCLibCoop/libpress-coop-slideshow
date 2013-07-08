@@ -8,7 +8,8 @@
 
 	var self,
 		_configured = {},	// passed in options
-		opts = {};			// opts == current at start up (diverges as user changes settings)
+		opts = {},			// opts == current at start up (diverges as user changes settings)
+		table_order;
 	
 	var SlideShowSetup = function( options ) {
 		this.init( options );
@@ -72,66 +73,187 @@
 		},
 			
 		dragstart: function( evt, ui ) {
-			
+	
 		},
 		
 		dragstop: function( evt, ui ) {
-			
-			var d = $(this);
-			
-		//	console.log( d.data('img-id') + ': ' + ui.position.left + ', ' + ui.position.top  );
-			
+				
 		},
 		
+		drop_on_row: function( evt, ui ) {
+		
+			var row = this.id;	
+			var dragged = ui.draggable;
+			
+			if( $(dragged).hasClass('slideshow-collection-row') ) {
+				self.drop_insert_row( this, ui );
+			}
+			else {
+				self.drop_insert_thumbnail( row, dragged, this );		
+			}
+		},
+		
+		drop_insert_row: function( row, ui )	{
+			
+			var $t = $(row); // this
+			var dragged = ui.draggable;
+			var dropzone_id = $($t).attr('id');
+			var dropped_id = $(dragged).attr('id');
+			var dropme = $(dragged).detach();
+			
+			$($t).before(dropme);
+			
+		//	var rows = $('.slideshow-sortable-rows').children().children();
+		//	console.log( rows );
+		
+		},
+		
+		drop_insert_thumbnail: function( row, dragged, target )	{
+		
+			var id = dragged.data('img-id');
+			var cap = dragged.data('img-caption');
+			var link = dragged.data('img-link');
+			
+			var thumb = $('#thumb'+id);
+			var src = thumb.attr('src');
+			var w = thumb.attr('width');
+			var h = thumb.attr('height');
+			
+			var thumbbox = $('.thumbbox',target);
+			var img = $('<img data-img-id="' + id + '" src="'+src+'" class="selected" id="selected'+row+'" width="' + w + '" height="' + h + '">');
+				thumbbox.empty().append(img);
+			var textbox = thumbbox.next();
+				linkspan = textbox.children().first();
+				textbox.empty().text( cap ).append( linkspan.empty().append( link ));
+
+		},
+		
+		/*
 		dropped: function( evt, ui ) {
+				
+					var dropzone = $(this).attr('id');
+					var d = ui.draggable;
+								
+					var id = d.data('img-id');
+					var cap = d.data('img-caption');
 		
-			var dropzone = $(this).attr('id');
-			var d = ui.draggable;
-			
-			var id = d.data('img-id');
-			var cap = d.data('img-caption');
-
-		//	console.log( 'caption ' + cap );
-		//	console.log( 'dropped object id ' + id );
-
-			var t = $('#thumb'+id);
-			var src = t.attr('src');
-			var w = t.attr('width');
-			var h = t.attr('height');
-			
-			var img = $('<img src="'+src+'" class="selected" id="selected'+d+'" width="' + w + '" height="' + h + '">');
-			
-			$('#'+ dropzone).empty().append( img );
-			$('#'+ dropzone).next().empty().text( cap );
-			
-		//	console.log( 'droppped on ' + dropzone );
-			
-		},
+					var t = $('#thumb'+id);
+					var src = t.attr('src');
+					var w = t.attr('width');
+					var h = t.attr('height');
+					
+					var img = $('<img src="'+src+'" class="selected" id="selected'+d+'" width="' + w + '" height="' + h + '">');
+					
+					$('#'+ dropzone).empty().append( img );
+					$('#'+ dropzone).next().empty().text( cap );
+					
+				//	console.log( 'droppped on ' + dropzone );
+					
+				},
+		*/
 		
 		over_drop: function( evt, ui ) {
-			console.log( 'over drop zone' );
+		//	console.log( 'over drop zone' );
+		
+			var dropzone = this.id;
+		
+			if( self._dragging ) {
+				_dragee = $(self._dragging);
+				
+				console.log( 'dragee: ' + _dragee ); 
+				
+				if( _dragee.hasClass('slideshow-collection-row') ) {
+					console.log( 'has class slideshow-collection-row' );
+				}
+			}			
+		
 		},
 		
 		drag_representation: function( evt ) {
 		
-			var d = $(this).data('img-id');
+			if( $(this).hasClass('slideshow-collection-row') ) {
+				return self.drag_row_rep( evt, this );
+			}
+			else {
+				return self.drag_thumb_rep( evt, this );
+			}
+		},
+		
+		drag_row_rep: function( evt, obj ) {
+			
+			var row = $(obj).clone();
+			return row;
+		},
+		
+		drag_thumb_rep: function( evt, obj ){
+		
+			var d = $(obj).data('img-id');
 			var t = $('#slotview'+d);
 			var src = t.attr('src');
-			console.log( src );
+		//	console.log( src );
 			var img = $('<img src="'+src+'" class="slotview" height="49" id="slotcopy'+d+'">');
 			return $('<div class="slideshow-drag-helper draggable"></div>').append(img.show());
 		},
 		
+		first_empty_row: function() {
+			var rows = $('.slideshow-collection-row');
+			for( i=0;i<rows.length;i++) {
+				var img = $('.thumbbox',rows[i]).children().first(); // should be an img or a para with a T in it
+				if( img == null || img == undefined ) {
+					return rows[i];
+				}
+				return false;
+			}	
+		},
+				
 		past_slideshow_selected: function() {
 		
-			console.log( $(this) );
+		//	console.log( $(this) );
 			var opt = $('#slideshow_select option').filter(':selected');
-				
 			$('.slideshow-collection-name').val( $(opt).text() );
+			var data = {
+				action: 'slideshow-fetch-collection',
+				slideshow_id: opt.val()
+			};
 			
+			$.post( ajaxurl, data ).complete(function(r){
+				var res = JSON.parse(r.responseText);
+				var i;
+				for( i=0; i<res.length;i++ ) {
+				
+					var row = $('.slideshow-collection-row').eq( i );
+				
+					if( res[i].post_id == "" ) {
+	//					console.log( 'res['+i+'].post_id: empty - this is a text entry' ); 				
+						self.place_slide_text( res[i].id, res[i].text_title,res[i].text_content, row);
+					}
+					else {
+						// needs to include title/caption in db for image too - needs UI for setting same
+						self.place_slide_img(res[i].id,res[i].post_id,res[i].slide_link,row );
+					}
+					
+					
+				} 
+				
+			});
 		},
 		
-		place_slide_text: function( id, title, content ) {
+		place_slide_img: function( id, post_id, link, row ) {
+			
+			
+				
+		},
+		
+		place_slide_text: function( id, title, content, row ) {
+		
+			if( row == null ) {
+				// get the first empty row ...
+				row = self.first_empty_row();
+			}
+			
+			$(row).children().first().empty().append($('<span class="slideshow-big-t">T</span>'));
+			$(row).children().last().empty().append(title); 
+			// do something for a mouseover popover showing the content 
 			
 		},
 		
@@ -158,6 +280,61 @@
 				
 		},
 		
+		save_collection: function() {
+		
+			var slides = [];
+			var rows = $('.slideshow-collection-row');
+			for( i=0;i<rows.length;i++) {
+			
+				var text_title, text_content, post_id, slide_link, ordering;
+			
+				var img = $(rows[i]).children().first().children('img');
+				var type = 'image';		// bias inherent in the system :-)
+				if( img === null ) {
+					console.log( 'null img - text slide' );
+					type = 'text';
+				}
+				
+				slide_link = $(rows[i]).children().last().children('span').text();
+				
+				if( type === 'image' ) {
+					post_id = $(img).data('img-id');
+				}
+				if( type === 'text' ) {
+					text_title = $(rows[i]).children().last().text();
+					text_content = $(rows[i]).children().last().children('div').text();
+				}
+								
+				var slide = {
+					type: type,
+					text_title: text_title,
+					text_content: text_content,
+					slide_link: slide_link,
+					post_id: post_id,
+					ordering: i
+				}
+				slides.push( slide );
+			}
+		
+			var data = {
+				action: 'slideshow-save-slide-collection',
+				title:	$('.slideshow-collection-name').val(),
+				slideshow_id: $('#slideshow_select').val(),
+				layout: $('input[name="slideshow-layout"]').val(),
+				transition: $('input[name="slideshow-transition"]').val(),
+				slides: slides
+			};
+			
+			$.post(ajaxurl,data).complete(function(r){
+				var res = JSON.parse(r.responseText);
+				
+				/// do something in response to the save attempt feedback ...
+				
+			});
+			
+			
+		},
+		
 		
 		/**
 		*	image-click handler to set the layout style
@@ -166,7 +343,7 @@
 		set_layout_control: function() {
 			var t = $(this);
 			var id = t.data('id');
-			console.log( id );
+		//	console.log( id );
 			$('#'+id).click();
 		},
 		
@@ -342,22 +519,22 @@
 jQuery().ready(function(){
 	
 	window.coop_slideshow_settings = jQuery().coop_slideshow_settings();
-	
 	window.slideshow_setup = jQuery().coop_slideshow_setup();
 	
 	jQuery('.draggable').draggable({ cursor:'move', 
 									 stack:	'.slide', 
 									/*  snap:	'.snappable',  */
-									 start: slideshow_setup.dragstart, 
-									 stop:  slideshow_setup.dragstop,
+									 start:  slideshow_setup.dragstart, 
+									 stop:   slideshow_setup.dragstop,
 									 helper: slideshow_setup.drag_representation
 								});
 									 
-	jQuery('.droppable').droppable({ drop:  slideshow_setup.dropped,
+	jQuery('.droppable').droppable({ drop:  slideshow_setup.drop_on_row,
 									 over:  slideshow_setup.over_drop,
 									 out:   slideshow_setup.leave_drop,
 									 hoverClass: 'drop_highlight' 
 								});
+								
 	jQuery('.slideshow-control-img').click( slideshow_setup.set_layout_control );
 	
 	jQuery('.slideshow-collection-name').blur( slideshow_setup.precheck_slideshow_name );
@@ -365,8 +542,12 @@ jQuery().ready(function(){
 	jQuery("#slideshow_select").chosen().change( slideshow_setup.past_slideshow_selected );
 	jQuery('.slideshow-text-slide-save-btn').click( function(event) {
 			event.stopPropagation();
-			slideshow_setup.add_text_only_slide()
+			slideshow_setup.add_text_only_slide();
 		});
+	jQuery('#coop-slides-setup-submit').click(function(event){
+		event.stopPropagation();
+		slideshow_setup.save_collection();
+	});
 	
 	
 });

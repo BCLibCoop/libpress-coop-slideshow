@@ -33,6 +33,7 @@ class Slideshow {
 			add_action( 'wp_ajax_coop-save-slideshow-change', array( &$this, 'slideshow_settings_save_changes'));
 			add_action( 'wp_ajax_slideshow_add_text_slide',array(&$this,'slideshow_add_text_slide'));
 			add_action( 'wp_ajax_precheck_slideshow_collection_name',array(&$this,'precheck_slideshow_collection_name'));
+			add_action( 'wp_ajax_slideshow-fetch-collection',array(&$this,'slideshow_fetch_collection'));
 			
 			// conditionally ensures that the slideshow table is present
 			add_action( 'wp_loaded', array( &$this, 'slideshow_create_db_table_handler'));
@@ -288,7 +289,6 @@ class Slideshow {
 	}
 	
 	
-	
 	private function slideshow_droppable_table() {
 		
 		$out = array();
@@ -299,10 +299,10 @@ class Slideshow {
 		
 		$out[] = '<table class="slideshow-sortable-rows">';
 		
-		$out[] = '<tr class="head-row"><th></th><th>Caption/Title<br/><span class="slideshow-slide-link-header">Slide Link</span></th><th></th></tr>';
+		$out[] = '<tr class="head-row"><th></th><th>Caption/Title<br/><span class="slideshow-slide-link-header">Slide Link</span></th></tr>';
 		
 		for( $i=0;$i<=5;$i++) {
-			$out[] = '<tr id="row'.$i.'" class="slideshow-collection-row draggable droppable" id="dropzone'.$i.'"><td class="thumbbox">&nbsp;</td><td class="slideshow-slide-title">&nbsp;<br/><span class="slideshow-slide-link">&nbsp;</span></td><td class="slideshow-collection-row-handle draggable">&nbsp;</td></tr>';
+			$out[] = '<tr id="row'.$i.'" class="slideshow-collection-row draggable droppable" id="dropzone'.$i.'"><td class="thumbbox">&nbsp;</td><td class="slideshow-slide-title">&nbsp;<br/><span class="slideshow-slide-link">&nbsp;</span></td></tr>';
 		}
 		
 		$out[] = '</table><!-- .slideshow-droppable-rows -->';
@@ -800,6 +800,7 @@ class Slideshow {
 	*	Store settings from teh global Slideshow Settings long form of options.
 	*
 	**/
+	
 	public function slideshow_settings_save_changes() {
 		
 	//	error_log(__FUNCTION__);
@@ -819,8 +820,62 @@ class Slideshow {
 		die();
 	}
 	
+	public function slideshow_fetch_collection() {
+		
+		global $wpdb;
+		
+		$slideshow_id = $_POST['slideshow_id'];
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		$sql = "SELECT * FROM $table_name WHERE slideshow_id=$slideshow_id ORDER BY ordering";
+		$res = $wpdb->get_results($sql);
+		$out = array();
+		foreach( $res as $r ) {
+			$out[] = '{"id":"'.$r->id.'","post_id":"'.$r->post_id.'","slide_link":"'.$r->slide_link.'","text_title":"'.stripslashes($r->text_title).'","text_content":"'.stripslashes($r->text_content).'"}'; 
+		}
+		
+	//	error_log( implode( "\n", $out ));
+			
+		echo '['. implode(',',$out).']';
+		die();
+		
+	}
+	
+	public function slideshow_fetch_img_meta() {
+		
+		global $wpdb;
+
+		// try to get the post from the local media cache first
+		// fallback to looking in the network shared media collection
+
+		$post_id = $_POST['post_id'];
+		$sql = "SELECT * FROM $wpdb->posts WHERE ID = $post_id";
+		$res = $wpdb->get_results($sql);
+		$meta;
+		
+		if( $res == NULL ) {
+			$sql = "SELECT * FROM wp_posts WHERE ID = $post_id";
+			$res = $wpdb->get_results($sql);
+			if( $res == NULL ) {
+				echo '{"result":"failed"}';
+				die();
+			}
+			$sql = "SELECT meta_value FROM wp_postmeta WHERE post_id= $post_id";
+			$meta = $wpdb->get_var($sql);
+		}
+		else {
+			$sql = "SELECT meta_value FROM $wpdb->postmeta WHERE post_id= $post_id";
+			$meta = $wpdb->get_var($sql);
+		}
+		$meta = maybe_unserialize($meta);
+		
+		echo '<pre>';
+		var_dump($meta);
+		echo '</pre>';
+
+	}
 	
 	public function precheck_slideshow_collection_name() {
+		
 		global $wpdb;
 		
 		$slideshow_name = sanitize_text_field($_POST['slideshow_name']);
