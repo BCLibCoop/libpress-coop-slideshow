@@ -179,6 +179,10 @@ textarea.slideshow-text-slide-content {
 	text-align: right;
 }
 
+.slideshow-big-t {
+	font-family: Times, Georgia, serif;
+	font-size: 3em;
+}
 
 /**
 *

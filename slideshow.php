@@ -32,8 +32,10 @@ class Slideshow {
 			add_action( 'admin_menu', array( &$this,'add_slideshow_menu' ));
 			add_action( 'wp_ajax_coop-save-slideshow-change', array( &$this, 'slideshow_settings_save_changes'));
 			add_action( 'wp_ajax_slideshow_add_text_slide',array(&$this,'slideshow_add_text_slide'));
-			add_action( 'wp_ajax_precheck_slideshow_collection_name',array(&$this,'precheck_slideshow_collection_name'));
+			add_action( 'wp_ajax_slideshow_precheck_collection_name',array(&$this,'slideshow_precheck_collection_name'));
+			add_action( 'wp_ajax_slideshow-fetch-img-meta',array(&$this,'slideshow_fetch_img_meta_callback'));
 			add_action( 'wp_ajax_slideshow-fetch-collection',array(&$this,'slideshow_fetch_collection'));
+			add_action( 'wp_ajax_slideshow-save-slide-collection',array(&$this,'slideshow_save_collection_handler'));
 			
 			// conditionally ensures that the slideshow table is present
 			add_action( 'wp_loaded', array( &$this, 'slideshow_create_db_table_handler'));
@@ -45,7 +47,7 @@ class Slideshow {
 	
 	public function frontside_enqueue_styles_scripts() {
 	
-		self::publish_slider_settings();
+		self::slideshow_settings_publish_config();
 	
 	//	wp_register_style( 'coop-slideshow', 	plugins_url( '/css/slideshow.css', __FILE__ ), false );
 	//	wp_enqueue_style( 'coop-slideshow' );
@@ -80,41 +82,18 @@ class Slideshow {
 		
 	}
 	
-	
 	public function add_slideshow_menu() {
 	
 		$plugin_page = add_submenu_page( 'site-manager', 'Slideshow Admin','Slideshow Admin', 'edit_options', 'top-slides', array(&$this,'slideshow_setup_page'));
-		add_submenu_page( 'site-manager', 'Slideshow Settings', 'Slideshow Settings', 'manage_network','slides-settings', array(&$this,'slideshow_admin_settings_page'));
+		add_submenu_page( 'site-manager', 'Slideshow Settings', 'Slideshow Settings', 'manage_network','slides-settings', array(&$this,'slideshow_settings_admin_page'));
 		
 		add_action( 'admin_footer-'.$plugin_page, array(&$this,'slideshow_setup_footer_script' ));
 		
 	}
 	
 	
-	private function fetch_slideshow_selector() {
-		
-		global $wpdb;
-		
-		$table_name = $wpdb->prefix . 'slideshows';
-		$sql = "SELECT * FROM $table_name ORDER BY title";
-		$res = $wpdb->get_results($sql);
-		
-		$out = array();
-		$out[] = '<select data-placeholder="... or choose a past slideshow to reload" name="slideshow_select" id="slideshow_select" class="slideshow_select chzn-select">';
-		
-		$out[] = '<option value="" ></option>';
-
-		
-		foreach($res as $r) {
-			$out[] = '<option value="'.$r->id .'" >'.$r->title.'</option>';
-		}
-		
-		$out[] = '</select>';
-		
-		return implode( "\n", $out);
-	}
 	
-		
+	
 	
 	public function slideshow_setup_page() {
 	
@@ -140,7 +119,7 @@ class Slideshow {
 					
 		$out[] = '<input type="text" class="slideshow-collection-name" name="slideshow-collection-name" value="" placeholder="Enter a name for this slide show"><br />';
 		
-		$out[] = self::fetch_slideshow_selector();
+		$out[] = self::slideshow_collection_selector();
 		$out[] = '<br/>';
 		
 		
@@ -288,6 +267,27 @@ class Slideshow {
 		
 	}
 	
+	private function slideshow_collection_selector() {
+		
+		global $wpdb;
+		
+		$table_name = $wpdb->prefix . 'slideshows';
+		$sql = "SELECT * FROM $table_name ORDER BY title";
+		$res = $wpdb->get_results($sql);
+		
+		$out = array();
+		$out[] = '<select data-placeholder="... or choose a past slideshow to reload" name="slideshow_select" id="slideshow_select" class="slideshow_select chzn-select">';
+		
+		$out[] = '<option value="" ></option>';
+
+		foreach($res as $r) {
+			$out[] = '<option value="'.$r->id .'" >'.$r->title.'</option>';
+		}
+		
+		$out[] = '</select>';
+		
+		return implode( "\n", $out);
+	}
 	
 	private function slideshow_droppable_table() {
 		
@@ -332,8 +332,6 @@ class Slideshow {
 		return implode("\n",$out);
 	}
 	*/
-	
-	
 	
 	private function text_slide_create_form() {
 	
@@ -435,7 +433,7 @@ class Slideshow {
 			
 			$out[] = '<tr>';
 			$out[] = '<td class="radio-box">';
-				$out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-2" value="no-thumbs">';
+				$out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-2" value="vertical">';
 			$out[] = '</td>';
 			$out[] = '<td>'; 
 				$out[] = '<label for="slideshow-control-2">Vertical thumbnails</label>';
@@ -467,7 +465,7 @@ class Slideshow {
 			
 			$out[] = '<tr>';
 			$out[] = '<td class="radio-box">';
-				$out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-3" value="no-thumbs">';
+				$out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-3" value="horizontal">';
 			$out[] = '</td>';
 			$out[] = '<td>'; 
 				$out[] = '<label for="slideshow-control-3">Horizontal thumbnails</label>';
@@ -509,7 +507,7 @@ class Slideshow {
 			
 			$out[] = '<tr>';
 			$out[] = '<td class="radio-box">';
-				$out[] = '<input type="radio" name="slideshow-transition" id="slideshow-control-4" value="no-thumbs">';
+				$out[] = '<input type="radio" name="slideshow-transition" id="slideshow-control-4" value="horizontal">';
 			$out[] = '</td>';
 			$out[] = '<td>'; 
 				$out[] = '<label for="slideshow-control-4">Slide Horizontal</label>';
@@ -541,7 +539,7 @@ class Slideshow {
 			
 			$out[] = '<tr>';
 			$out[] = '<td class="radio-box">';
-				$out[] = '<input type="radio" name="slideshow-transition" id="slideshow-control-5" value="no-thumbs">';
+				$out[] = '<input type="radio" name="slideshow-transition" id="slideshow-control-5" value="vertical">';
 			$out[] = '</td>';
 			$out[] = '<td>'; 
 				$out[] = '<label for="slideshow-control-5">Slide Vertical</label>';
@@ -573,7 +571,7 @@ class Slideshow {
 			
 			$out[] = '<tr>';
 			$out[] = '<td class="radio-box">';
-				$out[] = '<input type="radio" name="slideshow-transition" id="slideshow-control-6" value="no-thumbs">';
+				$out[] = '<input type="radio" name="slideshow-transition" id="slideshow-control-6" value="fade">';
 			$out[] = '</td>';
 			$out[] = '<td>'; 
 				$out[] = '<label for="slideshow-control-6">Cross-fade</label>';
@@ -627,7 +625,401 @@ class Slideshow {
 */	
 	}
 	
-	public function publish_slider_settings() {
+	public function slideshow_save_collection_handler() {
+		
+		global $wpdb;
+		
+		error_log("\n\n\t\tslideshow_save_collection_handler\n\n\n");
+		
+		$title = $_POST['title'];
+		$slideshow_id = $_POST['slideshow_id'];
+		
+		$layout = $_POST['layout'];
+		$transition = $_POST['transition'];
+		
+		$slides = $_POST['slides'];
+		if( !is_array($slides) ) {
+			error_log( 'slides are not in an array' );
+			die();
+		}
+		
+		if( empty($slideshow_id) ) {
+			$slideshow_id = slideshow_create_collection( $title );
+		}
+		
+		$table_name = $wpdb->prefix . 'slideshows';
+		$sql = "UPDATE $table_name SET layout='".$layout."', transition='".$transition."', date=now() WHERE id = $slideshow_id";
+		$wpdb->query($sql);
+		
+		foreach( $slides as $s ) {
+		
+			$FIELDS = array('slideshow_id');
+			$VALUES = array($slideshow_id);
+			
+			$type = $s['type'];
+			$slide_id = '';
+			
+			if( 'image' === $type ) {
+				
+				$FIELDS[] = 'post_id';
+				$VALUES[] = $s['post_id'];
+				
+			}
+			else {	// 'text' === $type
+				
+				$FIELDS[] = 'text_title';
+				$VALUES[] = "'".addslashes($s['text_title'])."'";
+						
+				$FIELDS[] = 'text_content';
+				$VALUES[] = "'".addslashes($s['text_content'])."'";
+			}
+			
+						
+			if( array_key_exists('slide_id',$s ) ) {
+			
+				$slide_id = $s['slide_id'];
+				
+				error_log( '$slide_id = ' . $slide_id); 
+				
+				//$FIELDS[] = 'id';
+				//$VALUES[] = $s['slide_id'];
+			}
+			
+			if( array_key_exists('ordering',$s) && is_numeric($s['ordering'])) {
+				$FIELDS[] = 'ordering';
+				$VALUES[] = $s['ordering'];
+			}
+			
+			if( array_key_exists('slide_link',$s ) && !empty($s['slide_link'])) {
+				$FIELDS[] = 'slide_link';
+				$VALUES[] = "'".addslashes($s['slide_link'])."'";
+			}
+			
+			$table_name = $wpdb->prefix . 'slideshow_slides';
+			$sql = '';
+			
+			if( ! empty($slide_id) ) {
+			
+				// pre-existing slide - update, do not create
+				$sql = "UPDATE $table_name SET ";
+				for( $i=0;$i<count($FIELDS);$i++) {
+					$sql .= $FIELDS[$i] .'='.$VALUES[$i];
+					if( $i < count($FIELDS)-1) {
+						$sql .= ',';
+					}
+				}
+				$sql .= " WHERE id = $slide_id";
+			}
+			else {
+			
+				$sql = "INSERT INTO $table_name (";
+				$sql .= implode(',',$FIELDS);
+				$sql .=") VALUES (" . implode(',',$VALUES) . ")";
+			}
+		
+			error_log( "\n\n".$sql."\n\n" );
+		
+			$wpdb->query($sql);
+		}
+		
+		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Slides saved to collection"}';
+		die();
+		
+	}
+	
+	public function slideshow_fetch_collection() {
+		
+		global $wpdb;
+		
+		$slideshow_id = $_POST['slideshow_id'];
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		$sql = "SELECT * FROM $table_name WHERE slideshow_id=$slideshow_id ORDER BY ordering";
+		$slides = $wpdb->get_results($sql);
+		$out = array();
+		foreach( $slides as $s ) {
+			if( $s->post_id ) {
+				$out[] = '{"id":"'.$s->id.'","post_id":"'.$s->post_id.'","slide_link":"'.$s->slide_link.'","ordering":"'.$s->ordering.'"}'; 
+			}
+			else {
+				$out[] = '{"id":"'.$s->id.'","slide_link":"'.$s->slide_link.'","text_title":"'.stripslashes($s->text_title).'","text_content":"'.stripslashes($s->text_content).'","ordering":"'.$s->ordering.'"}'; 
+			}
+		}
+		
+	//	error_log( implode( "\n", $out ));
+			
+		echo '['. implode(',',$out).']';
+		die();
+		
+	}
+	
+	
+	/**
+	*	Build a simpler data structure for metadata
+	*
+	*	return this as a nested array
+	**/
+	
+	public function slideshow_fetch_img_meta() {
+		
+		global $wpdb;
+
+		// try to get the post from the local media cache first,
+		// 	fallback to looking in the network shared media collection
+
+		$post_id = $_POST['post_id'];
+		$sql = "SELECT post_title FROM $wpdb->posts WHERE ID = $post_id";
+		$post_title = $wpdb->get_var($sql);
+		
+		$source = 'local';	// originates in the blog owner's media dirs vs. network shared media
+		
+		$meta;
+		
+		if( $post_title == NULL ) {
+			$sql = "SELECT post_title FROM wp_posts WHERE ID = $post_id";
+			$post_title = $wpdb->get_var($sql);
+			if( $post_title == NULL ) {
+				echo '{"result":"failed"}';
+				die();
+			}
+			$source = 'network';
+			$sql = "SELECT meta_value FROM wp_postmeta WHERE meta_key='_wp_attachment_metadata' AND post_id = $post_id";
+			$meta = $wpdb->get_var($sql);
+		}
+		else {
+			// 'local' again/still
+			$sql = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key='_wp_attachment_metadata' AND post_id= $post_id";
+			$meta = $wpdb->get_var($sql);
+		}
+		$meta = maybe_unserialize($meta);
+		
+		$postmeta = array();
+		
+		$postmeta['title'] = $post_title;
+		
+		list( $year, $month, $file ) = explode( '/',$meta['file']);
+		
+		$rootdir = 'files';		// default for 'local' source
+		if( $source === 'network' ) {
+			$rootdir = 'wp-uploads';
+		}
+		
+		$postmeta['folder'] = sprintf( "/%s/%4d/%02d/",$rootdir,$year,$month);
+		$postmeta['file'] = $file;
+		$postmeta['width'] = $meta['width'];
+		$postmeta['height'] = $meta['height'];
+		
+		$postmeta['thumb'] = array( 
+			'file' => $meta['sizes']['thumbnail']['file'],
+			'width'=> $meta['sizes']['thumbnail']['width'],
+			'height'=> $meta['sizes']['thumbnail']['height'] 
+		);
+		$postmeta['medium'] = array( 
+			'file' => $meta['sizes']['medium']['file'],
+			'width'=> $meta['sizes']['medium']['width'],
+			'height'=> $meta['sizes']['medium']['height'] 
+		);
+
+		$postmeta['large'] = array( 
+			'file' => $meta['sizes']['large']['file'],
+			'width'=> $meta['sizes']['large']['width'],
+			'height'=> $meta['sizes']['large']['height'] 
+		);
+
+		/*		
+		foreach( $meta as $k => $v ) {
+			if( is_array($v) ) {
+				foreach( $v as $j => $l ) {
+					if( is_array($l)) {
+						foreach( $l as $a => $b ) {
+							if( is_array($b)) {
+								foreach( $b as $c => $d ) {
+									error_log( $k .': '.$j.': ['. $a .'] '. $c .' => ' . $d );
+								}
+							}
+							else {
+								error_log( $k.': ['.$j.'] '.$a .' <=> '.$b );		
+							}
+						}
+					}
+					else {
+						error_log( $k.': '.$j .' => '. $l );
+					}
+				}
+			}
+			else {
+				error_log( $k .' = > '. $v );
+			}
+		}
+*/		
+		
+		return $postmeta;
+		
+	}
+	
+
+	/**
+	*	Fetch image meta callback	
+	*		wraps the call to get img meta data
+	*	returns it as JSON
+	**/
+
+	public function slideshow_fetch_img_meta_callback() {
+	
+		$post_id = $_POST['post_id'];
+		
+		$meta = self::slideshow_fetch_img_meta($post_id);
+
+		$out = array();
+		
+		$out[] = '{"result":"success"';
+		$out[] = '"meta": {"title": "'.$meta['title'].'"';
+		$out[] = '"file":"'.$meta['file'].'"';
+		$out[] = '"folder":"'.$meta['folder'].'"';
+		$out[] = '"height":"'.$meta['height'].'"';
+		$out[] = '"width":"'.$meta['width'].'"';
+		
+		$out[] = '"thumb": {"file":"'.$meta['thumb']['file'].'"';
+		$out[] = '"width":"'.$meta['thumb']['width'].'"';
+		$out[] = '"height":"'.$meta['thumb']['height'].'"}';
+		
+		$out[] = '"medium": {"file":"'.$meta['medium']['file'].'"';
+		$out[] = '"width":"'.$meta['medium']['width'].'"';
+		$out[] = '"height":"'.$meta['medium']['height'].'"}';
+		
+		$out[] = '"large": {"file":"'.$meta['large']['file'].'"';
+		$out[] = '"width":"'.$meta['large']['width'].'"';
+		$out[] = '"height":"'.$meta['large']['height'].'"}}}';
+		
+		echo implode(',',$out);
+		die();
+		
+
+	}
+	
+	public function slideshow_precheck_collection_name() {
+		
+		global $wpdb;
+		
+		$slideshow_name = sanitize_text_field($_POST['slideshow_name']);
+		$table_name = $wpdb->prefix . 'slideshows';
+		$sql = "SELECT id FROM $table_name WHERE title = '".addslashes($slideshow_name)."'";
+		$id = $wpdb->get_var($sql, FALSE);
+		if( $id ) {		
+			/* found - not okay to use */
+			echo '{"result":"found", "slideshow_id":"'.$id.'"}';
+		}
+		else {	
+			/* failed - is okay to use */
+			echo '{"result":"not found"}';
+		}
+		die();
+	}
+	
+	public function slideshow_create_collection( $slideshow_name = '' ) {
+		
+		global $wpdb;
+		
+		$table_name = $wpdb->prefix . 'slideshows';
+		$sql = "INSERT INTO $table_name (title) VALUES ( '".addslashes($slideshow_name)."' )";
+		$wpdb->query($sql);
+		
+		return $wpdb->insert_id;
+	}
+	
+	
+	/**
+	*	Store the content of the Add Text-only slide subform
+	*
+	**/
+	public function slideshow_add_text_slide() {
+		
+		error_log(__FUNCTION__ );
+		
+		global $wpdb;
+		
+		$slideshow_id = $_POST['slideshow_id'];
+		$slideshow_name = sanitize_text_field($_POST['slideshow_name']);
+		$title = sanitize_text_field($_POST['title']);
+		$content = sanitize_text_field($_POST['content']);
+		
+		if( empty($slideshow_id) || $slideshow_id == 'null' ) {
+			if( ! empty($slideshow_name) ) {
+				$slideshow_id = self::slideshow_create_collection($slideshow_name);
+			}
+			else {
+				echo '{"result":"failed"}';
+			}
+		}
+		
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		$sql = "INSERT INTO $table_name (slideshow_id,text_title,text_content) values ( $slideshow_id, '".addslashes($title)."','". addslashes($content)."')";
+		
+		$wpdb->query($sql);
+		
+		$slide_id = $wpdb->insert_id;
+		if( $slide_id ) {
+			echo '{"result":"success", "slide_id":"'.$slide_id.'"}';
+		}
+		else {
+			echo '{"result":"failed"}';
+		}
+		die();
+	}
+
+	
+	/**
+	*	Store / adjust settings from the global Slideshow Settings long form of options.
+	*
+	**/
+	
+	public function slideshow_settings_admin_page() {
+				
+	//	error_log(__FUNCTION__);
+				
+		$out = array();
+		$out[] = '<div class="wrap">';
+		
+		$out[] = '<div id="icon-options-general" class="icon32">';
+		$out[] = '<br>';
+		$out[] = '</div>';
+		
+		$out[] = '<h2>Slideshow Settings</h2>';
+		$out[] = '<p>&nbsp;</p>';
+		$out[] = '<p>Instructions go here.</p>';
+		
+		$out[] = '<table class="form-table">';
+		
+		$out[] = self::slideshow_settings_parse_defaults();
+					
+		$out[] = '</table>';
+		
+		$out[] = '<p class="submit">';
+		$out[] = '<input type="submit" value="Save Changes" class="button button-primary" id="coop-slideshow-submit" name="submit">';
+		$out[] = '</p>';
+		
+		echo implode("\n",$out);
+	}
+	
+	public function slideshow_settings_save_changes() {
+		
+	//	error_log(__FUNCTION__);
+		
+		// reconstitute the keys we need to get into the $_POST object
+		$keys = stripslashes($_POST['keys']);
+		$keys = str_replace(array('[',']','"'), array('','',''), $keys );
+		$keys = explode(",",$keys) ;
+		
+		foreach( $keys as $k ) {
+			$val = $_POST[$k];
+			update_option('_'.$this->slug.'_'.$k, "$val" );
+		//	error_log( $k . ' => '. $val );
+		}
+		
+		echo '{"feedback": "'.count($keys).' settings updated"}';
+		die();
+	}	
+	
+	public function slideshow_settings_publish_config() {
 	
 		global $wpdb;
 		$tag = '_'.$this->slug.'_';
@@ -657,7 +1049,7 @@ class Slideshow {
 		echo implode("\n",$out);		
 	}
 	
-	private function parseSlideshowDefaults() {
+	private function slideshow_settings_parse_defaults() {
 	
 		$lines = file( dirname(__FILE__).'/inc/default-settings.js');
 		
@@ -767,189 +1159,7 @@ class Slideshow {
 		return implode("\n",$out);
 	}
 		
-	public function slideshow_admin_settings_page() {
-				
-	//	error_log(__FUNCTION__);
-				
-		$out = array();
-		$out[] = '<div class="wrap">';
 		
-		$out[] = '<div id="icon-options-general" class="icon32">';
-		$out[] = '<br>';
-		$out[] = '</div>';
-		
-		$out[] = '<h2>Slideshow Settings</h2>';
-		$out[] = '<p>&nbsp;</p>';
-		$out[] = '<p>Instructions go here.</p>';
-		
-		$out[] = '<table class="form-table">';
-		
-		$out[] = self::parseSlideshowDefaults();
-					
-		$out[] = '</table>';
-		
-		$out[] = '<p class="submit">';
-		$out[] = '<input type="submit" value="Save Changes" class="button button-primary" id="coop-slideshow-submit" name="submit">';
-		$out[] = '</p>';
-		
-		echo implode("\n",$out);
-	}
-	
-	
-	/**
-	*	Store settings from teh global Slideshow Settings long form of options.
-	*
-	**/
-	
-	public function slideshow_settings_save_changes() {
-		
-	//	error_log(__FUNCTION__);
-		
-		// reconstitute the keys we need to get into the $_POST object
-		$keys = stripslashes($_POST['keys']);
-		$keys = str_replace(array('[',']','"'), array('','',''), $keys );
-		$keys = explode(",",$keys) ;
-		
-		foreach( $keys as $k ) {
-			$val = $_POST[$k];
-			update_option('_'.$this->slug.'_'.$k, "$val" );
-		//	error_log( $k . ' => '. $val );
-		}
-		
-		echo '{"feedback": "'.count($keys).' settings updated"}';
-		die();
-	}
-	
-	public function slideshow_fetch_collection() {
-		
-		global $wpdb;
-		
-		$slideshow_id = $_POST['slideshow_id'];
-		$table_name = $wpdb->prefix . 'slideshow_slides';
-		$sql = "SELECT * FROM $table_name WHERE slideshow_id=$slideshow_id ORDER BY ordering";
-		$res = $wpdb->get_results($sql);
-		$out = array();
-		foreach( $res as $r ) {
-			$out[] = '{"id":"'.$r->id.'","post_id":"'.$r->post_id.'","slide_link":"'.$r->slide_link.'","text_title":"'.stripslashes($r->text_title).'","text_content":"'.stripslashes($r->text_content).'"}'; 
-		}
-		
-	//	error_log( implode( "\n", $out ));
-			
-		echo '['. implode(',',$out).']';
-		die();
-		
-	}
-	
-	public function slideshow_fetch_img_meta() {
-		
-		global $wpdb;
-
-		// try to get the post from the local media cache first
-		// fallback to looking in the network shared media collection
-
-		$post_id = $_POST['post_id'];
-		$sql = "SELECT * FROM $wpdb->posts WHERE ID = $post_id";
-		$res = $wpdb->get_results($sql);
-		$meta;
-		
-		if( $res == NULL ) {
-			$sql = "SELECT * FROM wp_posts WHERE ID = $post_id";
-			$res = $wpdb->get_results($sql);
-			if( $res == NULL ) {
-				echo '{"result":"failed"}';
-				die();
-			}
-			$sql = "SELECT meta_value FROM wp_postmeta WHERE post_id= $post_id";
-			$meta = $wpdb->get_var($sql);
-		}
-		else {
-			$sql = "SELECT meta_value FROM $wpdb->postmeta WHERE post_id= $post_id";
-			$meta = $wpdb->get_var($sql);
-		}
-		$meta = maybe_unserialize($meta);
-		
-		echo '<pre>';
-		var_dump($meta);
-		echo '</pre>';
-
-	}
-	
-	public function precheck_slideshow_collection_name() {
-		
-		global $wpdb;
-		
-		$slideshow_name = sanitize_text_field($_POST['slideshow_name']);
-		$table_name = $wpdb->prefix . 'slideshows';
-		$sql = "SELECT id FROM $table_name WHERE title = '".addslashes($slideshow_name)."'";
-		$id = $wpdb->get_var($sql, FALSE);
-		if( $id ) {		
-			/* found - not okay to use */
-			echo '{"result":"found", "slideshow_id":"'.$id.'"}';
-		}
-		else {	
-			/* failed - is okay to use */
-			echo '{"result":"not found"}';
-		}
-		die();
-	}
-	
-	public function create_slideshow_collection( $slideshow_name = '' ) {
-		
-		global $wpdb;
-		
-		$table_name = $wpdb->prefix . 'slideshows';
-		$sql = "INSERT INTO $table_name (title) VALUES ( '".addslashes($slideshow_name)."' )";
-		$wpdb->query($sql);
-		
-		return $wpdb->insert_id;
-	}
-	
-	
-	/**
-	*	Store the content of the Add Text-only slide subform
-	*
-	**/
-	
-	public function slideshow_add_text_slide() {
-		
-		error_log(__FUNCTION__ );
-		
-		global $wpdb;
-		
-		$slideshow_id = $_POST['slideshow_id'];
-		$slideshow_name = sanitize_text_field($_POST['slideshow_name']);
-		$title = sanitize_text_field($_POST['title']);
-		$content = sanitize_text_field($_POST['content']);
-		
-		if( empty($slideshow_id) || $slideshow_id == 'null' ) {
-			if( ! empty($slideshow_name) ) {
-				$slideshow_id = self::create_slideshow_collection($slideshow_name);
-			}
-			else {
-				echo '{"result":"failed"}';
-			}
-		}
-		
-		$table_name = $wpdb->prefix . 'slideshow_slides';
-		$sql = "INSERT INTO $table_name (slideshow_id,text_title,text_content) values ( $slideshow_id, '".addslashes($title)."','". addslashes($content)."')";
-		
-		$wpdb->query($sql);
-		
-		$slide_id = $wpdb->insert_id;
-		if( $slide_id ) {
-			echo '{"result":"success", "slide_id":"'.$slide_id.'"}';
-		}
-		else {
-			echo '{"result":"failed"}';
-		}
-		die();
-	}
-	
-	
-	
-	
-	
-	
 	
 	/**
 	*	Create slideshow-related tables any time a blog
@@ -1003,9 +1213,6 @@ class Slideshow {
 		update_option('_slideshow_db_version', '1.0');
 		
 	}
-	
-	
-	
 	
 }
 
