@@ -129,9 +129,11 @@ class Slideshow {
 		$out[] = '<tr><td class="slideshow-name">';
 		
 		$out[] = '<input type="text" class="slideshow-collection-name" name="slideshow-collection-name" value="" placeholder="Enter a name for a new slideshow">';
-		$out[] = '<a href="" class="button slideshow-add-collection-name-btn">Save name</a>';
+		
 		
 		$out[] = '</td><td class="slideshow-gutter"></td><td class="slideshow-controls">';
+		
+		$out[] = '<a href="" class="button button-primary slideshow-add-collection-name-btn">Save collection</a>';
 		
 		$out[] = '</td></tr>';
 		$out[] = '<tr><td class="slideshow-name">';

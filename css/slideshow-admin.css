@@ -6,6 +6,15 @@
 	box-shadow: 6px 6px 6px rgba(0,250,50,0.5)
 }
 
+.slideshow-signals {
+	z-index: 1000;
+	border: thin solid #ccc;
+	background-image: url('/wp-content/plugins/slideshow/imgs/signal-sprite.png') 50 50;
+	width: 32px;
+	height: 32px;
+	box-shadow: 6px 6px 6px rgba(90,90,90,0.5);
+}
+
 
 table.slideshow-drag-drop-layout {
 	margin-top: 10px;
@@ -30,7 +39,7 @@ td.slideshow-controls {
 
 .slideshow-collection-name {
 	font-size: 2em;
-	width: 80%;
+	width: 100%;
 	margin-bottom: 10px;
 }
 
