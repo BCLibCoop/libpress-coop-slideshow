@@ -99,6 +99,15 @@ class Slideshow {
 	
 		global $wpdb;
 		
+		
+		$blog_details = get_blog_details();
+		$siteurl = get_site_url($blog_details->site_id); 	// base site == the shared media host 
+		/*
+		foreach( $blog_details as $k => $v ) {
+			error_log( "$k => $v" );
+		}
+		*/		
+		
 		$thumb_w = get_option('thumbnail_size_w',true);
 		$thumb_h = get_option('thumbnail_size_h',true);
 		
@@ -114,13 +123,26 @@ class Slideshow {
 		
 		$out[] = '<p>&nbsp;</p>';
 		
-		$out[] = '<p>This paage supprts the creation of Slideshows: a series of images / text slides which rotate automatically from one to the next. A slide show can comprise up to five slides (for best viewing effect). An image suitable for use in the slideshow is 1000px wide x 300px high. Images should be prepared under the Media menu, and must be given a Media Tag: <b>slide</b>.</p>';
+		$out[] = '<p>This page supports the creation of Slideshows: a series of images / text slides which rotate automatically from one to the next. A slideshow can comprise up to five slides (for best viewing effect). An image suitable for use in the slideshow is 1000 pixels wide x 300 pixels high. Images should be prepared under the Media menu, and must be given a Media Tag of: <b>slide</b>.</p>';
 		
-					
-		$out[] = '<input type="text" class="slideshow-collection-name" name="slideshow-collection-name" value="" placeholder="Enter a name for this slide show"><br />';
+		$out[] = '<table class="slideshow-header-controls">';
+		$out[] = '<tr><td class="slideshow-name">';
 		
+		$out[] = '<input type="text" class="slideshow-collection-name" name="slideshow-collection-name" value="" placeholder="Enter a name for a new slideshow">';
+		$out[] = '<a href="" class="button slideshow-add-collection-name-btn">Save name</a>';
+		
+		$out[] = '</td><td class="slideshow-gutter"></td><td class="slideshow-controls">';
+		
+		$out[] = '</td></tr>';
+		$out[] = '<tr><td class="slideshow-name">';
+
 		$out[] = self::slideshow_collection_selector();
-		$out[] = '<br/>';
+		
+		$out[] = '</td><td class="slideshow-gutter"></td><td class="slideshow-controls">';
+		
+
+		$out[] = '</td></tr>';
+		$out[] = '</table>';
 		
 		
 		// $sql = "SELECT * FROM $wpdb->posts WHERE post_type='attachment' ORDER BY post_title";
@@ -137,7 +159,6 @@ class Slideshow {
 		$out[] = '</td><!-- .slideshow-dropzone -->';
 		$out[] = '<td class="slideshow-gutter">&nbsp;</td>';
 		$out[] = '<td class="slideshow-dragzone">';
-		
 		
 		
 		$out[] = '<table class="slidershow-drag-table">';
@@ -239,9 +260,9 @@ class Slideshow {
 			$medium = $meta['sizes']['medium'];
 			$large = $meta['sizes']['large'];
 			
-			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="http://cmss.localhost/wp-uploads/%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder, $thumbnail['file'], $thumb_w, $thumb_h);
+			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s/wp-uploads/%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$siteurl,$folder, $thumbnail['file'], $thumb_w, $thumb_h);
 			
-			$out[] = sprintf('<img id="slotview%d" src="http://cmss.localhost/wp-uploads/%s%s" height="%d" class="slotview"></div>',$r->ID,$folder,$large['file'],$thumb_h);
+			$out[] = sprintf('<img id="slotview%d" src="%s/wp-uploads/%s%s" height="%d" class="slotview"></div>',$r->ID,$siteurl,$folder,$large['file'],$thumb_h);
 	
 		}
 		
@@ -299,7 +320,14 @@ class Slideshow {
 		
 		$out[] = '<table class="slideshow-sortable-rows">';
 		
-		$out[] = '<tr class="head-row"><th></th><th>Caption/Title<br/><span class="slideshow-slide-link-header">Slide Link</span></th></tr>';
+		$out[] = '<tr class="head-row"><th></th><th>';
+		
+		$out[] = '<div class="slideshow-controls-right"><input type="checkbox" id="slideshow-is-active-collection" class="slideshow-is-active-collection" value="1"> <label for="slideshow-is-active-collection" class="slideshow-activate-collection">This is the active slideshow</label></div>';
+		
+		$out[] = 'Caption/Title<br/><span class="slideshow-slide-link-header">Slide Link</span>';
+					
+		$out[] = '</th></tr>';
+					
 		
 		for( $i=0;$i<=5;$i++) {
 			$out[] = '<tr id="row'.$i.'" class="slideshow-collection-row draggable droppable" id="dropzone'.$i.'"><td class="thumbbox">&nbsp;</td><td class="slideshow-slide-title">&nbsp;<br/><span class="slideshow-slide-link">&nbsp;</span></td></tr>';
@@ -351,14 +379,15 @@ class Slideshow {
 		
 		$out[] = '<tr>';
 		$out[] = '<td class="slideshow-text-slide-link-box">';
-		$out[] = '<button class="slideshow-text-slide-link-btn">Link to ...</button>';
+		$out[] = '<a href="" class="button slideshow-text-slide-link-btn">Link to ...</a>';
+		$out[] = '<input type="text" class="hidden slideshow-text-slide-link-input" value="">';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 		
 		$out[] = '<tr>';
 		$out[] = '<td class="slideshow-text-slide-save-box">';
-		$out[] = '<button class="slideshow-text-slide-cancel-btn">Cancel</button>';
-		$out[] = '<button class="slideshow-text-slide-save-btn">Add the slide</button>';
+		$out[] = '<a href="" class="button slideshow-text-slide-cancel-btn">Cancel</a>';
+		$out[] = '<a href="" class="button slideshow-text-slide-save-btn">Add the slide</a>';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -628,27 +657,46 @@ class Slideshow {
 	public function slideshow_save_collection_handler() {
 		
 		global $wpdb;
-		
-		error_log("\n\n\t\tslideshow_save_collection_handler\n\n\n");
-		
+				
 		$title = $_POST['title'];
 		$slideshow_id = $_POST['slideshow_id'];
+		$is_active = $_POST['is_active'];
+		
+		if( empty($is_active) || $is_active == 'false' ) {
+		//	error_log( 'is_active setting to zero' );
+			$is_active = 0;
+		}
+		else {
+			$is_active = 1;
+		}
 		
 		$layout = $_POST['layout'];
 		$transition = $_POST['transition'];
 		
-		$slides = $_POST['slides'];
+		$slides = array();
+		if( array_key_exists('slides',$_POST) ) {
+			$slides = $_POST['slides'];
+		}
+		/*
 		if( !is_array($slides) ) {
 			error_log( 'slides are not in an array' );
 			die();
 		}
+		*/
 		
 		if( empty($slideshow_id) ) {
-			$slideshow_id = slideshow_create_collection( $title );
+			$slideshow_id = self::slideshow_create_collection( $title );
 		}
 		
 		$table_name = $wpdb->prefix . 'slideshows';
-		$sql = "UPDATE $table_name SET layout='".$layout."', transition='".$transition."', date=now() WHERE id = $slideshow_id";
+		
+		if( $is_active == 1 ) {
+			/* erase any currently marked as active */
+			$sql = "UPDATE $table_name SET is_active=0 WHERE is_active=1";
+			$wpdb->query($sql);
+		}
+		
+		$sql = "UPDATE $table_name SET layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
 		$wpdb->query($sql);
 		
 		foreach( $slides as $s ) {
@@ -722,7 +770,7 @@ class Slideshow {
 			$wpdb->query($sql);
 		}
 		
-		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Slides saved to collection"}';
+		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Slideshow collection saved"}';
 		die();
 		
 	}
@@ -732,6 +780,10 @@ class Slideshow {
 		global $wpdb;
 		
 		$slideshow_id = $_POST['slideshow_id'];
+		
+		$table_name = $wpdb->prefix.'slideshows';
+		$is_active = $wpdb->get_var("SELECT is_active FROM $table_name WHERE id =$slideshow_id");
+				
 		$table_name = $wpdb->prefix . 'slideshow_slides';
 		$sql = "SELECT * FROM $table_name WHERE slideshow_id=$slideshow_id ORDER BY ordering";
 		$slides = $wpdb->get_results($sql);
@@ -747,7 +799,7 @@ class Slideshow {
 		
 	//	error_log( implode( "\n", $out ));
 			
-		echo '['. implode(',',$out).']';
+		echo '{"slides":['. implode(',',$out).'], "is_active":"'.$is_active.'"}';
 		die();
 		
 	}
@@ -941,7 +993,11 @@ class Slideshow {
 		$slideshow_name = sanitize_text_field($_POST['slideshow_name']);
 		$title = sanitize_text_field($_POST['title']);
 		$content = sanitize_text_field($_POST['content']);
-		
+		$link = '';
+		if( array_key_exists('slide_link',$_POST)) {
+			$link = sanitize_text_field($_POST['slide_link']);	
+		}
+				
 		if( empty($slideshow_id) || $slideshow_id == 'null' ) {
 			if( ! empty($slideshow_name) ) {
 				$slideshow_id = self::slideshow_create_collection($slideshow_name);
@@ -952,7 +1008,7 @@ class Slideshow {
 		}
 		
 		$table_name = $wpdb->prefix . 'slideshow_slides';
-		$sql = "INSERT INTO $table_name (slideshow_id,text_title,text_content) values ( $slideshow_id, '".addslashes($title)."','". addslashes($content)."')";
+		$sql = "INSERT INTO $table_name (slideshow_id,text_title,text_content, slide_link) values ( $slideshow_id, '".addslashes($title)."','". addslashes($content)."', '".$link."')";
 		
 		$wpdb->query($sql);
 		
@@ -1192,7 +1248,8 @@ class Slideshow {
 				." title varchar(60) NOT NULL, "
 				." layout varchar(20) NOT NULL DEFAULT 'no-thumb', "
 				." transition varchar(20) NOT NULL DEFAULT 'horizontal',"
-				." date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL );";
+				." date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL ,"
+				." is_active tinyint NOT NULL DEFAULT 0 );";
 		$wpdb->query($sql);
 
 		

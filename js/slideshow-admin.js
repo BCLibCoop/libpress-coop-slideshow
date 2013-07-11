@@ -20,6 +20,37 @@
 		init: function( options ) {
 			
 			self = this;
+			
+			// a.k.a. [ Save name ] button 
+			$('.slideshow-add-collection-name-btn').click( function(event) {
+				event.stopPropagation();
+				self.save_collection_name();
+				return false;
+			});
+			
+			$('.slideshow-text-slide-link-btn').click( function(event){
+					event.stopPropagation();
+					self.toggle_text_link_input();
+					return false; 
+			});
+				
+			$('.slideshow-text-slide-cancel-btn').click( function(event){
+				event.stopPropagation();
+				self.clear_text_slide_form();
+				return false;
+			});
+			
+			$('.slideshow-text-slide-save-btn').click( function(event) {
+				event.stopPropagation();
+				slideshow_setup.add_text_only_slide();
+				return false;
+			});
+			
+			$('.slideshow-runtime-information').click( function(event) {
+				event.stopPropagation();
+				self.runtime_calculation();
+				return false;
+			});
 		},
 		
 		add_text_only_slide: function() {
@@ -36,17 +67,27 @@
 			var title = $('#slideshow-text-slide-heading').val();
 			var content = $('#slideshow-text-slide-content').val();
 			
+			var is_active = $('#slideshow-is-active-collection').val();
+				if( undefined === is_active ) {
+					is_active = String() + '0';
+				}
+			
 			if( title == '' || content == '' ) {
 				alert( 'You must enter a title and a message' );
 				return false;
 			}
+			
+			var slide_link = $('.slideshow-text-slide-link-input').val();
+			
 			
 			var data = {
 				action: 'slideshow_add_text_slide',
 				slideshow_name: slideshow_collection_name,
 				slideshow_id: slideshow_id,
 				title: title,
-				content: content
+				content: content,
+				slide_link: slide_link,
+				is_active: is_active
 			};
 			
 			$.post( ajaxurl, data ).complete( function(r) {
@@ -59,14 +100,30 @@
 				/* 	self.place_slide_text(id,title,content); */
 				
 					self.fetch_selected_slideshow();
-				
 				}
 				else {
 					alert( 'Unable to save the text slide.' );
 					$('#slideshow-text-slide-heading').focus();
 				}
 			});
-
+		},
+		
+		toggle_text_link_input: function() {
+			
+			if( $('.slideshow-text-slide-link-input').hasClass('hidden')) {
+				self.activate_text_only_link_input();
+			}
+			else {
+				self.deactivate_text_only_link_input();
+			}
+		},
+		
+		activate_text_only_link_input: function() {
+			$('.slideshow-text-slide-link-input').removeClass('hidden');
+		},
+		
+		deactivate_text_only_link_input: function() {
+			$('.slideshow-text-slide-link-input').addClass('hidden');
 		},
 		
 		clear_drop_table_rows: function() {
@@ -84,6 +141,7 @@
 		clear_text_slide_form: function() {
 			$('#slideshow-text-slide-heading').empty().val('');
 			$('#slideshow-text-slide-content').empty().val('');
+			$('.slideshow-text-slide-link-input').empty().val('');
 			// maybe URL subform too 
 		},
 			
@@ -232,17 +290,18 @@
 			})
 		},
 		
-		
 		first_empty_row: function() {
 		
 			var rows = $('.slideshow-collection-row');
-			for( i=0;i<rows.length;i++) {
-				var img = $('.thumbbox',rows[i]).children().first(); 
-				if( img == null || img == undefined ) {
+			for(var i=0;i<rows.length;i++) {
+			
+				var txt = $('.slideshow-slide-title',rows[i]).text(); 
+				console.log( 'row '+i + ': ' + txt );
+				if( txt.length == 0 ) {
+					console.log( 'txt.length == 0' );
 					return rows[i];
 				}
-				return false;
-			}	
+			}
 		},
 				
 		fetch_selected_slideshow: function() {
@@ -260,17 +319,25 @@
 			
 			$.post( ajaxurl, data ).complete(function(r){
 				var res = JSON.parse(r.responseText);
+				var slides = res.slides;
+				if( res.is_active == 1 ) {
+					$('#slideshow-is-active-collection').attr('checked','checked');
+				}
+				else {
+					$('#slideshow-is-active-collection').removeAttr('checked');
+				}
+				
 				var i;
-				for( i=0; i<res.length;i++ ) {
+				for( i=0; i<slides.length;i++ ) {
 				
 					var row = $('.slideshow-collection-row').eq( i );
 				
-					if( res[i].post_id == null ) {	// this is a text entry
-						self.place_slide_text( res[i].id, res[i].text_title, res[i].text_content, row);
+					if( slides[i].post_id == null ) {	// this is a text entry
+						self.place_slide_text( slides[i].id, slides[i].text_title, slides[i].text_content, slides[i].slide_link, row);
 					}
 					else {
 						// needs to include title/caption in db for image too - needs UI for setting same
-						self.place_slide_img( res[i].id, res[i].post_id, res[i].slide_link, row );
+						self.place_slide_img( slides[i].id, slides[i].post_id, slides[i].slide_link, row );
 					}
 				} 
 			});
@@ -303,11 +370,15 @@
 				
 				var img = $('<img data-img-id="' + post_id + '" src="'+src+'" width="' + w + '" height="' + h + '">');
 				$(row).children().first().empty().append( img );
-				$(row).children().last().empty().append(meta['title']);	
+				$(row).children().last().empty().append( meta['title'] );
+				if( undefined !== link ) {
+					var anchor = $('<br/><a>').text( link ).attr('href',link);
+					$(row).children().last().append( anchor );	
+				}
 			})	
 		},
 		
-		place_slide_text: function( id, title, content, row ) {
+		place_slide_text: function( id, title, content, link, row ) {
 		
 		//	console.log( 'called place_slide_text - ' + id + ' - ' + content );
 		
@@ -319,11 +390,17 @@
 			$(row).attr('data-slide-id',id);
 		//	console.log( 'reading back: ' + $(row).data('slide-id') );
 			$(row).children().first().empty().append($('<span class="slideshow-big-t">T</span>'));
-			$(row).children().last().empty().append(title)
-				.append( $('<div class="slideshow-content-popover" />').append( content )); 
+			$(row).children().last().empty().append(title); 
+			if( undefined !== link ) {
+				var anchor = $('<br/><a>').text( link ).attr('href',link);
+				$(row).children().last().append( anchor );	
+			}
+			$(row).children().last().append( $('<div class="slideshow-content-popover" />').append( content ));
 		},
 		
 		precheck_slideshow_name: function() {
+			
+			if( $('.slideshow-collection-name').val() === '' ) return;
 			
 			var data = {
 				action: 'precheck_slideshow_collection_name',
@@ -344,6 +421,68 @@
 				
 			});
 				
+		},
+		
+		runtime_calculation: function() {
+		
+			var row = self.first_empty_row();
+			if( ! row ) {
+				row = $('#row0');
+			}
+			var index = $(row).attr('id').replace('row','');
+			var dwell = parseInt(window.coop_slideshow_settings.current.pause) / 1000;
+			var transit = parseInt(window.coop_slideshow_settings.current.speed) / 1000;
+			
+			var net = index * (dwell + transit);	// slideshow cycle in seconds
+			
+			var msg = "There are "+index+" slides in this slideshow. Each slide will show for "+dwell+" seconds. ";
+				msg += "Transition between slides will take "+transit+" seconds. ";
+				msg += "The slideshow will take a total of "+net+" seconds to cycle completely.";
+			
+			$('.slideshow-runtime-information').empty().text( msg );
+		},
+		
+		
+		save_collection_name: function() {
+		
+			var is_active = $('#slideshow-is-active-collection').is(':checked');
+				console.log( 'is_active: ' + is_active );
+				if( undefined === is_active ) {
+					is_active = String() + '0';
+				}
+		
+			var layout = $('input[name="slideshow-layout"]').filter(':checked').val();
+				if( undefined === layout ) {
+					layout = 'no-thumb';
+				}
+				
+			var transition = $('input[name="slideshow-transition"]').filter(':checked').val();
+				if( undefined === transition ) {
+					transition = window.coop_slideshow_settings.current.mode;
+				}
+		
+			var data = {
+				action: 'slideshow-save-slide-collection',
+				title:	$('.slideshow-collection-name').val(),
+				slideshow_id: $('#slideshow_select').val(),
+				layout: layout,
+				transition: transition,
+				is_active: is_active
+			};
+			
+			$.post(ajaxurl,data).complete(function(r){
+				var res = JSON.parse(r.responseText);
+				
+				/// do something in response to the save attempt feedback ...
+				if( res.result === 'success' ) {
+					alert( 'Slide collection metadata saved' );	
+					self.fetch_selected_slideshow();			
+				}
+				else {
+					alert( res.feedback );
+				}		
+			});			
+					
 		},
 		
 		save_collection: function() {
@@ -370,12 +509,14 @@
 					type = 'text';		
 					// popover - take it off
 					var popover = $(rows[i]).children().last().children('div').detach();
+					// link? - take it off
+					slide_link = $(rows[i]).children().last().children('a').detach();
 					// read this while it is gone
 					text_title = $(rows[i]).children().last().text();
 					// read this while separated
 					text_content = $(popover).text();
 					// now put it back where it came from
-					$(rows[i]).children().last().append( popover );
+					$(rows[i]).children().last().append( popover ).append( slide_link );
 					
 				//	console.log( 'no img_id - text slide - ' + text_title ); 
 				}
@@ -388,13 +529,10 @@
 				
 				// if this slide has already been saved it has a slide_id index
 				slide_id = $(rows[i]).attr('data-slide-id');
-				
-				
-				
+							
 				// possible for each type
-				slide_link = $(rows[i]).children().last().children('span').text();
-				
-				
+				slide_link = $(rows[i]).children().last().children('a').text();
+							
 				if( type == 'image' ) {
 					// this is all we need for an image slide, 
 					// along with possible slide_id and slide_link values
@@ -414,17 +552,35 @@
 					}
 					slides.push( slide );
 				}
-				
-			//	console.log( 'slides.length: ' + slides.length );
-				
+				//	console.log( 'slides.length: ' + slides.length );			
 			}
 				
+			
+			var is_active = $('#slideshow-is-active-collection').val();
+				if( undefined === is_active ) {
+					is_active = String() + '0';
+				}
+		
+			var layout = $('input[name="slideshow-layout"]').filter(':checked').val();
+				if( undefined === layout ) {
+					layout = 'no-thumb';
+				}
+				
+			var transition = $('input[name="slideshow-transition"]').filter(':checked').val();
+				if( undefined === transition ) {
+					transition = window.coop_slideshow_settings.current.mode;
+				}
+			
+			
 			var data = {
 				action: 'slideshow-save-slide-collection',
 				title:	$('.slideshow-collection-name').val(),
 				slideshow_id: $('#slideshow_select').val(),
 				layout: $('input[name="slideshow-layout"]').filter(':checked').val(),
 				transition: $('input[name="slideshow-transition"]').filter(':checked').val(),
+				layout: layout,
+				transition: transition,
+				is_active: is_active,
 				slides: slides
 			};
 			
@@ -433,17 +589,13 @@
 				
 				/// do something in response to the save attempt feedback ...
 				if( res.result === 'success' ) {
-					alert( 'Collection saved' );
-				//	history.go(0);
-				
+					alert( 'Slide collection saved' );	
 					self.fetch_selected_slideshow();				
 				}
 				else {
 					alert( res.feedback );
-				}
-				
+				}		
 			});
-			
 		},
 		
 		
@@ -454,15 +606,13 @@
 		set_layout_control: function() {
 			var t = $(this);
 			var id = t.data('id');
-		//	console.log( id );
 			$('#'+id).click();
 		},
 		
 		show_checkmark: function() {
 			alert( 'show checkmark in the right hand edge of the Collection name field' );
 		}
-		
-		
+			
 	}
 	
 	$.fn.coop_slideshow_setup = function(opts) {
@@ -649,10 +799,7 @@ jQuery().ready(function(){
 	jQuery('.slideshow-control-img').click( slideshow_setup.set_layout_control );
 	jQuery('.slideshow-collection-name').blur( slideshow_setup.precheck_slideshow_name );
 	jQuery("#slideshow_select").chosen().change( slideshow_setup.fetch_selected_slideshow );
-	jQuery('.slideshow-text-slide-save-btn').click( function(event) {
-			event.stopPropagation();
-			slideshow_setup.add_text_only_slide();
-		});
+
 	jQuery('#coop-slides-setup-submit').click(function(event){
 		event.stopPropagation();
 		slideshow_setup.save_collection();
