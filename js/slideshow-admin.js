@@ -9,6 +9,7 @@
 	var self,
 		_configured = {},	// passed in options
 		opts = {},			// opts == current at start up (diverges as user changes settings)
+		signal,				// for showing signals to the user in a floating div .sort-table-signal
 		table_order;
 	
 	var SlideShowSetup = function( options ) {
@@ -20,6 +21,10 @@
 		init: function( options ) {
 			
 			self = this;
+			
+			self.signal = $('.sort-table.signal');
+			$(self.signal).addClass( 'minus-enabled' );
+			
 			
 			// a.k.a. [ Save name ] button 
 			$('.slideshow-add-collection-name-btn').click( function(event) {

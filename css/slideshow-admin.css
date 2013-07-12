@@ -2,18 +2,13 @@
 	display: none;
 }
 
-.update-halo {
-	box-shadow: 6px 6px 6px rgba(0,250,50,0.5)
-}
-
-
 table.slideshow-drag-drop-layout {
 	margin-top: 10px;
 	width: 95%;
 /*	border: thin solid #ccf; */
 }
 
-/* subtable alyout */
+/* subtable layout */
 table.slideshow-header-controls {
 	width: 95%;
 }
@@ -58,6 +53,14 @@ table.slideshow-sortable-rows {
 	width: 100%;
 	overflow: scroll;
 }
+
+div.sort-table-signal {
+	width: 32px;
+	height: 32px;
+	overflow: hidden;
+	background-color: rgba(255,255,255,0.5);
+}
+
 
 div.slideshow-controls-right {
 	float: right;
@@ -115,7 +118,6 @@ td span.slideshow-slide-link {
 }
 
 
-
 .drop_highlight {
 	box-shadow: inset 0px 0px 10px rgba(50,50,250,0.75);
 }
@@ -129,7 +131,6 @@ div.slideshow-runtime-information {
 	width: 96%;
 	border: thin solid #eee;
 	margin: 10px auto;
-	
 }
 
 

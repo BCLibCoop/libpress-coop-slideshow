@@ -335,6 +335,8 @@ class Slideshow {
 		
 		$out[] = '</table><!-- .slideshow-droppable-rows -->';
 		
+		$out[] = '<div class="sort-table-signal"><img src="'.plugins_url('/imgs/signal-sprite.png',__FILE__).'" class="signal-sprite"></div>';
+		
 		return implode("\n",$out);
 	}
 	
@@ -627,8 +629,8 @@ class Slideshow {
 	}
 	
 	public function slideshow_setup_footer_script() {
-	/*
 	
+	/*
 		$out = array('<script type="text/javascript">');
 		
 		$out[] = 'function notify( evt ) {';
@@ -650,7 +652,6 @@ class Slideshow {
 		$out[] = '</script>';
 		
 		echo implode( "\n", $out );
-	
 */	
 	}
 	
@@ -1027,7 +1028,6 @@ class Slideshow {
 	*	Store / adjust settings from the global Slideshow Settings long form of options.
 	*
 	**/
-	
 	public function slideshow_settings_admin_page() {
 				
 	//	error_log(__FUNCTION__);
