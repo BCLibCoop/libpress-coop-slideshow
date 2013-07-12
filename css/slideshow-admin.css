@@ -2,6 +2,36 @@
 	display: none;
 }
 
+<<<<<<< HEAD
+=======
+.update-halo {
+	box-shadow: 6px 6px 6px rgba(0,250,50,0.5)
+}
+
+
+.slideshow-signals-preload {
+	position: relative;
+	float: right;
+	top: 50px;
+	width: 362px;
+	height: 100px;
+	border: thin solid red;	
+}
+
+
+.slideshow-signals {
+	/* container for signals */
+	z-index: 1000;
+	width: 32px;
+	height: 32px;
+	top: -43px;
+	float: right;
+	position: relative;
+	overflow: hidden;
+}
+
+
+>>>>>>> master
 table.slideshow-drag-drop-layout {
 	margin-top: 10px;
 	width: 95%;
@@ -21,11 +51,12 @@ td.slideshow-name,
 td.slideshow-controls {
 	width: 48%;
 	text-align: left;
+	vertical-align: top;
 }
 
 .slideshow-collection-name {
 	font-size: 2em;
-	width: 80%;
+	width: 100%;
 	margin-bottom: 10px;
 }
 
@@ -194,7 +225,7 @@ textarea.slideshow-text-slide-content {
 }
 
 .slideshow-big-t {
-	font-family: Times, Georgia, serif;
+	font-family: Georgia, Times, serif;
 	font-size: 3em;
 }
 

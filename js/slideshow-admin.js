@@ -27,7 +27,7 @@
 			
 			
 			// a.k.a. [ Save name ] button 
-			$('.slideshow-add-collection-name-btn').click( function(event) {
+			$('.slideshow-save-collection-btn').click( function(event) {
 				event.stopPropagation();
 				self.save_collection_name();
 				return false;
@@ -55,7 +55,10 @@
 				event.stopPropagation();
 				self.runtime_calculation();
 				return false;
-			});
+			});		
+			
+			$('.signals-sprite').addClass('cross-disabled');
+			
 		},
 		
 		add_text_only_slide: function() {
@@ -113,27 +116,27 @@
 			});
 		},
 		
-		toggle_text_link_input: function() {
+		toggle_link_to_input: function() {
 			
 			if( $('.slideshow-text-slide-link-input').hasClass('hidden')) {
-				self.activate_text_only_link_input();
+				self.activate_link_to_input();
 			}
 			else {
-				self.deactivate_text_only_link_input();
+				self.deactivate_link_to_input();
 			}
 		},
 		
-		activate_text_only_link_input: function() {
+		activate_link_to_input: function() {
 			$('.slideshow-text-slide-link-input').removeClass('hidden');
 		},
 		
-		deactivate_text_only_link_input: function() {
+		deactivate_link_to_input: function() {
 			$('.slideshow-text-slide-link-input').addClass('hidden');
 		},
 		
 		clear_drop_table_rows: function() {
+		
 			var rows = $('.slideshow-collection-row');
-			
 			for( i=0;i<rows.length;i++) {	
 				console.log( 'clearing row ' + i );
 				$('.thumbbox',rows[i]).empty();
@@ -147,7 +150,6 @@
 			$('#slideshow-text-slide-heading').empty().val('');
 			$('#slideshow-text-slide-content').empty().val('');
 			$('.slideshow-text-slide-link-input').empty().val('');
-			// maybe URL subform too 
 		},
 			
 		dragstart: function( evt, ui ) {
@@ -336,15 +338,17 @@
 				for( i=0; i<slides.length;i++ ) {
 				
 					var row = $('.slideshow-collection-row').eq( i );
-				
-					if( slides[i].post_id == null ) {	// this is a text entry
+					if( slides[i].post_id == null ) {	
+						// this is a text entry
 						self.place_slide_text( slides[i].id, slides[i].text_title, slides[i].text_content, slides[i].slide_link, row);
 					}
 					else {
 						// needs to include title/caption in db for image too - needs UI for setting same
 						self.place_slide_img( slides[i].id, slides[i].post_id, slides[i].slide_link, row );
 					}
-				} 
+				}
+				
+				self.runtime_calculation();
 			});
 		},
 		
@@ -375,10 +379,15 @@
 				
 				var img = $('<img data-img-id="' + post_id + '" src="'+src+'" width="' + w + '" height="' + h + '">');
 				$(row).children().first().empty().append( img );
-				$(row).children().last().empty().append( meta['title'] );
+						
+				var title = $('<div class="slide-title" />').append(meta['title']);
+					$(row).children().last().empty().append( title );
+				
 				if( undefined !== link ) {
-					var anchor = $('<br/><a>').text( link ).attr('href',link);
-					$(row).children().last().append( anchor );	
+				
+					var anchor = $('<a class="slide-anchor" target="_blank"/>').text( link ).attr('href',link);
+					var div = $('<div class="slide-link" />').append( anchor );
+					$(row).children().last().append( div );
 				}
 			})	
 		},
@@ -395,10 +404,15 @@
 			$(row).attr('data-slide-id',id);
 		//	console.log( 'reading back: ' + $(row).data('slide-id') );
 			$(row).children().first().empty().append($('<span class="slideshow-big-t">T</span>'));
-			$(row).children().last().empty().append(title); 
+			
+			var titlediv = $('<div class="slide-title" />').append(title);
+			
+			$(row).children().last().empty().append(titlediv); 
+			
 			if( undefined !== link ) {
-				var anchor = $('<br/><a>').text( link ).attr('href',link);
-				$(row).children().last().append( anchor );	
+				var anchor = $('<a class="slide-anchor" target="_blank"/>').text( link ).attr('href',link);
+				var div = $('<div class="slide-link" />').append( anchor );
+					$(row).children().last().append( div );
 			}
 			$(row).children().last().append( $('<div class="slideshow-content-popover" />').append( content ));
 		},
@@ -616,6 +630,22 @@
 		
 		show_checkmark: function() {
 			alert( 'show checkmark in the right hand edge of the Collection name field' );
+		},
+		
+		spritebox: function() {
+			
+			var box = $('<div class="slideshow-signals"></div>');
+			var left = parseInt($('.slideshow-collection-name').css('left'),10);
+				left = left + parseInt($('.slideshow-collection-name').css('width'),10) - 32;
+				box.css('left',left);
+			
+			var top = parseInt($('.slideshow-collection-name').css('top'),10) - 32;
+				box.css('top',top);
+				
+				box.css('position','relative');
+				
+			$('.slideshow-collection-name').parent().append(box);
+			
 		}
 			
 	}
