@@ -36,7 +36,7 @@ class Slideshow {
 			add_action( 'admin_menu', array( &$this,'add_slideshow_menu' ));
 			add_action( 'wp_ajax_coop-save-slideshow-change', array( &$this, 'slideshow_settings_save_changes'));
 			add_action( 'wp_ajax_slideshow_add_text_slide',array(&$this,'slideshow_add_text_slide'));
-			add_action( 'wp_ajax_slideshow_precheck_collection_name',array(&$this,'slideshow_precheck_collection_name'));
+			add_action( 'wp_ajax_precheck_slideshow_collection_name',array(&$this,'slideshow_precheck_collection_name'));
 			add_action( 'wp_ajax_slideshow-fetch-img-meta',array(&$this,'slideshow_fetch_img_meta_callback'));
 			add_action( 'wp_ajax_slideshow-fetch-collection',array(&$this,'slideshow_fetch_collection'));
 			add_action( 'wp_ajax_slideshow-save-slide-collection',array(&$this,'slideshow_save_collection_handler'));
@@ -147,6 +147,7 @@ class Slideshow {
 		
 		$out[] = '</td><td class="slideshow-gutter"></td><td class="slideshow-controls">';
 		
+		$out[] = 'unassigned space ' ;
 
 		$out[] = '</td></tr>';
 		$out[] = '</table>';
@@ -168,9 +169,9 @@ class Slideshow {
 		$out[] = '<td class="slideshow-dragzone">';
 		
 		
-		$out[] = '<table class="slidershow-drag-table">';
+		$out[] = '<table class="slideshow-drag-table">';
 		$out[] = '<tr><th class="alignleft">Your Slide Images</th></tr>';
-		$out[] = '<tr><td class="slideshow-draggable-items">';
+		$out[] = '<tr><td id="slide-remove-local" class="slideshow-draggable-items droppable local">';
 		
 		foreach( $res as $r ) {
 		
@@ -225,7 +226,7 @@ class Slideshow {
 		$out[] = '</td></tr>';
 		
 		$out[] = '<tr><th class="alignleft">Shared Slide Images</th></tr>';
-		$out[] = '<tr><td class="slideshow-draggable-items">';
+		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items droppable shared">';
 		
 		/*	fetch NSM images with Media Tag: 'slide' 	*/
 		/**
@@ -333,10 +334,11 @@ class Slideshow {
 		
 		$out[] = 'Caption/Title<br/><span class="slideshow-slide-link-header">Slide Link</span>';
 					
-		$out[] = '</th><th></th></tr>';
+		$out[] = '</th></tr>';
 					
-		for( $i=0;$i<=5;$i++) {
-			$out[] = '<tr id="row'.$i.'" class="slideshow-collection-row draggable droppable" id="dropzone'.$i.'"><td class="thumbbox">&nbsp;</td><td class="slideshow-slide-title">&nbsp;<span class="slideshow-slide-link">&nbsp;</span></td><td class="signalbox"></td></tr>';
+		for( $i=0;$i<5;$i++) {
+			$out[] = '<tr id="row'.$i.'" class="slideshow-collection-row draggable droppable" id="dropzone'.$i.'"><td class="thumbbox">&nbsp;</td>';
+			$out[] = '<td class="slideshow-slide-title"><div class="slide-title">&nbsp;</div><div class="slide-link">&nbsp;</div></td></tr>';
 		}
 		
 		$out[] = '</table><!-- .slideshow-droppable-rows -->';
@@ -946,8 +948,11 @@ class Slideshow {
 		
 		$slideshow_name = sanitize_text_field($_POST['slideshow_name']);
 		$table_name = $wpdb->prefix . 'slideshows';
-		$sql = "SELECT id FROM $table_name WHERE title = '".addslashes($slideshow_name)."'";
+		
+		$sql = "SELECT id FROM $table_name WHERE title = '".$slideshow_name."'";
+		
 		$id = $wpdb->get_var($sql, FALSE);
+		
 		if( $id ) {		
 			/* found - not okay to use */
 			echo '{"result":"found", "slideshow_id":"'.$id.'"}';

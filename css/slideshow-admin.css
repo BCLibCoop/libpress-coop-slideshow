@@ -2,6 +2,10 @@
 	display: none;
 }
 
+.ghosted {
+	opacity: 0.5;
+}
+
 .update-halo {
 	box-shadow: 6px 6px 6px rgba(0,250,50,0.5)
 }
@@ -143,7 +147,7 @@ td.thumbbox img {
 }
 
 td.slideshow-slide-title {
-	width: 80%;
+/*	width: 80%; */
 	height: 50px;
 	text-align: left;
 	vertical-align: middle;
@@ -160,15 +164,14 @@ div.slide-link {
 
 div.slideshow-content-popover {
 	display: none;
-	width: 80%;
+	
 	font-weight: normal;
 }
 
 td.signalbox {
-	width: 32px;
+	width: 36px;
 	border: thin solid #ccc;
 }
-
 
 
 td span.slideshow-slide-link {
@@ -195,12 +198,16 @@ div.slideshow-runtime-information {
 
 table.slideshow-drag-table {
 	min-height: 500px;
-	/* four rows - one for local media, one for network media 
+	width: 100%;
+	/* four rows - 
+		one for local media, 
+		one for network media 
 		one for each one's heading */	
 }
 td.slideshow-draggable-items {
 	vertical-align: top;
 	height: 250px;
+	width: 100%;
 	overflow-y: scroll;
 }
 
