@@ -20,6 +20,7 @@ if ( ! class_exists( 'Slideshow' )) :
 class Slideshow {
 
 	var $slug = 'slideshow';
+	var $sprite = '';
 
 	public function __construct() {
 		add_action( 'init', array( &$this, '_init' ));
@@ -27,7 +28,10 @@ class Slideshow {
 
 	public function _init() {
 	
+		$this->sprite = plugins_url('/imgs/signal-sprite.png',__FILE__);
+		
 		if( is_admin() ) {
+		
 			add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_styles_scripts' ));
 			add_action( 'admin_menu', array( &$this,'add_slideshow_menu' ));
 			add_action( 'wp_ajax_coop-save-slideshow-change', array( &$this, 'slideshow_settings_save_changes'));
@@ -62,15 +66,17 @@ class Slideshow {
 			return;
 		}
 
-		wp_register_style( 'coop-slideshow-admin-css', plugins_url( '/css/slideshow-admin.css', __FILE__ ), false );
-		wp_register_style( 'coop-chosen-css', plugins_url( '/css/chosen.min.css', __FILE__ ), false );
+		wp_register_style( 'coop-slideshow-admin', plugins_url( '/css/slideshow-admin.css', __FILE__ ), false );
+		wp_register_style( 'coop-signals', plugins_url( '/css/signals.css', __FILE__ ), false );
+		wp_register_style( 'coop-chosen', plugins_url( '/css/chosen.min.css', __FILE__ ), false );
 		
 		wp_register_script( 'coop-slideshow-admin-js', plugins_url( '/js/slideshow-admin.js',__FILE__), array('jquery'));
 		wp_register_script( 'coop-slideshow-defaults-js', plugins_url( '/inc/default-settings.js',__FILE__));
 		wp_register_script( 'coop-chosen-jq-min-js', plugins_url( '/js/chosen.jquery.min.js',__FILE__));
 				
-		wp_enqueue_style( 'coop-slideshow-admin-css' );
-		wp_enqueue_style( 'coop-chosen-css' );
+		wp_enqueue_style( 'coop-slideshow-admin' );
+		wp_enqueue_style( 'coop-signals' );
+		wp_enqueue_style( 'coop-chosen' );
 	
 		wp_enqueue_script( 'jquery-ui-core' );
 		wp_enqueue_script( 'jquery-ui-draggable' );
@@ -87,11 +93,9 @@ class Slideshow {
 		$plugin_page = add_submenu_page( 'site-manager', 'Slideshow Admin','Slideshow Admin', 'edit_options', 'top-slides', array(&$this,'slideshow_setup_page'));
 		add_submenu_page( 'site-manager', 'Slideshow Settings', 'Slideshow Settings', 'manage_network','slides-settings', array(&$this,'slideshow_settings_admin_page'));
 		
-		add_action( 'admin_footer-'.$plugin_page, array(&$this,'slideshow_setup_footer_script' ));
+	//	add_action( 'admin_footer-'.$plugin_page, array(&$this,'slideshow_setup_footer_script' ));
 		
 	}
-	
-	
 	
 	
 	
@@ -130,10 +134,11 @@ class Slideshow {
 		
 		$out[] = '<input type="text" class="slideshow-collection-name" name="slideshow-collection-name" value="" placeholder="Enter a name for a new slideshow">';
 		
+		$out[] = '<div class="slideshow-signals"><img class="signals-sprite" src="'.$this->sprite.'"></div>';
 		
 		$out[] = '</td><td class="slideshow-gutter"></td><td class="slideshow-controls">';
 		
-		$out[] = '<a href="" class="button button-primary slideshow-add-collection-name-btn">Save collection</a>';
+		$out[] = '<a href="" class="button button-primary slideshow-save-collection-btn">Save collection</a>';
 		
 		$out[] = '</td></tr>';
 		$out[] = '<tr><td class="slideshow-name">';
@@ -278,13 +283,13 @@ class Slideshow {
 		$out[] = '</table><!-- .slideshow-drag-drop-layout -->';
 		
 		
+		$out[] = '<div class="slideshow-signals-preload">';
+		$out[] = '<img src="'.$this->sprite.'" width="362" height="96">';
+		$out[] = '</div>';
+		
 		$out[] = self::text_slide_create_form();
 		
 		$out[] = self::quick_set_layout_controls();
-			
-		$out[] = '<p class="submit">';
-		$out[] = '<input type="submit" value="Save Changes" class="button button-primary" id="coop-slides-setup-submit" name="submit">';
-		$out[] = '</p>';
 		
 		echo implode("\n",$out);
 		
@@ -629,31 +634,13 @@ class Slideshow {
 	}
 	
 	public function slideshow_setup_footer_script() {
-	/*
 	
 		$out = array('<script type="text/javascript">');
-		
-		$out[] = 'function notify( evt ) {';
-		$out[] = '    console.log( evt.type + ", " + jQuery(this).data("img-id")); ';
-		$out[] = '};';
-		
-		$out[] = 'function dragstart_handler( evt, ui ) {';
-		$out[] = '  console.log( "start " + jQuery(this).data("img-id"))  ';
-		$out[] = '};';
-		
-		$out[] = 'function dragstop_handler( evt, ui ) {';
-		$out[] = '  console.log( "stop " + jQuery(this).data("img-id"))  ';
-		$out[] = '};';
-		
-		$out[] = 'jQuery().ready(function(){ ';
-		$out[] = "   jQuery('.draggable').draggable({ cursor: 'move', stack:'.slide', snap:'.snappable', start: dragstart_handler, stop: dragstop_handler } ); ";
-		$out[] = "   jQuery('.droppable').droppable(); ";
-		$out[] = '});';
+		$out[] = 'var slideshow_sprite = "'.$this->sprite.'"; ';
 		$out[] = '</script>';
 		
 		echo implode( "\n", $out );
-	
-*/	
+
 	}
 	
 	public function slideshow_save_collection_handler() {
