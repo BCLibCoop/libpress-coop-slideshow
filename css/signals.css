@@ -1,0 +1,151 @@
+.signals-sprite {
+	position: relative;
+}
+
+.plus-disabled {
+	left: 0px;
+	top: 0px;
+}
+.plus-enabled {
+	left: 0px;
+	top: -32px;
+}
+.plus-active {
+	left: 0px;
+	top: -64px;
+}
+
+
+.minus-disabled {
+	left: -32px;
+	top: 0px;
+}
+.minus-enabled {
+	left: -32px;
+	top: -32px;
+}
+.minus-active {
+	left: -32px;
+	top: -64px;
+}
+
+
+.tick-disabled {
+	left: -64px;
+	top: 0px;
+}
+.tick-enabled {
+	left: -64px;
+	top: -32px;
+}
+.tick-active {
+	left: -64px;
+	top: -64px;
+}
+
+.cross-disabled {
+	left: -96px;
+	top: 0px;
+}
+.cross-enabled {
+	left: -96px;
+	top: -32px;
+}
+.cross-active {
+	left: -96px;
+	top: -64px;
+}
+
+.reload-disabled {
+	left: -128px;
+	top: 0px;
+}
+.reload-enabled {
+	left: -128px;
+	top: -32px;
+}
+.reload-active {
+	left: -128px;
+	top: -64px;
+}
+
+.bang-disabled {
+	left: -160px;
+	top: 0px;
+}
+.bang-enabled {
+	left: -160px;
+	top: -32px;
+}
+.bang-active {
+	left: -160px;
+	top: -64px;
+}
+
+.query-disabled {
+	left: -192px;
+	top: 0px;
+}
+.query-enabled {
+	left: -192px;
+	top: -32px;
+}
+.query-active {
+	left: -192px;
+	top: -64px;
+}
+
+
+.pen-disabled {
+	left: -224px;
+	top: 0px;
+}
+.pen-enabled {
+	left: -224px;
+	top: -32px;
+}
+.pen-active {
+	left: -224px;
+	top: -64px;
+}
+
+.pencil-disabled {
+	left: -256px;
+	top: 0px;
+}
+.pencil-enabled {
+	left: -256px;
+	top: -32px;
+}
+.pencil-active {
+	left: -256px;
+	top: -64px;
+}
+
+
+.lock-disabled {
+	left: -288px;
+	top: 0px;
+}
+.lock-enabled {
+	left: -288px;
+	top: -32px;
+}
+.lock-active {
+	left: -288px;
+	top: -64px;
+}
+
+
+.unlock-disabled {
+	left: -320px;
+	top: 0px;
+}
+.unlock-enabled {
+	left: -320px;
+	top: -32px;
+}
+.unlock-active {
+	left: -320px;
+	top: -64px;
+}

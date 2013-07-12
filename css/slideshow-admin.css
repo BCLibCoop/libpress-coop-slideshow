@@ -7,13 +7,52 @@
 }
 
 
+.slideshow-signals-preload {
+	position: relative;
+	float: right;
+	top: 50px;
+	width: 362px;
+	height: 100px;
+	border: thin solid red;	
+}
+
+
+#row-signal {
+	z-index: 1000 !important;
+	width: 32px;
+	height: 32px;
+	overflow: hidden;
+	position: relative;
+	float: right;
+}
+
+#row-signal img.signals-sprite {
+	z-index: 1200 !important;
+	position: relative;
+}
+
+#collection-name-signal {
+	z-index: 1000;
+	top: -43px;
+	float: right;
+}
+
+.slideshow-signals {
+	/* container for signals */
+	width: 32px;
+	height: 32px;
+	position: relative;
+	overflow: hidden;
+}
+
+
 table.slideshow-drag-drop-layout {
 	margin-top: 10px;
 	width: 95%;
 /*	border: thin solid #ccf; */
 }
 
-/* subtable alyout */
+/* subtable layout */
 table.slideshow-header-controls {
 	width: 95%;
 }
@@ -26,11 +65,12 @@ td.slideshow-name,
 td.slideshow-controls {
 	width: 48%;
 	text-align: left;
+	vertical-align: top;
 }
 
 .slideshow-collection-name {
 	font-size: 2em;
-	width: 80%;
+	width: 100%;
 	margin-bottom: 10px;
 }
 
@@ -59,6 +99,14 @@ table.slideshow-sortable-rows {
 	overflow: scroll;
 }
 
+div.sort-table-signal {
+	width: 32px;
+	height: 32px;
+	overflow: hidden;
+	background-color: rgba(255,255,255,0.5);
+}
+
+
 div.slideshow-controls-right {
 	float: right;
 }
@@ -80,6 +128,7 @@ th span.slideshow-slide-link-header {
 	color: #999;	
 }
 
+
 td.thumbbox {
 	height: 50px;
 	width: 50px;
@@ -94,7 +143,7 @@ td.thumbbox img {
 }
 
 td.slideshow-slide-title {
-	width: 90%;
+	width: 80%;
 	height: 50px;
 	text-align: left;
 	vertical-align: middle;
@@ -104,16 +153,28 @@ td.slideshow-slide-title {
 	font-weight: bold;
 }
 
+div.slide-title,
+div.slide-link {
+	width: 100%;
+}
+
 div.slideshow-content-popover {
 	display: none;
+	width: 80%;
 	font-weight: normal;
 }
+
+td.signalbox {
+	width: 32px;
+	border: thin solid #ccc;
+}
+
+
 
 td span.slideshow-slide-link {
 	font-weight: normal;
 	color: #999;
 }
-
 
 
 .drop_highlight {
@@ -129,7 +190,6 @@ div.slideshow-runtime-information {
 	width: 96%;
 	border: thin solid #eee;
 	margin: 10px auto;
-	
 }
 
 
@@ -193,7 +253,7 @@ textarea.slideshow-text-slide-content {
 }
 
 .slideshow-big-t {
-	font-family: Times, Georgia, serif;
+	font-family: Georgia, Times, serif;
 	font-size: 3em;
 }
 
