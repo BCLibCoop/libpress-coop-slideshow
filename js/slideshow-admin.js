@@ -9,7 +9,7 @@
 	var self,
 		_configured = {},	// passed in options
 		opts = {},			// opts == current at start up (diverges as user changes settings)
-		signal,				// for showing signals to the user in a floating div .sort-table-signal
+		signalbox,				// for showing signals to the user in a floating div .sort-table-signal
 		table_order;
 	
 	var SlideShowSetup = function( options ) {
@@ -18,15 +18,11 @@
 	
 	SlideShowSetup.prototype  =  {
 	
+	
 		init: function( options ) {
 			
 			self = this;
-			
-			self.signal = $('.sort-table.signal');
-			$(self.signal).addClass( 'minus-enabled' );
-			
-			
-			// a.k.a. [ Save name ] button 
+						 
 			$('.slideshow-save-collection-btn').click( function(event) {
 				event.stopPropagation();
 				self.save_collection_name();
@@ -57,9 +53,37 @@
 				return false;
 			});		
 			
-			$('.signals-sprite').addClass('cross-disabled');
+			$("#slideshow_select").chosen().change( self.fetch_selected_slideshow );
+			$('#slideshow_select').chosen().change( self.reset_collection_name_signal );
+			
+			$('#runtime-signal img.signals-sprite').addClass('reload-disabled').hover( self.runtime_hover_in, self.runtime_hover_out ).click( self.runtime_calculation );
+			//$('#collection-name-signal img.signals-sprite').addClass('tick-enabled');
 			
 		},
+		
+		reset_collection_name_signal: function(){
+			$('#collection-name-signal img').removeClass('cross-active').addClass('tick-disabled');
+		},
+		
+		runtime_hover_in: function() {
+			$(this).removeClass('reload-disabled').addClass('reload-active');
+		},
+		
+		runtime_hover_out: function() {
+		
+			$(this).removeClass('reload-active').addClass('reload-disabled');
+		},
+		
+		slide_hover_in: function() {
+			var box = $(this);
+				box.append(self.signalbox);
+		},
+		
+		slide_hover_out: function() {
+			var box = $(this);
+			self.signalbox = $('img.signals-sprite',box).parent().detach();
+		},
+		
 		
 		add_text_only_slide: function() {
 			
@@ -138,12 +162,20 @@
 		
 			var rows = $('.slideshow-collection-row');
 			for( i=0;i<rows.length;i++) {	
-				console.log( 'clearing row ' + i );
+			//	console.log( 'clearing row ' + i );
 				$('.thumbbox',rows[i]).empty();
 				$(rows[i]).data('slide-id','');
 				$(rows[i]).children().last().text('');
 				$(rows[i]).children().last().children('span').empty();
 			}
+		},
+		
+		clear_and_reinsert_row: function( dragged ){
+			$('.thumbbox',dragged).empty();
+			$(dragged).data('slide-id','');
+			$('div',dragged).empty();
+
+			$('.slideshow-sortable-rows').append(dragged);
 		},
 		
 		clear_text_slide_form: function() {
@@ -178,6 +210,7 @@
 			var $t = $(row); // this
 			var dragged = ui.draggable;
 			var dropzone_id = $($t).attr('id');
+					
 			var dropped_id = $(dragged).attr('id');
 			var dropme = $(dragged).detach();
 			
@@ -186,6 +219,53 @@
 		//	var rows = $('.slideshow-sortable-rows').children().children();
 		//	console.log( rows );
 		
+		},
+		
+		return_to_source: function( row, ui ) {
+		
+			console.log( 'return to source' );
+		
+			var $t = $(this); // this
+			
+			var dragged = ui.draggable;
+		
+			if ( ! dragged.hasClass('slideshow-collection-row')) {
+				return;
+			}
+			
+			var dropzone_id = $($t).attr('id');
+					
+			if( dropzone_id == 'slide-remove-local'  ) {
+				self.slide_remove_local( dragged );
+				return;
+			}
+			else if( dropzone_id == 'slide-remove-shared' ) {
+				self.slide_remove_shared( dragged );
+				return;
+			}
+		},
+		
+		over_source: function( evt, ui ) {
+			
+		},
+		
+		leave_source: function( evt, ui ) {
+			
+		},
+	
+		slide_remove_local: function( dragged ) {
+			
+			console.log( 'slide_remove_local()' );
+		
+			var img_id = $('img',dragged).data('img-id');
+			$('#thumb'+img_id).removeClass('ghosted').parent().draggable('option','disabled',false);
+			self.clear_and_reinsert_row(dragged);
+		},
+		
+		slide_remove_shared: function( dragged ) {
+			var img_id = $('img',dragged).data('img-id');
+			$('#thumb'+img_id).removeClass('ghosted').parent().draggable('option','disabled',false);
+			self.clear_and_reinsert_row(dragged);
 		},
 		
 		drop_insert_thumbnail: function( row, dragged, target )	{
@@ -202,54 +282,30 @@
 			var thumbbox = $('.thumbbox',target);
 			var img = $('<img data-img-id="' + id + '" src="'+src+'" class="selected" id="selected'+row+'" width="' + w + '" height="' + h + '">');
 				thumbbox.empty().append(img);
+				
 			var textbox = thumbbox.next();
-				linkspan = textbox.children().first();
-				textbox.empty().text( cap ).append( linkspan.empty().append( link ));
+			
+			var titlediv = $('div',textbox).first();
+			var linkdiv = $('div',textbox).last();
+			var anchor = linkdiv.children('a').first();
+				anchor.attr('href', link );
+				titlediv.empty().text( cap );
+				linkdiv.empty().append( anchor );
+
+			$(thumb).addClass('ghosted').parent().draggable('option','disabled',true);
 
 			self.fetch_img_meta( id );
 
-
 		},
 		
-		/*
-		dropped: function( evt, ui ) {
-				
-					var dropzone = $(this).attr('id');
-					var d = ui.draggable;
-								
-					var id = d.data('img-id');
-					var cap = d.data('img-caption');
-		
-					var t = $('#thumb'+id);
-					var src = t.attr('src');
-					var w = t.attr('width');
-					var h = t.attr('height');
-					
-					var img = $('<img src="'+src+'" class="selected" id="selected'+d+'" width="' + w + '" height="' + h + '">');
-					
-					$('#'+ dropzone).empty().append( img );
-					$('#'+ dropzone).next().empty().text( cap );
-					
-				//	console.log( 'droppped on ' + dropzone );
-					
-				},
-		*/
 		
 		over_drop: function( evt, ui ) {
 		//	console.log( 'over drop zone' );
+			
+		},
 		
-			var dropzone = this.id;
-		
-			if( self._dragging ) {
-				_dragee = $(self._dragging);
-				
-				console.log( 'dragee: ' + _dragee ); 
-				
-				if( _dragee.hasClass('slideshow-collection-row') ) {
-					console.log( 'has class slideshow-collection-row' );
-				}
-			}			
-		
+		leave_drop: function( evt, ui ) {
+			
 		},
 		
 		drag_representation: function( evt ) {
@@ -273,7 +329,6 @@
 			var d = $(obj).data('img-id');
 			var t = $('#slotview'+d);
 			var src = t.attr('src');
-		//	console.log( src );
 			var img = $('<img src="'+src+'" class="slotview" height="49" id="slotcopy'+d+'">');
 			return $('<div class="slideshow-drag-helper draggable"></div>').append(img.show());
 		},
@@ -294,7 +349,7 @@
 					alert( "Could not retrieve meta data for image: " + post_id );
 					return false;
 				}
-			})
+			});
 		},
 		
 		first_empty_row: function() {
@@ -335,7 +390,7 @@
 				}
 				
 				var i;
-				for( i=0; i<slides.length;i++ ) {
+				for( i=0; i<slides.length; i++ ) {
 				
 					var row = $('.slideshow-collection-row').eq( i );
 					if( slides[i].post_id == null ) {	
@@ -347,8 +402,6 @@
 						self.place_slide_img( slides[i].id, slides[i].post_id, slides[i].slide_link, row );
 					}
 				}
-				
-				self.runtime_calculation();
 			});
 		},
 		
@@ -375,19 +428,18 @@
 				var w = meta['thumb']['width'];
 				var h = meta['thumb']['height'];
 				
-				$(row).attr( 'data-slide-id', id );
+				$(row).data('slide-id', id );
 				
 				var img = $('<img data-img-id="' + post_id + '" src="'+src+'" width="' + w + '" height="' + h + '">');
 				$(row).children().first().empty().append( img );
 						
 				var title = $('<div class="slide-title" />').append(meta['title']);
-					$(row).children().last().empty().append( title );
+					$(row).children().eq(1).empty().append( title );
 				
 				if( undefined !== link ) {
-				
 					var anchor = $('<a class="slide-anchor" target="_blank"/>').text( link ).attr('href',link);
 					var div = $('<div class="slide-link" />').append( anchor );
-					$(row).children().last().append( div );
+					$(row).children().eq(1).append( div );
 				}
 			})	
 		},
@@ -401,20 +453,21 @@
 				row = self.first_empty_row();
 			}
 			
-			$(row).attr('data-slide-id',id);
+			$(row).data('slide-id',id);
 		//	console.log( 'reading back: ' + $(row).data('slide-id') );
 			$(row).children().first().empty().append($('<span class="slideshow-big-t">T</span>'));
 			
 			var titlediv = $('<div class="slide-title" />').append(title);
 			
-			$(row).children().last().empty().append(titlediv); 
+			$(row).children().eq(1).empty().append(titlediv); 
 			
 			if( undefined !== link ) {
 				var anchor = $('<a class="slide-anchor" target="_blank"/>').text( link ).attr('href',link);
 				var div = $('<div class="slide-link" />').append( anchor );
-					$(row).children().last().append( div );
+					$(row).children().eq(1).append( div );
 			}
-			$(row).children().last().append( $('<div class="slideshow-content-popover" />').append( content ));
+			$(row).children().eq(1).append( $('<div class="slideshow-content-popover" />').append( content ));
+			
 		},
 		
 		precheck_slideshow_name: function() {
@@ -430,12 +483,17 @@
 				var res = JSON.parse(r.responseText);
 				if( res.result == 'found' ) {
 					// not okay to use if keyed into field
-					alert( 'A collection already exists with that name.' );
-					$('.slideshow-collection-name').focus();
+					$('#collection-name-signal img').addClass('cross-active');
+					
+					if( res.slideshow_id > 0 ) {
+						$('#slideshow_select').attr('selectedIndex',res.slideshow_id);
+						$('#slideshow_select').trigger('liszt:updated');
+						$('#collection-name-signal img').removeClass('cross-active').addClass('tick-disabled');
+					}
 				}
 				else {
 					// okay to use if newly created
-					self.show_checkmark();
+					$('#collection-name-signal img').addClass('plus-active');
 				}
 				
 			});
@@ -444,10 +502,18 @@
 		
 		runtime_calculation: function() {
 		
-			var row = self.first_empty_row();
-			if( ! row ) {
-				row = $('#row0');
-			}
+			var rows = $('.slideshow-collection-row');
+		//		console.log( "count of rows: " + $(rows).size() );
+				
+			var count = 0;
+			
+			var tds = $('.thumbbox').children();			
+			
+		//	console.log( "count of significant slides: " + tds.size() );
+			
+			
+			var row = tds.last();
+			
 			var index = $(row).attr('id').replace('row','');
 			var dwell = parseInt(window.coop_slideshow_settings.current.pause) / 1000;
 			var transit = parseInt(window.coop_slideshow_settings.current.speed) / 1000;
@@ -460,7 +526,6 @@
 			
 			$('.slideshow-runtime-information').empty().text( msg );
 		},
-		
 		
 		save_collection_name: function() {
 		
@@ -547,7 +612,7 @@
 				}
 				
 				// if this slide has already been saved it has a slide_id index
-				slide_id = $(rows[i]).attr('data-slide-id');
+				slide_id = $(rows[i]).data('slide-id');
 							
 				// possible for each type
 				slide_link = $(rows[i]).children().last().children('a').text();
@@ -629,9 +694,12 @@
 		},
 		
 		show_checkmark: function() {
-			alert( 'show checkmark in the right hand edge of the Collection name field' );
+			$('#collection-name-signal img').addClass('tick-active').fadeOut(2000);
 		},
 		
+		/**
+		*	slideshow-collection-name input sprite...
+		**/
 		spritebox: function() {
 			
 			var box = $('<div class="slideshow-signals"></div>');
@@ -641,7 +709,6 @@
 			
 			var top = parseInt($('.slideshow-collection-name').css('top'),10) - 32;
 				box.css('top',top);
-				
 				box.css('position','relative');
 				
 			$('.slideshow-collection-name').parent().append(box);
@@ -792,7 +859,6 @@
 		},
 		
 		set_current_value: function() {
-		
 			// update self.current to reflect the user's changes
 			var id = this.getAttribute('name');
 			var val = this.value;
@@ -830,11 +896,18 @@ jQuery().ready(function(){
 									 out:   slideshow_setup.leave_drop,
 									 hoverClass: 'drop_highlight' 
 								});
+	
+	jQuery('.returnable').droppable({ drop: slideshow_setup.return_to_source,
+									  over: slideshow_setup.over_source,
+									  out:	slideshow_setup.leave_source,
+									  hoverClass: 'return_highlight' 
+				
+								});							
+								
 								
 	jQuery('.slideshow-control-img').click( slideshow_setup.set_layout_control );
 	jQuery('.slideshow-collection-name').blur( slideshow_setup.precheck_slideshow_name );
-	jQuery("#slideshow_select").chosen().change( slideshow_setup.fetch_selected_slideshow );
-
+	
 	jQuery('#coop-slides-setup-submit').click(function(event){
 		event.stopPropagation();
 		slideshow_setup.save_collection();
