@@ -171,7 +171,7 @@ class Slideshow {
 		
 		$out[] = '<table class="slideshow-drag-table">';
 		$out[] = '<tr><th class="alignleft">Your Slide Images</th></tr>';
-		$out[] = '<tr><td id="slide-remove-local" class="slideshow-draggable-items droppable local">';
+		$out[] = '<tr><td id="slide-remove-local" class="slideshow-draggable-items returnable local">';
 		
 		foreach( $res as $r ) {
 		
@@ -226,7 +226,7 @@ class Slideshow {
 		$out[] = '</td></tr>';
 		
 		$out[] = '<tr><th class="alignleft">Shared Slide Images</th></tr>';
-		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items droppable shared">';
+		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
 		
 		/*	fetch NSM images with Media Tag: 'slide' 	*/
 		/**
@@ -307,7 +307,7 @@ class Slideshow {
 		$out = array();
 		$out[] = '<select data-placeholder="... or choose a past slideshow to reload" name="slideshow_select" id="slideshow_select" class="slideshow_select chzn-select">';
 		
-		$out[] = '<option value="" ></option>';
+		$out[] = '<option value=""></option>';
 
 		foreach($res as $r) {
 			$out[] = '<option value="'.$r->id .'" >'.$r->title.'</option>';
@@ -343,7 +343,7 @@ class Slideshow {
 		
 		$out[] = '</table><!-- .slideshow-droppable-rows -->';
 		
-		$out[] = '<div id="row-signal" class="slideshow-signals"><img src="'.$this->sprite.'" class="signals-sprite"></div>';
+		$out[] = '<div id="runtime-signal" class="slideshow-signals"><img src="'.$this->sprite.'" class="signals-sprite"></div>';
 		
 		return implode("\n",$out);
 	}

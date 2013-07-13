@@ -20,16 +20,18 @@
 	border: thin solid red;	
 }
 
-
+#runtime-signal,
 #row-signal {
 	z-index: 1000 !important;
 	width: 32px;
 	height: 32px;
+	margin-top: 10px;
 	overflow: hidden;
 	position: relative;
 	float: right;
 }
 
+#runtime-signal img.signals-sprite,
 #row-signal img.signals-sprite {
 	z-index: 1200 !important;
 	position: relative;
@@ -179,9 +181,12 @@ td span.slideshow-slide-link {
 	color: #999;
 }
 
-
 .drop_highlight {
-	box-shadow: inset 0px 0px 10px rgba(50,50,250,0.75);
+	box-shadow: inset 0px 0px 15px rgba(23,23,229,0.75);
+}
+
+.return_highlight {
+	box-shadow: inset 0px 0px 15px rgba(177,234,34,0.75);
 }
 
 h3.slideshow-runtime-heading {

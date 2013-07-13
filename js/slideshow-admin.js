@@ -55,12 +55,23 @@
 			
 			$("#slideshow_select").chosen().change( self.fetch_selected_slideshow );
 			$('#slideshow_select').chosen().change( self.reset_collection_name_signal );
+			
+			$('#runtime-signal img.signals-sprite').addClass('reload-disabled').hover( self.runtime_hover_in, self.runtime_hover_out ).click( self.runtime_calculation );
 			//$('#collection-name-signal img.signals-sprite').addClass('tick-enabled');
 			
 		},
 		
 		reset_collection_name_signal: function(){
 			$('#collection-name-signal img').removeClass('cross-active').addClass('tick-disabled');
+		},
+		
+		runtime_hover_in: function() {
+			$(this).removeClass('reload-disabled').addClass('reload-active');
+		},
+		
+		runtime_hover_out: function() {
+		
+			$(this).removeClass('reload-active').addClass('reload-disabled');
 		},
 		
 		slide_hover_in: function() {
@@ -199,17 +210,7 @@
 			var $t = $(row); // this
 			var dragged = ui.draggable;
 			var dropzone_id = $($t).attr('id');
-			
-			if( dropzone_id == 'slide-remove-local' ) {
-				self.slide_remove_local( dragged );
-				return;
-			}
-			else if( dropzone_id == 'slide-remove-shared' ) {
-				self.slide_remove_shared( dragged );
-				return;
-			}
-			// else we are droppingn on the sort-table
-			
+					
 			var dropped_id = $(dragged).attr('id');
 			var dropme = $(dragged).detach();
 			
@@ -220,9 +221,42 @@
 		
 		},
 		
+		return_to_source: function( row, ui ) {
 		
+			console.log( 'return to source' );
 		
+			var $t = $(this); // this
+			
+			var dragged = ui.draggable;
+		
+			if ( ! dragged.hasClass('slideshow-collection-row')) {
+				return;
+			}
+			
+			var dropzone_id = $($t).attr('id');
+					
+			if( dropzone_id == 'slide-remove-local'  ) {
+				self.slide_remove_local( dragged );
+				return;
+			}
+			else if( dropzone_id == 'slide-remove-shared' ) {
+				self.slide_remove_shared( dragged );
+				return;
+			}
+		},
+		
+		over_source: function( evt, ui ) {
+			
+		},
+		
+		leave_source: function( evt, ui ) {
+			
+		},
+	
 		slide_remove_local: function( dragged ) {
+			
+			console.log( 'slide_remove_local()' );
+		
 			var img_id = $('img',dragged).data('img-id');
 			$('#thumb'+img_id).removeClass('ghosted').parent().draggable('option','disabled',false);
 			self.clear_and_reinsert_row(dragged);
@@ -264,45 +298,14 @@
 
 		},
 		
-		/*
-		dropped: function( evt, ui ) {
-				
-					var dropzone = $(this).attr('id');
-					var d = ui.draggable;
-								
-					var id = d.data('img-id');
-					var cap = d.data('img-caption');
-		
-					var t = $('#thumb'+id);
-					var src = t.attr('src');
-					var w = t.attr('width');
-					var h = t.attr('height');
-					
-					var img = $('<img src="'+src+'" class="selected" id="selected'+d+'" width="' + w + '" height="' + h + '">');
-					
-					$('#'+ dropzone).empty().append( img );
-					$('#'+ dropzone).next().empty().text( cap );
-					
-				//	console.log( 'droppped on ' + dropzone );
-					
-				},
-		*/
 		
 		over_drop: function( evt, ui ) {
 		//	console.log( 'over drop zone' );
+			
+		},
 		
-			var dropzone = this.id;
-		
-			if( self._dragging ) {
-				_dragee = $(self._dragging);
-				
-				console.log( 'dragee: ' + _dragee ); 
-				
-				if( _dragee.hasClass('slideshow-collection-row') ) {
-					console.log( 'has class slideshow-collection-row' );
-				}
-			}			
-		
+		leave_drop: function( evt, ui ) {
+			
 		},
 		
 		drag_representation: function( evt ) {
@@ -346,7 +349,7 @@
 					alert( "Could not retrieve meta data for image: " + post_id );
 					return false;
 				}
-			})
+			});
 		},
 		
 		first_empty_row: function() {
@@ -399,8 +402,6 @@
 						self.place_slide_img( slides[i].id, slides[i].post_id, slides[i].slide_link, row );
 					}
 				}
-				
-				self.runtime_calculation();
 			});
 		},
 		
@@ -427,7 +428,7 @@
 				var w = meta['thumb']['width'];
 				var h = meta['thumb']['height'];
 				
-				$(row).attr( 'data-slide-id', id );
+				$(row).data('slide-id', id );
 				
 				var img = $('<img data-img-id="' + post_id + '" src="'+src+'" width="' + w + '" height="' + h + '">');
 				$(row).children().first().empty().append( img );
@@ -452,7 +453,7 @@
 				row = self.first_empty_row();
 			}
 			
-			$(row).attr('data-slide-id',id);
+			$(row).data('slide-id',id);
 		//	console.log( 'reading back: ' + $(row).data('slide-id') );
 			$(row).children().first().empty().append($('<span class="slideshow-big-t">T</span>'));
 			
@@ -501,10 +502,18 @@
 		
 		runtime_calculation: function() {
 		
-			var row = self.first_empty_row();
-			if( ! row ) {
-				row = $('#row0');
-			}
+			var rows = $('.slideshow-collection-row');
+		//		console.log( "count of rows: " + $(rows).size() );
+				
+			var count = 0;
+			
+			var tds = $('.thumbbox').children();			
+			
+		//	console.log( "count of significant slides: " + tds.size() );
+			
+			
+			var row = tds.last();
+			
 			var index = $(row).attr('id').replace('row','');
 			var dwell = parseInt(window.coop_slideshow_settings.current.pause) / 1000;
 			var transit = parseInt(window.coop_slideshow_settings.current.speed) / 1000;
@@ -603,7 +612,7 @@
 				}
 				
 				// if this slide has already been saved it has a slide_id index
-				slide_id = $(rows[i]).attr('data-slide-id');
+				slide_id = $(rows[i]).data('slide-id');
 							
 				// possible for each type
 				slide_link = $(rows[i]).children().last().children('a').text();
@@ -850,7 +859,6 @@
 		},
 		
 		set_current_value: function() {
-		
 			// update self.current to reflect the user's changes
 			var id = this.getAttribute('name');
 			var val = this.value;
@@ -888,6 +896,14 @@ jQuery().ready(function(){
 									 out:   slideshow_setup.leave_drop,
 									 hoverClass: 'drop_highlight' 
 								});
+	
+	jQuery('.returnable').droppable({ drop: slideshow_setup.return_to_source,
+									  over: slideshow_setup.over_source,
+									  out:	slideshow_setup.leave_source,
+									  hoverClass: 'return_highlight' 
+				
+								});							
+								
 								
 	jQuery('.slideshow-control-img').click( slideshow_setup.set_layout_control );
 	jQuery('.slideshow-collection-name').blur( slideshow_setup.precheck_slideshow_name );
