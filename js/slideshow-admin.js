@@ -59,7 +59,22 @@
 			$('#runtime-signal img.signals-sprite').addClass('reload-disabled').hover( self.runtime_hover_in, self.runtime_hover_out ).click( self.runtime_calculation );
 			//$('#collection-name-signal img.signals-sprite').addClass('tick-enabled');
 			
+			
+			self.init_quick_set_layout();
+			
 		},
+				
+		init_quick_set_layout: function() {
+		
+			var layout = window.coop_slideshow_settings.current.layout;
+			var transition = window.coop_slideshow_settings.current.mode;
+			
+			$('input[value="'+transition+'"][name="slideshow-transition"]').attr('checked','checked');
+			
+		//	console.log( layout + ', ' + transition );
+			
+		},
+		
 		
 		reset_collection_name_signal: function(){
 			$('#collection-name-signal img').removeClass('cross-active').addClass('tick-disabled');
@@ -768,6 +783,8 @@
 							
 			$('#coop-slideshow-submit').click( this.save_changes );	
 			
+		//	console.log('returning initialized coop_slideshow_settings object');
+			
 			return this;
 		},
 		
@@ -792,7 +809,18 @@
 			}
 		},
 		
+		get_current_layout: function() {
 		
+			if ( self.current.controls ) {
+				return 'no-thumb';
+			}
+		
+			
+			
+			
+			
+		},
+			
 		save_changes: function() {
 			
 			// save button has been clicked 
@@ -850,19 +878,20 @@
 		},
 		
 		set_current_value: function() {
+	
 			// update self.current to reflect the user's changes
 			var id = this.getAttribute('name');
 			var val = this.value;
 			if( val == '' ) {
 				val = 'empty';
 			}
+		
 			self.current[id] = val; 
 			self.touched( id );
 		}
 	}
 	
 	$.fn.coop_slideshow_settings = function(opts) {
-		//alert('here');
 		return new SlideShowSettings(opts);
 	} 
 
