@@ -503,20 +503,11 @@
 		runtime_calculation: function() {
 		
 			var rows = $('.slideshow-collection-row');
-		//		console.log( "count of rows: " + $(rows).size() );
-				
-			var count = 0;
-			
-			var tds = $('.thumbbox').children();			
-			
-		//	console.log( "count of significant slides: " + tds.size() );
-			
-			
-			var row = tds.last();
-			
-			var index = $(row).attr('id').replace('row','');
-			var dwell = parseInt(window.coop_slideshow_settings.current.pause) / 1000;
-			var transit = parseInt(window.coop_slideshow_settings.current.speed) / 1000;
+			var children = $('.thumbbox').children();			
+			var row = children.last().parent().parent().attr('id');
+			var index = parseInt(row.replace('row',''),10) + 1; // offset zero-based index 
+			var dwell = parseInt(window.coop_slideshow_settings.current.pause,10) / 1000;
+			var transit = parseInt(window.coop_slideshow_settings.current.speed,10) / 1000;
 			
 			var net = index * (dwell + transit);	// slideshow cycle in seconds
 			
