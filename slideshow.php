@@ -441,7 +441,7 @@ class Slideshow {
 			
 			$out[] = '<tr>';
 			$out[] = '<td class="radio-box">';
-				$out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-1" value="no-thumbs">';
+				$out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-1" value="no-thumb">';
 			$out[] = '</td>';
 			$out[] = '<td>'; 
 				$out[] = '<label for="slideshow-control-1">No thumbnails</label>';

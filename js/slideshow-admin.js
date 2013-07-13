@@ -66,9 +66,12 @@
 				
 		init_quick_set_layout: function() {
 		
-			var layout = window.coop_slideshow_settings.current.layout;
+			var layout = window.coop_slideshow_settings.current.currentLayout;
 			var transition = window.coop_slideshow_settings.current.mode;
 			
+			console.log( layout + ', '+ transition );
+			
+			$('input[value="'+layout+'"][name="slideshow-layout"]').attr('checked','checked');
 			$('input[value="'+transition+'"][name="slideshow-transition"]').attr('checked','checked');
 			
 		//	console.log( layout + ', ' + transition );
@@ -808,19 +811,7 @@
 				}
 			}
 		},
-		
-		get_current_layout: function() {
-		
-			if ( self.current.controls ) {
-				return 'no-thumb';
-			}
-		
-			
-			
-			
-			
-		},
-			
+					
 		save_changes: function() {
 			
 			// save button has been clicked 
