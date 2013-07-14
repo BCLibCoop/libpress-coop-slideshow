@@ -694,7 +694,7 @@ class Slideshow {
 		
 		global $wpdb;
 				
-		$title = $_POST['title'];
+		$slideshow_title = $_POST['title'];
 		$slideshow_id = $_POST['slideshow_id'];
 		$is_active = $_POST['is_active'];
 		
@@ -721,12 +721,13 @@ class Slideshow {
 		$table_name = $wpdb->prefix . 'slideshows';
 		
 		if( $is_active == 1 ) {
-			/* erase any currently marked as active */
+			/* before we are set to the active record */
+			/* unmark any currently marked as active */
 			$sql = "UPDATE $table_name SET is_active=0 WHERE is_active=1";
 			$wpdb->query($sql);
 		}
 		
-		$sql = "UPDATE $table_name SET layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
+		$sql = "UPDATE $table_name SET title='".$slideshow_title."', layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
 		$wpdb->query($sql);
 		
 		
