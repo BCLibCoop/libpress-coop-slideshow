@@ -451,6 +451,7 @@
 			};
 			
 			$.post( ajaxurl, data ).complete(function(r){
+			
 				var res = JSON.parse(r.responseText);
 				var slides = res.slides;
 				self.slideshow_id = opt.val();
@@ -471,7 +472,7 @@
 					}
 					else {
 						// needs to include title/caption in db for image too - needs UI for setting same
-						self.place_slide_img( slides[i].id, slides[i].post_id, slides[i].slide_link, row );
+						self.place_slide_img( slides[i].id, slides[i].post_id, slides[i].text_title, slides[i].slide_link, row );
 					}
 				}
 			});
@@ -539,7 +540,7 @@
 			$('.slideshow-inline-edit-toggle',evt.target).css('background-position','-266px -6px');
 		},
 		
-		place_slide_img: function( id, post_id, link, row ) {
+		place_slide_img: function( id, post_id, slide_title, link, row ) {
 			
 		//	console.log( 'called place_slide_img ' + id + ': ' + post_id );
 			
@@ -564,10 +565,15 @@
 				
 				$(row).data('slide-id', id );
 				
+				var this_title = meta['title'];
+				if( slide_title != '' && title != meta['title'] ) {
+					this_title = slide_title;
+				}
+				
 				var img = $('<img data-img-id="' + post_id + '" src="'+src+'" width="' + w + '" height="' + h + '">');
 				$(row).children().first().empty().append( img );
-						
-				var title = $('<div class="slide-title" />').append(meta['title']).append( self.insert_inline_edit() );
+				
+				var title = $('<div class="slide-title" />').append(this_title).append( self.insert_inline_edit() );
 					title.hover(self.inline_edit_hover_in, self.inline_edit_hover_out );
 					title.click(self.inline_edit_toggle);
 					$(row).children().eq(1).empty().append( title );
@@ -578,7 +584,6 @@
 						div.hover(self.inline_edit_hover_in, self.inline_edit_hover_out );
 						div.click(self.inline_edit_toggle);
 					$(row).children().eq(1).append( div );
-
 				}
 				
 				self.runtime_calculate();

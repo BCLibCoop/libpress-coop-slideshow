@@ -759,6 +759,9 @@ class Slideshow {
 				$FIELDS[] = 'post_id';
 				$VALUES[] = $s['post_id'];
 				
+				$FIELDS[] = 'text_title';
+				$VALUES[] = "'".addslashes($s['text_title'])."'";
+	
 			}
 			else {	// 'text' === $type
 				
@@ -836,7 +839,7 @@ class Slideshow {
 		$out = array();
 		foreach( $slides as $s ) {
 			if( $s->post_id ) {
-				$out[] = '{"id":"'.$s->id.'","post_id":"'.$s->post_id.'","slide_link":"'.$s->slide_link.'","ordering":"'.$s->ordering.'"}'; 
+				$out[] = '{"id":"'.$s->id.'","post_id":"'.$s->post_id.'","text_title":"'.stripslashes($s->text_title).'","slide_link":"'.$s->slide_link.'","ordering":"'.$s->ordering.'"}'; 
 			}
 			else {
 				$out[] = '{"id":"'.$s->id.'","slide_link":"'.$s->slide_link.'","text_title":"'.stripslashes($s->text_title).'","text_content":"'.stripslashes($s->text_content).'","ordering":"'.$s->ordering.'"}'; 
