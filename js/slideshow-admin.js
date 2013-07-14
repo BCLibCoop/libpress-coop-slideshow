@@ -501,8 +501,18 @@
 			var height = target.outerHeight();
 			
 			if( target.attr('id') == 'inline-edit' ){
+				// RESTORE non-edit view
 				var div = self.editing_node;
-				div.text( target.val() );
+				if( div.hasClass('slide-title')) {
+					// naked content
+					div.text( target.val() );
+				}
+				else {
+					// content wrapped in anchor tag
+					var a = $('<a/>').attr('href',target.val()).attr('target','_blank').text(target.val());
+					div.empty().append( a );
+				}
+				// restore click-to-edit functionality
 				div.append( self.insert_inline_edit() );
 				div.hover(self.inline_edit_hover_in, self.inline_edit_hover_out );
 				div.click(self.inline_edit_toggle);
@@ -510,6 +520,7 @@
 				target.replaceWith( div );
 			}
 			else {		
+				// CONVERT to edit view
 				var input = $('<input type="text" id="inline-edit" value="'+txt+'"/>');
 					input.css('top',top).css('width',width).css('left',left);
 					self.editing_node = target.replaceWith( input );
@@ -747,8 +758,7 @@
 				text_title = $(rows[i]).children().last().children('div').first().text();	// now in fact, .first()
 				
 				// link? - read the link URL from the anchor
-				slide_link = $(rows[i]).children().last().children('div').eq(2).children('a').attr('href');  // slide link box
-
+				slide_link = $(rows[i]).children().last().children('div.slide-link').children('a').attr('href');  // slide link box
 				
 				if( img_id == undefined ) {
 
