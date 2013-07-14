@@ -106,7 +106,7 @@ input.slideshow-collection-name {
 
 td.slideshow-dropzone,
 td.slideshow-dragzone {
-	border: thin solid #ccc;
+	/* border: thin solid #ccc; */
 	min-width: 48%;
 	vertical-align: top;
 
