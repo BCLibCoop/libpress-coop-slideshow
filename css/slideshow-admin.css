@@ -167,24 +167,47 @@ td.thumbbox img {
 }
 
 td.slideshow-slide-title {
-/*	width: 80%; */
 	height: 50px;
 	text-align: left;
 	vertical-align: middle;
 	border: thin solid #ccc;
 	background-color: rgba(255,255,255,0.5);
-	padding-left: 6px;
+	padding-left: 5px;
 	font-weight: bold;
 }
 
+/**
+*	Inline edit function
+*
+**/
 div.slide-title,
 div.slide-link {
 	width: 100%;
+	min-height: 25px;
+	vertical-align: middle;
+	
 }
+
+div.slideshow-inline-edit-toggle {
+	height: 20px;
+	width: 20px;
+	position: relative;
+	float: right;
+	margin: 0 0;
+	padding: 0 0;
+	z-index: 1000;
+	overflow: hidden;
+}
+
+input#inline-edit {
+	z-index: 500;
+	position: relative;
+}
+
+
 
 div.slideshow-content-popover {
 	display: none;
-	
 	font-weight: normal;
 }
 
@@ -277,6 +300,7 @@ textarea.slideshow-text-slide-content {
 .slideshow-text-slide-link-input {
 	width: 82%;
 	float: right;
+	display: none;
 }
 
 .slideshow-text-slide-save-box {
@@ -321,6 +345,5 @@ td.radio-box {
 	width: 5%;
 	text-align: right;
 }
-
 
 

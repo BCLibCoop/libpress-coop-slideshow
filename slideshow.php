@@ -373,6 +373,25 @@ class Slideshow {
 	}
 	*/
 	
+	
+	public function target_pages_selector() {
+	
+		global $wpdb;
+		
+		$sql = "SELECT ID, post_title FROM $wpdb->posts WHERE post_status = 'publish' AND post_type='page' ORDER BY post_title";
+		$res = $wpdb->get_results( $sql );
+		
+		$out = array('<select data-placeholder="Link to a page..." id="slideshow_page_selector" name="slideshow_page_selector" class="slideshow-page-selector chzn-select">');
+		$out[] = '<option value=""></option>';
+		foreach( $res as $r ) {
+			$out[] = '<option value="'.$r->ID.'">'.$r->post_title.'</option>';
+		}
+		$out[] = '</select>';
+		
+		return implode("\n",$out);
+	}
+		
+	
 	private function text_slide_create_form() {
 	
 		$out = array();
@@ -391,15 +410,16 @@ class Slideshow {
 		
 		$out[] = '<tr>';
 		$out[] = '<td class="slideshow-text-slide-link-box">';
-		$out[] = '<a href="" class="button slideshow-text-slide-link-btn">Link to ...</a>';
-		$out[] = '<input type="text" class="hidden slideshow-text-slide-link-input" value="">';
+		
+		$out[] = self::target_pages_selector();
+		
 		$out[] = '</td>';
 		$out[] = '</tr>';
 		
 		$out[] = '<tr>';
 		$out[] = '<td class="slideshow-text-slide-save-box">';
-		$out[] = '<a href="" class="button slideshow-text-slide-cancel-btn">Cancel</a>';
-		$out[] = '<a href="" class="button slideshow-text-slide-save-btn">Add the slide</a>';
+		$out[] = '<a href="javascript:void(0);" class="button slideshow-text-slide-cancel-btn">Cancel</a>';
+		$out[] = '<a href="javascript:void(0);" class="button slideshow-text-slide-save-btn">Add the slide</a>';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -1077,7 +1097,7 @@ class Slideshow {
 		$out[] = '</table>';
 		
 		$out[] = '<p class="submit">';
-		$out[] = '<input type="submit" value="Save Changes" class="button button-primary" id="coop-slideshow-submit" name="submit">';
+		$out[] = '<input type="submit" value="Save Changes" class="button button-primary" id="coop-slideshow-settings-submit" name="submit">';
 		$out[] = '</p>';
 		
 		echo implode("\n",$out);
