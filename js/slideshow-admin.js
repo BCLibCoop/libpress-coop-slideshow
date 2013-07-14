@@ -500,13 +500,25 @@
 			var left = target.css('left');
 			var width = target.width();
 			var height = target.outerHeight();
-			
+
 			if( target.attr('id') == 'inline-edit' ){
 				// RESTORE non-edit view
 				var div = self.editing_node;
 				if( div.hasClass('slide-title')) {
-					// naked content
-					div.text( target.val() );
+				
+					// guard against empty titles (not permitted: business rule)
+					var newtxt = target.val();
+					if( newtxt.trim() == '' ) {
+						console.log( 'new text is empty: alert user' );
+						alert( 'Slides must have a title' );
+						target.val( div.text() );
+						target.focus();
+						return;	
+					}
+					else {
+						// naked content
+						div.text( newtxt );
+					}
 				}
 				else {
 					// content wrapped in anchor tag
