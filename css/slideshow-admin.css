@@ -10,15 +10,6 @@
 	box-shadow: 6px 6px 6px rgba(0,250,50,0.5)
 }
 
-/**
-// source for dragging images 
-// - the libraries will get big and overflow...
-**/
-td.local,
-td.shared {
-	overflow: scroll;
-}
-
 
 div.alt-hover {
 	background-color: rgba(209,227,152,0.83);
@@ -115,12 +106,12 @@ input.slideshow-collection-name {
 }
 
 
-td.slideshow-dropzone,
-td.slideshow-dragzone {
-	/* border: thin solid #ccc; */
+td.slideshow-dropzone,		/* left - contains the sorting table */
+td.slideshow-dragzone 		/* right - contains the dragging rsources */ 
+{		
+	/* border: thin solid #ccc;  */
 	min-width: 48%;
 	vertical-align: top;
-
 }
 td.slideshow-gutter {
 /*	min-width:20px; */
@@ -266,11 +257,12 @@ table.slideshow-drag-table {
 		one for network media 
 		one for each one's heading */	
 }
+
 td.slideshow-draggable-items {
 	vertical-align: top;
-	height: 250px;
+	min-height: 250px;
 	width: 100%;
-	overflow-y: scroll;
+	border: thin solid #eee;
 }
 
 td.slideshow-draggable-items div {
@@ -293,8 +285,8 @@ img.slotview {
 *
 **/
 table.slideshow-text-slide-create {
-	margin-top: 30px;
-	width: 45%;
+/* 	margin-top: 30px; */
+	width: 100%;
 }
 td.slideshow-label {
 	font-size: 1.2em;
@@ -334,7 +326,7 @@ textarea.slideshow-text-slide-content {
 **/
 
 table.slideshow-layout-controls {
-	width: 45%;
+	width: 100%;
 	margin: 30px auto 30px 0px;;
 	border-top: thin solid #ccc;
 	border-bottom: thin solid #ccc;

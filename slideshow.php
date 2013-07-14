@@ -165,7 +165,13 @@ class Slideshow {
 		$out[] = '<h3 class="slideshow-runtime-heading">Runtime information:</h3>';
 		$out[] = '<div class="slideshow-runtime-information"></div>';
 		
+		
+		$out[] = self::text_slide_create_form();
+		$out[] = self::quick_set_layout_controls();
+		
+				
 		$out[] = '</td><!-- .slideshow-dropzone -->';
+		
 		$out[] = '<td class="slideshow-gutter">&nbsp;</td>';
 		$out[] = '<td class="slideshow-dragzone">';
 		
@@ -289,9 +295,7 @@ class Slideshow {
 		$out[] = '<img src="'.$this->sprite.'" width="362" height="96">';
 		$out[] = '</div>';
 		
-		$out[] = self::text_slide_create_form();
 		
-		$out[] = self::quick_set_layout_controls();
 		
 		echo implode("\n",$out);
 		
