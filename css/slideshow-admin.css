@@ -18,6 +18,7 @@ div.alt-hover {
 	box-shadow: 0px 3px 3px 0px rgba(30,30,30,.5);
 	z-index: 1200;
 	float: left;
+	display: none;
 }
 
 .slideshow-signals-preload {
@@ -211,10 +212,11 @@ h3.slideshow-runtime-heading {
 }
 div.slideshow-runtime-information {
 	
-	height: 100px;
+	height: 4.5em;
 	width: 96%;
-	border: thin solid #eee;
+/*	border: thin solid #eee; */
 	margin: 10px auto;
+	padding: 6px;
 }
 
 

@@ -26,6 +26,7 @@
 			// innit hook-ups llisted more-or-less in page order
 			
 			$('.slideshow-collection-name').change( self.collection_name_monitor_changes );
+			
 			$('#collection-name-signal img').hover( self.alt_hover_in, self.alt_hover_out )
 				.attr('alt','enter a new name');
 			
@@ -34,9 +35,16 @@
 						 
 			$('.slideshow-save-collection-btn').click( function(event) {
 				event.stopPropagation();
-				self.save_collection_name();
+				self.save_collection();
 				return false;
 			});
+			
+			$('.slideshow-delete-collection-btn').click( function(event) {
+				event.stopPropagation();
+				self.delete_this_collection();
+				return false;
+			});
+
 			
 			$('.slideshow-text-slide-link-btn').click( function(event){
 					event.stopPropagation();
@@ -57,7 +65,7 @@
 			});
 			
 			
-			$('#runtime-signal img.signals-sprite').addClass('reload-disabled').hover( self.runtime_hover_in, self.runtime_hover_out ).click( self.runtime_calculation );
+			$('#runtime-signal img.signals-sprite').addClass('reload-disabled').hover( self.runtime_hover_in, self.runtime_hover_out ).click( self.runtime_calculate );
 			
 			$('#runtime-signal img').attr('alt','recalculate runtime');
 						
@@ -113,7 +121,7 @@
 		},
 		
 		reset_collection_name_signal: function(){
-			$('#collection-name-signal img').removeClass('cross-active').addClass('tick-disabled').attr('alt','name needs checking');
+			$('#collection-name-signal img').removeClass('cross-active').addClass('tick-disabled').attr('alt','name has been saved');
 		},
 		
 		runtime_hover_in: function(evt) {
@@ -261,7 +269,33 @@
 			}
 			
 		},			
+		
+		delete_this_collection: function() {
+		
+			if( confirm("This is a destructive operation.\nAre you sure you want to\nremove this slideshow from the database?" )) {
 			
+				var is_active = $('#slideshow-is-active-collection').is(':checked');
+			
+				var data = {
+					action: 'slideshow-delete-slide-collection',
+					slideshow_id: $('#slideshow_select').val()
+				};
+				
+				$.post( ajaxurl, data ).complete(function(r) {
+				
+					var res = JSON.parse(r.responseText);
+					if( res.result == 'success' ) {
+						alert( res.feedback );
+						window.history.go(0);
+					}
+				});
+			}
+			else {
+				alert( 'Operation cancelled');
+			}
+			return false;
+		},
+		
 		dragstart: function( evt, ui ) {
 	
 		},
@@ -462,7 +496,7 @@
 				var res = JSON.parse(r.responseText);
 				var slides = res.slides;
 				self.slideshow_id = opt.val();
-				if( res.is_active == 1 ) {
+				if( res.is_active === 1 ) {
 					$('#slideshow-is-active-collection').attr('checked','checked');
 				}
 				else {
@@ -487,7 +521,7 @@
 		
 		place_slide_img: function( id, post_id, link, row ) {
 			
-			console.log( 'called place_slide_img ' + id + ': ' + post_id );
+		//	console.log( 'called place_slide_img ' + id + ': ' + post_id );
 			
 			if( row == null ) {
 				// get the first empty row ...
@@ -516,7 +550,7 @@
 				var title = $('<div class="slide-title" />').append(meta['title']);
 					$(row).children().eq(1).empty().append( title );
 				
-				if( undefined !== link ) {
+				if( undefined !== link ) {	
 					var anchor = $('<a class="slide-anchor" target="_blank"/>').text( link ).attr('href',link);
 					var div = $('<div class="slide-link" />').append( anchor );
 					$(row).children().eq(1).append( div );
@@ -592,16 +626,22 @@
 		
 		runtime_calculate: function() {
 		
-			var rows = $('.slideshow-collection-row');
-			var children = $('.thumbbox').children();			
-			var row = children.last().parent().parent().attr('id');
+			$('.slideshow-runtime-information').empty();
+		
+			var children = $('.thumbbox').children();	
+/*
+			for( i=0; i<children.length; i++ ) {
+				console.log( i +': ' + $(children[i]).parent().parent().attr('id'));
+			}
 			
+*/	
 			var msg;
-			if( undefined === row ){
+			if( undefined === children ){
 				msg = "There must be slides before calculating the runtime.";
 			}
 			else {
-				var index = parseInt(row.replace('row',''),10) + 1; // offset zero-based index 
+			///	var index = parseInt(row.replace('row',''),10) + 1; // offset zero-based index 
+				var index = children.length;
 				var dwell = parseInt(window.coop_slideshow_settings.current.pause,10) / 1000;
 				var transit = parseInt(window.coop_slideshow_settings.current.speed,10) / 1000;
 				
@@ -617,7 +657,7 @@
 		save_collection_name: function() {
 		
 			var is_active = $('#slideshow-is-active-collection').is(':checked');
-				console.log( 'is_active: ' + is_active );
+			//	console.log( 'is_active: ' + is_active );
 				if( undefined === is_active ) {
 					is_active = String() + '0';
 				}
@@ -675,40 +715,39 @@
 				var img = $(rows[i]).children().first().children('img');
 				var img_id = $(img).data('img-id');
 				
-				if( img_id == undefined ) {
+				// read the title from it's box
+				text_title = $(rows[i]).children().last().children('div').first().text();	// now in fact, .first()
 				
+				// link? - read the link URL from the anchor
+				slide_link = $(rows[i]).children().last().children('div').eq(2).children('a').attr('href');  // slide link box
+
+				
+				if( img_id == undefined ) {
+
+					console.log( 'no img_id - text slide - ' + text_title );		
 					type = 'text';		
-					// popover - take it off
-					var popover = $(rows[i]).children().last().children('div').detach();
-					// link? - take it off
-					slide_link = $(rows[i]).children().last().children('a').detach();
-					// read this while it is gone
-					text_title = $(rows[i]).children().last().text();
-					// read this while separated
-					text_content = $(popover).text();
-					// now put it back where it came from
-					$(rows[i]).children().last().append( popover ).append( slide_link );
-					
-				//	console.log( 'no img_id - text slide - ' + text_title ); 
+
+					// read the content of the content div 
+					text_content = $(rows[i]).children().last().children('div').last().text();
 				}
 				
 				if( type == 'text' && text_title == '' ) {
-				//	console.log( 'not a text slide afterall - ' + text_title );
+					console.log( 'not a text slide (empty title) - ' );
 					// skip the rest of the loop
 					continue;
 				}
 				
 				// if this slide has already been saved it has a slide_id index
 				slide_id = $(rows[i]).data('slide-id');
-							
-				// possible for each type
-				slide_link = $(rows[i]).children().last().children('a').text();
-							
+														
 				if( type == 'image' ) {
 					// this is all we need for an image slide, 
 					// along with possible slide_id and slide_link values
 					post_id = img_id;
 				}	
+				
+				console.log( type + ': ' + text_title + ': ' + text_content + ': ' + post_id + ': ' + slide_id + ': ' + slide_link );
+				
 				
 				if( (type === 'image' && post_id > 0) || (type == 'text')) { 
 	

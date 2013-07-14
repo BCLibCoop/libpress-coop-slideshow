@@ -40,6 +40,7 @@ class Slideshow {
 			add_action( 'wp_ajax_slideshow-fetch-img-meta',array(&$this,'slideshow_fetch_img_meta_callback'));
 			add_action( 'wp_ajax_slideshow-fetch-collection',array(&$this,'slideshow_fetch_collection'));
 			add_action( 'wp_ajax_slideshow-save-slide-collection',array(&$this,'slideshow_save_collection_handler'));
+			add_action( 'wp_ajax_slideshow-delete-slide-collection',array(&$this,'slideshow_delete_collection_handler'));
 			
 			// conditionally ensures that the slideshow table is present
 			add_action( 'wp_loaded', array( &$this, 'slideshow_create_db_table_handler'));
@@ -137,6 +138,7 @@ class Slideshow {
 		$out[] = '</td><td class="slideshow-gutter">&nbsp;</td><td class="slideshow-controls">';
 		
 		$out[] = '<a href="" class="button button-primary slideshow-save-collection-btn">Save collection</a>';
+		$out[] = '<a href="" class="button slideshow-delete-collection-btn">Delete the loaded slideshow</a>';
 		
 		$out[] = '</td></tr>';
 		
@@ -647,6 +649,27 @@ class Slideshow {
 	
 	}
 	
+	
+	public function slideshow_delete_collection_handler() {
+		
+		global $wpdb;
+		
+		$slideshow_id = $_POST['slideshow_id'];
+		
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		
+		$ret = $wpdb->delete( $table_name, array('slideshow_id'=>$slideshow_id));
+	//	error_log( 'remove from '.$table_name .': '. $ret .' for slideshow_id: '.  $slideshow_id );
+		
+		$table_name = $wpdb->prefix . 'slideshows';
+		$ret = $wpdb->delete( $table_name, array('id'=>$slideshow_id));
+		error_log( 'remove from '.$table_name .': '. $ret .' for slideshow_id: '.  $slideshow_id );
+		
+		echo '{"result":"success", "feedback":"Slideshow deleted."}';
+		die();
+	}
+
+	
 	public function slideshow_save_collection_handler() {
 		
 		global $wpdb;
@@ -670,13 +693,7 @@ class Slideshow {
 		if( array_key_exists('slides',$_POST) ) {
 			$slides = $_POST['slides'];
 		}
-		/*
-		if( !is_array($slides) ) {
-			error_log( 'slides are not in an array' );
-			die();
-		}
-		*/
-		
+			
 		if( empty($slideshow_id) ) {
 			$slideshow_id = self::slideshow_create_collection( $title );
 		}
@@ -692,6 +709,22 @@ class Slideshow {
 		$sql = "UPDATE $table_name SET layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
 		$wpdb->query($sql);
 		
+		
+		/**
+		*	Release all slides currently associated with this slideshow_id
+		*
+		*	We do this to accommodate deletions from the set.
+		**/
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		$ret = $wpdb->update($table_name, array('slideshow_id'=>0),array('slideshow_id' => $slideshow_id));
+		error_log( 'Releasing slildes: updated '.$ret .' where slideshow_id = '.$slideshow_id);
+		
+		/**
+		*	Build the update/insert statement foreach 
+		*
+		*	Iterates the slides collection, builds appropraite query
+		*	Some slides already exist: update; others are new, insert.
+		**/
 		foreach( $slides as $s ) {
 		
 			$FIELDS = array('slideshow_id');
@@ -714,13 +747,12 @@ class Slideshow {
 				$FIELDS[] = 'text_content';
 				$VALUES[] = "'".addslashes($s['text_content'])."'";
 			}
-			
 						
 			if( array_key_exists('slide_id',$s ) ) {
 			
 				$slide_id = $s['slide_id'];
 				
-				error_log( '$slide_id = ' . $slide_id); 
+				error_log( '$slide_id = ' . $slide_id);
 				
 				//$FIELDS[] = 'id';
 				//$VALUES[] = $s['slide_id'];
