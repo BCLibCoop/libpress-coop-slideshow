@@ -165,7 +165,13 @@ class Slideshow {
 		$out[] = '<h3 class="slideshow-runtime-heading">Runtime information:</h3>';
 		$out[] = '<div class="slideshow-runtime-information"></div>';
 		
+		
+		$out[] = self::text_slide_create_form();
+		$out[] = self::quick_set_layout_controls();
+		
+				
 		$out[] = '</td><!-- .slideshow-dropzone -->';
+		
 		$out[] = '<td class="slideshow-gutter">&nbsp;</td>';
 		$out[] = '<td class="slideshow-dragzone">';
 		
@@ -289,9 +295,7 @@ class Slideshow {
 		$out[] = '<img src="'.$this->sprite.'" width="362" height="96">';
 		$out[] = '</div>';
 		
-		$out[] = self::text_slide_create_form();
 		
-		$out[] = self::quick_set_layout_controls();
 		
 		echo implode("\n",$out);
 		
@@ -373,6 +377,25 @@ class Slideshow {
 	}
 	*/
 	
+	
+	public function target_pages_selector() {
+	
+		global $wpdb;
+		
+		$sql = "SELECT ID, post_title FROM $wpdb->posts WHERE post_status = 'publish' AND post_type='page' ORDER BY post_title";
+		$res = $wpdb->get_results( $sql );
+		
+		$out = array('<select data-placeholder="Link to a page..." id="slideshow_page_selector" name="slideshow_page_selector" class="slideshow-page-selector chzn-select">');
+		$out[] = '<option value=""></option>';
+		foreach( $res as $r ) {
+			$out[] = '<option value="'.$r->ID.'">'.$r->post_title.'</option>';
+		}
+		$out[] = '</select>';
+		
+		return implode("\n",$out);
+	}
+		
+	
 	private function text_slide_create_form() {
 	
 		$out = array();
@@ -391,15 +414,16 @@ class Slideshow {
 		
 		$out[] = '<tr>';
 		$out[] = '<td class="slideshow-text-slide-link-box">';
-		$out[] = '<a href="" class="button slideshow-text-slide-link-btn">Link to ...</a>';
-		$out[] = '<input type="text" class="hidden slideshow-text-slide-link-input" value="">';
+		
+		$out[] = self::target_pages_selector();
+		
 		$out[] = '</td>';
 		$out[] = '</tr>';
 		
 		$out[] = '<tr>';
 		$out[] = '<td class="slideshow-text-slide-save-box">';
-		$out[] = '<a href="" class="button slideshow-text-slide-cancel-btn">Cancel</a>';
-		$out[] = '<a href="" class="button slideshow-text-slide-save-btn">Add the slide</a>';
+		$out[] = '<a href="javascript:void(0);" class="button slideshow-text-slide-cancel-btn">Cancel</a>';
+		$out[] = '<a href="javascript:void(0);" class="button slideshow-text-slide-save-btn">Add the slide</a>';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -674,7 +698,7 @@ class Slideshow {
 		
 		global $wpdb;
 				
-		$title = $_POST['title'];
+		$slideshow_title = $_POST['title'];
 		$slideshow_id = $_POST['slideshow_id'];
 		$is_active = $_POST['is_active'];
 		
@@ -701,12 +725,13 @@ class Slideshow {
 		$table_name = $wpdb->prefix . 'slideshows';
 		
 		if( $is_active == 1 ) {
-			/* erase any currently marked as active */
+			/* before we are set to the active record */
+			/* unmark any currently marked as active */
 			$sql = "UPDATE $table_name SET is_active=0 WHERE is_active=1";
 			$wpdb->query($sql);
 		}
 		
-		$sql = "UPDATE $table_name SET layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
+		$sql = "UPDATE $table_name SET title='".$slideshow_title."', layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
 		$wpdb->query($sql);
 		
 		
@@ -717,7 +742,7 @@ class Slideshow {
 		**/
 		$table_name = $wpdb->prefix . 'slideshow_slides';
 		$ret = $wpdb->update($table_name, array('slideshow_id'=>0),array('slideshow_id' => $slideshow_id));
-		error_log( 'Releasing slildes: updated '.$ret .' where slideshow_id = '.$slideshow_id);
+	//	error_log( 'Releasing slides: updated '.$ret .' where slideshow_id = '.$slideshow_id);
 		
 		/**
 		*	Build the update/insert statement foreach 
@@ -738,6 +763,9 @@ class Slideshow {
 				$FIELDS[] = 'post_id';
 				$VALUES[] = $s['post_id'];
 				
+				$FIELDS[] = 'text_title';
+				$VALUES[] = "'".addslashes($s['text_title'])."'";
+	
 			}
 			else {	// 'text' === $type
 				
@@ -752,8 +780,9 @@ class Slideshow {
 			
 				$slide_id = $s['slide_id'];
 				
-				error_log( '$slide_id = ' . $slide_id);
+			//	error_log( '$slide_id = ' . $slide_id);
 				
+				// we don't actually reset the id of each slide now do we ? :-}
 				//$FIELDS[] = 'id';
 				//$VALUES[] = $s['slide_id'];
 			}
@@ -766,6 +795,11 @@ class Slideshow {
 			if( array_key_exists('slide_link',$s ) && !empty($s['slide_link'])) {
 				$FIELDS[] = 'slide_link';
 				$VALUES[] = "'".addslashes($s['slide_link'])."'";
+			}
+			else {
+				// slide_link may have been deleted - always set to empty if not present
+				$FIELDS[] = 'slide_link';
+				$VALUES[] = "''";
 			}
 			
 			$table_name = $wpdb->prefix . 'slideshow_slides';
@@ -790,12 +824,18 @@ class Slideshow {
 				$sql .=") VALUES (" . implode(',',$VALUES) . ")";
 			}
 		
-			error_log( "\n\n".$sql."\n\n" );
+		//	error_log( "\n\n".$sql."\n\n" );
 		
 			$wpdb->query($sql);
 		}
 		
-		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Slideshow collection saved"}';
+		// clean up any orphaned slides 
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		$ret = $wpdb->delete($table_name, array('slideshow_id'=>0));
+		// $ret == num rows removed | false on error //
+		
+		
+		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Slide collection saved"}';
 		die();
 		
 	}
@@ -815,7 +855,7 @@ class Slideshow {
 		$out = array();
 		foreach( $slides as $s ) {
 			if( $s->post_id ) {
-				$out[] = '{"id":"'.$s->id.'","post_id":"'.$s->post_id.'","slide_link":"'.$s->slide_link.'","ordering":"'.$s->ordering.'"}'; 
+				$out[] = '{"id":"'.$s->id.'","post_id":"'.$s->post_id.'","text_title":"'.stripslashes($s->text_title).'","slide_link":"'.$s->slide_link.'","ordering":"'.$s->ordering.'"}'; 
 			}
 			else {
 				$out[] = '{"id":"'.$s->id.'","slide_link":"'.$s->slide_link.'","text_title":"'.stripslashes($s->text_title).'","text_content":"'.stripslashes($s->text_content).'","ordering":"'.$s->ordering.'"}'; 
@@ -1077,7 +1117,7 @@ class Slideshow {
 		$out[] = '</table>';
 		
 		$out[] = '<p class="submit">';
-		$out[] = '<input type="submit" value="Save Changes" class="button button-primary" id="coop-slideshow-submit" name="submit">';
+		$out[] = '<input type="submit" value="Save Changes" class="button button-primary" id="coop-slideshow-settings-submit" name="submit">';
 		$out[] = '</p>';
 		
 		echo implode("\n",$out);
