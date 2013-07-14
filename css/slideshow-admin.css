@@ -10,6 +10,16 @@
 	box-shadow: 6px 6px 6px rgba(0,250,50,0.5)
 }
 
+/**
+// source for dragging images 
+// - the libraries will get big and overflow...
+**/
+td.local,
+td.shared {
+	overflow: scroll;
+}
+
+
 div.alt-hover {
 	background-color: rgba(209,227,152,0.83);
 	padding: 10px;
