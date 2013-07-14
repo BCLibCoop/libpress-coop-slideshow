@@ -23,6 +23,7 @@
 		init: function( options ) {
 			
 			self = this;
+			self.editing_node = null;
 			
 			// init hook-ups listed more-or-less in page order
 			
@@ -496,7 +497,11 @@
 		//	console.log( 'target.attr("id"): ' + target.attr('id') );
 			
 			// guard - only one active inline-editor at one time
-			if( self.editing_node != null && target.attr('id') == undefined ) {
+			if( self.editing_node !== null && target.attr('id') == undefined ) {
+				
+				// restore the graphic for all targets to neutral 
+				$('.slideshow-inline-edit-toggle').css('background-position','-266px -6px');
+							
 				return;
 			}
 			
