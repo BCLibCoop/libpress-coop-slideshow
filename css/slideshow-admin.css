@@ -10,6 +10,15 @@
 	box-shadow: 6px 6px 6px rgba(0,250,50,0.5)
 }
 
+div.alt-hover {
+	background-color: rgba(209,227,152,0.83);
+	padding: 10px;
+	color: #666;
+	border: thin solid #999;
+	box-shadow: 0px 3px 3px 0px rgba(30,30,30,.5);
+	z-index: 1200;
+	float: left;
+}
 
 .slideshow-signals-preload {
 	position: relative;
@@ -17,7 +26,6 @@
 	top: 50px;
 	width: 362px;
 	height: 100px;
-	border: thin solid red;	
 }
 
 #runtime-signal,
@@ -39,8 +47,11 @@
 
 #collection-name-signal {
 	z-index: 1000;
-	top: -43px;
 	float: right;
+	top: -35px;
+	margin-right: 109%;
+	position: relative;
+	
 }
 
 .slideshow-signals {
@@ -69,15 +80,21 @@ table.slideshow-header-controls td {
 
 td.slideshow-name,
 td.slideshow-controls {
+	vertical-align: middle;	
 	width: 48%;
 	text-align: left;
-	vertical-align: top;
+	padding: 0px 0px;
 }
 
-.slideshow-collection-name {
+div.collection-name-status-msg {
+	width: 100%;
+	color: #999;
+}
+
+input.slideshow-collection-name {
 	font-size: 2em;
 	width: 100%;
-	margin-bottom: 10px;
+	margin: 0;
 }
 
 .slideshow_select {

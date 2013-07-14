@@ -93,7 +93,7 @@ class Slideshow {
 		$plugin_page = add_submenu_page( 'site-manager', 'Slideshow Admin','Slideshow Admin', 'edit_options', 'top-slides', array(&$this,'slideshow_setup_page'));
 		add_submenu_page( 'site-manager', 'Slideshow Settings', 'Slideshow Settings', 'manage_network','slides-settings', array(&$this,'slideshow_settings_admin_page'));
 		
-	//	add_action( 'admin_footer-'.$plugin_page, array(&$this,'slideshow_setup_footer_script' ));
+		add_action( 'admin_footer-'.$plugin_page, array(&$this,'slideshow_footer' ));
 		
 	}
 	
@@ -134,20 +134,19 @@ class Slideshow {
 		
 		$out[] = '<input type="text" class="slideshow-collection-name" name="slideshow-collection-name" value="" placeholder="Enter a name for a new slideshow">';
 		
-		$out[] = '<div id="collection-name-signal" class="slideshow-signals"><img class="signals-sprite" src="'.$this->sprite.'"></div>';
-		
-		$out[] = '</td><td class="slideshow-gutter"></td><td class="slideshow-controls">';
+		$out[] = '</td><td class="slideshow-gutter">&nbsp;</td><td class="slideshow-controls">';
 		
 		$out[] = '<a href="" class="button button-primary slideshow-save-collection-btn">Save collection</a>';
 		
 		$out[] = '</td></tr>';
+		
 		$out[] = '<tr><td class="slideshow-name">';
 
 		$out[] = self::slideshow_collection_selector();
 		
-		$out[] = '</td><td class="slideshow-gutter"></td><td class="slideshow-controls">';
+		$out[] = '</td><td class="slideshow-gutter">&nbsp;</td><td class="slideshow-signal-preload">';
 		
-		$out[] = 'unassigned space ' ;
+		$out[] = '<div id="collection-name-signal" class="slideshow-signals"><img class="signals-sprite" src="'.$this->sprite.'"></div>';
 
 		$out[] = '</td></tr>';
 		$out[] = '</table>';
@@ -637,15 +636,15 @@ class Slideshow {
 		return implode("\n",$out);
 	}
 	
-	public function slideshow_setup_footer_script() {
+	public function slideshow_footer() {
 	
-	/*
-		$out = array('<script type="text/javascript">');
-		$out[] = 'var slideshow_sprite = "'.$this->sprite.'"; ';
-		$out[] = '</script>';
+
+		$out = array();
+		$out[] = '<div class="alt-hover">&nbsp;</div>';
 		
 		echo implode( "\n", $out );
-	*/
+
+	
 	}
 	
 	public function slideshow_save_collection_handler() {

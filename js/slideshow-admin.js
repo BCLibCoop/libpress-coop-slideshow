@@ -10,7 +10,7 @@
 		_configured = {},	// passed in options
 		opts = {},			// opts == current at start up (diverges as user changes settings)
 		signalbox,				// for showing signals to the user in a floating div .sort-table-signal
-		table_order;
+		slideshow_id;
 	
 	var SlideShowSetup = function( options ) {
 		this.init( options );
@@ -22,6 +22,15 @@
 		init: function( options ) {
 			
 			self = this;
+			
+			// innit hook-ups llisted more-or-less in page order
+			
+			$('.slideshow-collection-name').change( self.collection_name_monitor_changes );
+			$('#collection-name-signal img').hover( self.alt_hover_in, self.alt_hover_out )
+				.attr('alt','enter a new name');
+			
+			$('#slideshow_select').chosen().change( self.fetch_selected_slideshow );
+			$('#slideshow_select').chosen().change( self.reset_collection_name_signal );
 						 
 			$('.slideshow-save-collection-btn').click( function(event) {
 				event.stopPropagation();
@@ -47,49 +56,74 @@
 				return false;
 			});
 			
-			$('.slideshow-runtime-information').click( function(event) {
-				event.stopPropagation();
-				self.runtime_calculation();
-				return false;
-			});		
-			
-			$("#slideshow_select").chosen().change( self.fetch_selected_slideshow );
-			$('#slideshow_select').chosen().change( self.reset_collection_name_signal );
 			
 			$('#runtime-signal img.signals-sprite').addClass('reload-disabled').hover( self.runtime_hover_in, self.runtime_hover_out ).click( self.runtime_calculation );
-			//$('#collection-name-signal img.signals-sprite').addClass('tick-enabled');
 			
-			
+			$('#runtime-signal img').attr('alt','recalculate runtime');
+						
 			self.init_quick_set_layout();
 			
 		},
 				
 		init_quick_set_layout: function() {
 		
+			// bind clicking on graphics to radio buttons
+			$('.slideshow-control-img').click( self.set_layout_control );
+		
+			// fetch and set current/default values 
 			var layout = window.coop_slideshow_settings.current.currentLayout;
 			var transition = window.coop_slideshow_settings.current.mode;
-			
-			console.log( layout + ', '+ transition );
-			
 			$('input[value="'+layout+'"][name="slideshow-layout"]').attr('checked','checked');
-			$('input[value="'+transition+'"][name="slideshow-transition"]').attr('checked','checked');
-			
-		//	console.log( layout + ', ' + transition );
-			
+			$('input[value="'+transition+'"][name="slideshow-transition"]').attr('checked','checked');			
 		},
 		
+		alt_hover_in: function(obj) {
+		
+			var type = 'img';
+			if( obj.type == 'mouseenter' ) {
+				type='event';
+				obj = obj.currentTarget;
+			}
+			var img = $(obj);	
+			var tip = $('.alt-hover');
+			var txt = img.attr('alt');
+			
+			if( txt == undefined || txt == '') {
+				return;
+			}
+			tip.empty().append( txt );
+			
+			var twidth = parseInt(tip.width(),10) / 2;
+			var theight = tip.outerHeight();
+			
+			var box = img.parent();
+			var pos = box.offset();	// absolute left, top 
+			var adminmenu = $('#adminmenuwrap').width();	
+				
+			var leftOffset = pos.left - 16 - adminmenu - twidth;
+			var topOffset = pos.top - 32 - theight;
+				 
+				tip.css( 'top', topOffset ).css( 'margin-left',leftOffset).css('position','absolute' );
+
+				tip.show();		
+		},
+		
+		alt_hover_out: function(evt) {
+			$('.alt-hover').hide();
+		},
 		
 		reset_collection_name_signal: function(){
-			$('#collection-name-signal img').removeClass('cross-active').addClass('tick-disabled');
+			$('#collection-name-signal img').removeClass('cross-active').addClass('tick-disabled').attr('alt','name needs checking');
 		},
 		
-		runtime_hover_in: function() {
+		runtime_hover_in: function(evt) {
 			$(this).removeClass('reload-disabled').addClass('reload-active');
+			self.alt_hover_in(evt);
 		},
 		
-		runtime_hover_out: function() {
-		
+		runtime_hover_out: function(evt) {
 			$(this).removeClass('reload-active').addClass('reload-disabled');
+			self.alt_hover_out(evt);
 		},
 		
 		slide_hover_in: function() {
@@ -145,10 +179,7 @@
 				
 				if( res.result === 'success' ) {
 					alert( 'Text slide saved' );
-					self.clear_text_slide_form();
-				/* 	var id = res.slide_id; */
-				/* 	self.place_slide_text(id,title,content); */
-				
+					self.clear_text_slide_form();				
 					self.fetch_selected_slideshow();
 				}
 				else {
@@ -188,6 +219,9 @@
 			}
 		},
 		
+		/**
+		*	Re-use rows after deleting an entry
+		**/
 		clear_and_reinsert_row: function( dragged ){
 			$('.thumbbox',dragged).empty();
 			$(dragged).data('slide-id','');
@@ -201,6 +235,32 @@
 			$('#slideshow-text-slide-content').empty().val('');
 			$('.slideshow-text-slide-link-input').empty().val('');
 		},
+			
+		collection_name_monitor_changes: function(evt) {
+		
+			var input = this;
+			var spritebox = $('#collection-name-signal');
+			var sprite = $('img',spritebox);
+			
+			
+			if( $(input).val().trim() == '' ) {
+				// whitespace only in field 
+				sprite.attr('class','signals-sprite cross-disabled');
+				$('#collection-name-status-msg').empty()
+					.append( 'Cannot use empty spaces for collection name' );
+				
+			}
+			else if( $(input).val().trim().length == 0 ) {
+				sprite.attr('class','signals-sprite plus-disabled');
+				$('#collection-name-status-msg').empty();
+			}
+			else {
+				sprite.attr('class','signals-sprite tick-disabled');
+				$('#collection-name-status-msg').empty().append( 'Checking if name already in use' );
+				self.precheck_slideshow_name();
+			}
+			
+		},			
 			
 		dragstart: function( evt, ui ) {
 	
@@ -234,8 +294,7 @@
 			
 			$($t).before(dropme);
 			
-		//	var rows = $('.slideshow-sortable-rows').children().children();
-		//	console.log( rows );
+			self.runtime_calculate();
 		
 		},
 		
@@ -313,6 +372,8 @@
 			$(thumb).addClass('ghosted').parent().draggable('option','disabled',true);
 
 			self.fetch_img_meta( id );
+
+			self.runtime_calculate();
 
 		},
 		
@@ -400,6 +461,7 @@
 			$.post( ajaxurl, data ).complete(function(r){
 				var res = JSON.parse(r.responseText);
 				var slides = res.slides;
+				self.slideshow_id = opt.val();
 				if( res.is_active == 1 ) {
 					$('#slideshow-is-active-collection').attr('checked','checked');
 				}
@@ -459,7 +521,9 @@
 					var div = $('<div class="slide-link" />').append( anchor );
 					$(row).children().eq(1).append( div );
 				}
-			})	
+				
+				self.runtime_calculate();
+			});
 		},
 		
 		place_slide_text: function( id, title, content, link, row ) {
@@ -485,7 +549,8 @@
 					$(row).children().eq(1).append( div );
 			}
 			$(row).children().eq(1).append( $('<div class="slideshow-content-popover" />').append( content ));
-			
+
+			self.runtime_calculate();
 		},
 		
 		precheck_slideshow_name: function() {
@@ -502,37 +567,50 @@
 				if( res.result == 'found' ) {
 					// not okay to use if keyed into field
 					$('#collection-name-signal img').addClass('cross-active');
-					
+										
 					if( res.slideshow_id > 0 ) {
 						$('#slideshow_select').attr('selectedIndex',res.slideshow_id);
 						$('#slideshow_select').trigger('liszt:updated');
-						$('#collection-name-signal img').removeClass('cross-active').addClass('tick-disabled');
+						$('#collection-name-signal img').attr('class','signals-sprite tick-active')
+							.attr('alt','reload this collection').unbind('click').bind('click',self.fetch_collection_by_name );
+						$('#collection-name-status-msg').empty().append( 'Found slideshow with that name. Click green tick to reload slideshow.' );
+
 					}
 				}
 				else {
 					// okay to use if newly created
-					$('#collection-name-signal img').addClass('plus-active');
+					$('#collection-name-signal img').attr('class','signals-sprite plus-active')
+						.attr('alt','save collection name')
+						.unbind('click').bind('click',self.save_collection_name);
+					$('#collection-name-status-msg').empty().append( 'Click the green plus to save slideshow name.' );
+
 				}
 				
 			});
 				
 		},
 		
-		runtime_calculation: function() {
+		runtime_calculate: function() {
 		
 			var rows = $('.slideshow-collection-row');
 			var children = $('.thumbbox').children();			
 			var row = children.last().parent().parent().attr('id');
-			var index = parseInt(row.replace('row',''),10) + 1; // offset zero-based index 
-			var dwell = parseInt(window.coop_slideshow_settings.current.pause,10) / 1000;
-			var transit = parseInt(window.coop_slideshow_settings.current.speed,10) / 1000;
 			
-			var net = index * (dwell + transit);	// slideshow cycle in seconds
-			
-			var msg = "There are "+index+" slides in this slideshow. Each slide will show for "+dwell+" seconds. ";
+			var msg;
+			if( undefined === row ){
+				msg = "There must be slides before calculating the runtime.";
+			}
+			else {
+				var index = parseInt(row.replace('row',''),10) + 1; // offset zero-based index 
+				var dwell = parseInt(window.coop_slideshow_settings.current.pause,10) / 1000;
+				var transit = parseInt(window.coop_slideshow_settings.current.speed,10) / 1000;
+				
+				var net = index * (dwell + transit);	// slideshow cycle in seconds
+				
+				msg = "There are "+index+" slides in this slideshow. Each slide will show for "+dwell+" seconds. ";
 				msg += "Transition between slides will take "+transit+" seconds. ";
 				msg += "The slideshow will take a total of "+net+" seconds to cycle completely.";
-			
+			}
 			$('.slideshow-runtime-information').empty().text( msg );
 		},
 		
@@ -693,8 +771,8 @@
 		
 		
 		/**
-		*	image-click handler to set the layout style
-		*	radio buttons when a graphic is clicked.
+		*	image-click handler: sets the layout 
+		*	radio buttons when it's graphic is clicked
 		**/
 		set_layout_control: function() {
 			var t = $(this);
@@ -721,7 +799,6 @@
 				box.css('position','relative');
 				
 			$('.slideshow-collection-name').parent().append(box);
-			
 		}
 			
 	}
@@ -915,10 +992,6 @@ jQuery().ready(function(){
 				
 								});							
 								
-								
-	jQuery('.slideshow-control-img').click( slideshow_setup.set_layout_control );
-	jQuery('.slideshow-collection-name').blur( slideshow_setup.precheck_slideshow_name );
-	
 	jQuery('#coop-slides-setup-submit').click(function(event){
 		event.stopPropagation();
 		slideshow_setup.save_collection();
