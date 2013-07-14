@@ -172,7 +172,6 @@ td.slideshow-slide-title {
 	vertical-align: middle;
 	border: thin solid #ccc;
 	background-color: rgba(255,255,255,0.5);
-	padding-left: 5px;
 	font-weight: bold;
 }
 
@@ -180,8 +179,12 @@ td.slideshow-slide-title {
 *	Inline edit function
 *
 **/
+div.slide-title {
+	margin-top: 5px;
+}
 div.slide-title,
 div.slide-link {
+	margin-left: 5px;
 	width: 100%;
 	min-height: 25px;
 	vertical-align: middle;
@@ -202,6 +205,7 @@ div.slideshow-inline-edit-toggle {
 input#inline-edit {
 	z-index: 500;
 	position: relative;
+	margin: 0 0;
 }
 
 
