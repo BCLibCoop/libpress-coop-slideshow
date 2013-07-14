@@ -791,6 +791,11 @@ class Slideshow {
 				$FIELDS[] = 'slide_link';
 				$VALUES[] = "'".addslashes($s['slide_link'])."'";
 			}
+			else {
+				// slide_link may have been deleted - always set to empty if not present
+				$FIELDS[] = 'slide_link';
+				$VALUES[] = "''";
+			}
 			
 			$table_name = $wpdb->prefix . 'slideshow_slides';
 			$sql = '';
