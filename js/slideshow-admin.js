@@ -493,8 +493,13 @@
 		
 			var target = $(this);
 			
-			console.log( target );
-					
+		//	console.log( 'target.attr("id"): ' + target.attr('id') );
+			
+			// guard - only one active inline-editor at one time
+			if( self.editing_node != null && target.attr('id') == undefined ) {
+				return;
+			}
+			
 			var txt = target.text();
 			var top = target.css('top');
 			var left = target.css('left');
@@ -509,7 +514,7 @@
 					// guard against empty titles (not permitted: business rule)
 					var newtxt = target.val();
 					if( newtxt.trim() == '' ) {
-						console.log( 'new text is empty: alert user' );
+					//	console.log( 'new text is empty: alert user' );
 						alert( 'Slides must have a title' );
 						target.val( div.text() );
 						target.focus();
@@ -530,6 +535,7 @@
 				div.click(self.inline_edit_toggle);
 				
 				target.replaceWith( div );
+				// clear buffer for reuse (also, null buffer is part of active-inline-editor detection)
 				self.editing_node = null;
 			}
 			else {		
