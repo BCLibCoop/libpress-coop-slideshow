@@ -738,7 +738,7 @@ class Slideshow {
 		**/
 		$table_name = $wpdb->prefix . 'slideshow_slides';
 		$ret = $wpdb->update($table_name, array('slideshow_id'=>0),array('slideshow_id' => $slideshow_id));
-		error_log( 'Releasing slildes: updated '.$ret .' where slideshow_id = '.$slideshow_id);
+	//	error_log( 'Releasing slides: updated '.$ret .' where slideshow_id = '.$slideshow_id);
 		
 		/**
 		*	Build the update/insert statement foreach 
@@ -776,8 +776,9 @@ class Slideshow {
 			
 				$slide_id = $s['slide_id'];
 				
-				error_log( '$slide_id = ' . $slide_id);
+			//	error_log( '$slide_id = ' . $slide_id);
 				
+				// we don't actually reset the id of each slide now do we ? :-}
 				//$FIELDS[] = 'id';
 				//$VALUES[] = $s['slide_id'];
 			}
@@ -819,12 +820,18 @@ class Slideshow {
 				$sql .=") VALUES (" . implode(',',$VALUES) . ")";
 			}
 		
-			error_log( "\n\n".$sql."\n\n" );
+		//	error_log( "\n\n".$sql."\n\n" );
 		
 			$wpdb->query($sql);
 		}
 		
-		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Slideshow collection saved"}';
+		// clean up any orphaned slides 
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		$ret = $wpdb->delete($table_name, array('slideshow_id'=>0));
+		// $ret == num rows removed | false on error //
+		
+		
+		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Slide collection saved"}';
 		die();
 		
 	}
