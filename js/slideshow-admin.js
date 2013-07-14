@@ -615,25 +615,25 @@
 		
 		place_slide_text: function( id, title, content, link, row ) {
 		
-		//	console.log( 'called place_slide_text - ' + id + ' - ' + content );
-		
 			if( row == null ) {
 				// get the first empty row ...
 				row = self.first_empty_row();
 			}
 			
 			$(row).data('slide-id',id);
-		//	console.log( 'reading back: ' + $(row).data('slide-id') );
 			$(row).children().first().empty().append($('<span class="slideshow-big-t">T</span>'));
 			
-			var titlediv = $('<div class="slide-title" />').append(title);
-			
+			var titlediv = $('<div class="slide-title" />').append(title).append( self.insert_inline_edit());
+				titlediv.hover(self.inline_edit_hover_in, self.inline_edit_hover_out );
+				titlediv.click(self.inline_edit_toggle);
 			$(row).children().eq(1).empty().append(titlediv); 
 			
 			if( undefined !== link ) {
 				var anchor = $('<a class="slide-anchor" target="_blank"/>').text( link ).attr('href',link);
-				var div = $('<div class="slide-link" />').append( anchor );
-					$(row).children().eq(1).append( div );
+				var div = $('<div class="slide-link" />').append( anchor ).append( self.insert_inline_edit());
+					div.hover(self.inline_edit_hover_in, self.inline_edit_hover_out );
+					div.click(self.inline_edit_toggle);
+				$(row).children().eq(1).append( div );
 			}
 			$(row).children().eq(1).append( $('<div class="slideshow-content-popover" />').append( content ));
 
