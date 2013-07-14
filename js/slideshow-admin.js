@@ -513,12 +513,11 @@
 						alert( 'Slides must have a title' );
 						target.val( div.text() );
 						target.focus();
-						return;	
+						return;
 					}
-					else {
-						// naked content
-						div.text( newtxt );
-					}
+					// naked content
+					div.text( newtxt );
+				
 				}
 				else {
 					// content wrapped in anchor tag
@@ -531,6 +530,7 @@
 				div.click(self.inline_edit_toggle);
 				
 				target.replaceWith( div );
+				self.editing_node = null;
 			}
 			else {		
 				// CONVERT to edit view
