@@ -7,102 +7,49 @@
  **/
 /**
  * Plugin Name: Slideshow Setup
- * Description: Slideshow configurator.  NETWORK ACTIVATE.
+ * Description: Slideshow configurator. User interaction interface.  NETWORK ACTIVATE.
  * Author: Erik Stainsby, Roaring Sky Software
- * Version: 0.1.0
+ * Version: 0.2.0
  
  **/
  
 //require_once( 'inc/slide-custom-post-type.php' );
  
-if ( ! class_exists( 'Slideshow' )) :
+if ( ! class_exists( 'SlideshowSetup' )) :
 
-class Slideshow {
+class SlideshowSetup {
+
 
 	var $slug = 'slideshow';
 	var $sprite = '';
 
 	public function __construct() {
 		add_action( 'init', array( &$this, '_init' ));
+	//	add_action( 'init', array( &$this, 'create_slide_post_type'));
 	}
 
 	public function _init() {
+	//	error_log( __FUNCTION__ );
 	
-		$this->sprite = plugins_url('/imgs/signal-sprite.png',__FILE__);
+		if( is_admin() ) 
+		{
+			$this->sprite = plugins_url('/imgs/signal-sprite.png',dirname(__FILE__));
 		
-		if( is_admin() ) {
-		
-			add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_styles_scripts' ));
-			add_action( 'admin_menu', array( &$this,'add_slideshow_menu' ));
-			add_action( 'wp_ajax_coop-save-slideshow-change', array( &$this, 'slideshow_settings_save_changes'));
 			add_action( 'wp_ajax_slideshow_add_text_slide',array(&$this,'slideshow_add_text_slide'));
 			add_action( 'wp_ajax_precheck_slideshow_collection_name',array(&$this,'slideshow_precheck_collection_name'));
 			add_action( 'wp_ajax_slideshow-fetch-img-meta',array(&$this,'slideshow_fetch_img_meta_callback'));
 			add_action( 'wp_ajax_slideshow-fetch-collection',array(&$this,'slideshow_fetch_collection'));
 			add_action( 'wp_ajax_slideshow-save-slide-collection',array(&$this,'slideshow_save_collection_handler'));
-			
-			// conditionally ensures that the slideshow table is present
-			add_action( 'wp_loaded', array( &$this, 'slideshow_create_db_table_handler'));
-		}
-		else {
-			add_action( 'wp_enqueue_scripts', array( &$this, 'frontside_enqueue_styles_scripts' ));
-		}
-	}
-	
-	public function frontside_enqueue_styles_scripts() {
-	
-		self::slideshow_settings_publish_config();
-	
-	//	wp_register_style( 'coop-slideshow', 	plugins_url( '/css/slideshow.css', __FILE__ ), false );
-	//	wp_enqueue_style( 'coop-slideshow' );
-	//	wp_enqueue_script( 'coop-slideshow-js' );
-	}
-	
-	public function admin_enqueue_styles_scripts($hook) {
-	
-	//	error_log($hook);
-	
-		if( 'site-manager_page_top-slides' !== $hook && 'site-manager_page_slides-settings' !== $hook ) {
-			return;
-		}
+			add_action( 'wp_ajax_slideshow-delete-slide-collection',array(&$this,'slideshow_delete_collection_handler'));
 
-		wp_register_style( 'coop-slideshow-admin', plugins_url( '/css/slideshow-admin.css', __FILE__ ), false );
-		wp_register_style( 'coop-signals', plugins_url( '/css/signals.css', __FILE__ ), false );
-		wp_register_style( 'coop-chosen', plugins_url( '/css/chosen.min.css', __FILE__ ), false );
-		
-		wp_register_script( 'coop-slideshow-admin-js', plugins_url( '/js/slideshow-admin.js',__FILE__), array('jquery'));
-		wp_register_script( 'coop-slideshow-defaults-js', plugins_url( '/inc/default-settings.js',__FILE__));
-		wp_register_script( 'coop-chosen-jq-min-js', plugins_url( '/js/chosen.jquery.min.js',__FILE__));
-				
-		wp_enqueue_style( 'coop-slideshow-admin' );
-		wp_enqueue_style( 'coop-signals' );
-		wp_enqueue_style( 'coop-chosen' );
+		}
 	
-		wp_enqueue_script( 'jquery-ui-core' );
-		wp_enqueue_script( 'jquery-ui-draggable' );
-		wp_enqueue_script( 'jquery-ui-droppable' );
-		wp_enqueue_script( 'coop-slideshow-admin-js' );
-		wp_enqueue_script( 'coop-chosen-jq-min-js' );
-		wp_enqueue_script( 'coop-slideshow-defaults-js' );	//  template of bxSlider's default values.
-			// we use this to test whether the user has altered any settings to know what we have to save.
-		
 	}
-	
-	public function add_slideshow_menu() {
-	
-		$plugin_page = add_submenu_page( 'site-manager', 'Slideshow Admin','Slideshow Admin', 'edit_options', 'top-slides', array(&$this,'slideshow_setup_page'));
-		add_submenu_page( 'site-manager', 'Slideshow Settings', 'Slideshow Settings', 'manage_network','slides-settings', array(&$this,'slideshow_settings_admin_page'));
-		
-	//	add_action( 'admin_footer-'.$plugin_page, array(&$this,'slideshow_setup_footer_script' ));
-		
-	}
-	
-	
-	
+
+
 	public function slideshow_setup_page() {
 	
 		global $wpdb;
-		
 		
 		$blog_details = get_blog_details();
 		$siteurl = get_site_url($blog_details->site_id); 	// base site == the shared media host 
@@ -134,20 +81,20 @@ class Slideshow {
 		
 		$out[] = '<input type="text" class="slideshow-collection-name" name="slideshow-collection-name" value="" placeholder="Enter a name for a new slideshow">';
 		
-		$out[] = '<div id="collection-name-signal" class="slideshow-signals"><img class="signals-sprite" src="'.$this->sprite.'"></div>';
-		
-		$out[] = '</td><td class="slideshow-gutter"></td><td class="slideshow-controls">';
+		$out[] = '</td><td class="slideshow-gutter">&nbsp;</td><td class="slideshow-controls">';
 		
 		$out[] = '<a href="" class="button button-primary slideshow-save-collection-btn">Save collection</a>';
+		$out[] = '<a href="" class="button slideshow-delete-collection-btn">Delete the loaded slideshow</a>';
 		
 		$out[] = '</td></tr>';
+		
 		$out[] = '<tr><td class="slideshow-name">';
 
 		$out[] = self::slideshow_collection_selector();
 		
-		$out[] = '</td><td class="slideshow-gutter"></td><td class="slideshow-controls">';
+		$out[] = '</td><td class="slideshow-gutter">&nbsp;</td><td class="slideshow-signal-preload">';
 		
-		$out[] = 'unassigned space ' ;
+		$out[] = '<div id="collection-name-signal" class="slideshow-signals"><img class="signals-sprite" src="'.$this->sprite.'"></div>';
 
 		$out[] = '</td></tr>';
 		$out[] = '</table>';
@@ -164,7 +111,13 @@ class Slideshow {
 		$out[] = '<h3 class="slideshow-runtime-heading">Runtime information:</h3>';
 		$out[] = '<div class="slideshow-runtime-information"></div>';
 		
+		
+		$out[] = self::text_slide_create_form();
+		$out[] = self::quick_set_layout_controls();
+		
+				
 		$out[] = '</td><!-- .slideshow-dropzone -->';
+		
 		$out[] = '<td class="slideshow-gutter">&nbsp;</td>';
 		$out[] = '<td class="slideshow-dragzone">';
 		
@@ -288,10 +241,6 @@ class Slideshow {
 		$out[] = '<img src="'.$this->sprite.'" width="362" height="96">';
 		$out[] = '</div>';
 		
-		$out[] = self::text_slide_create_form();
-		
-		$out[] = self::quick_set_layout_controls();
-		
 		echo implode("\n",$out);
 		
 	}
@@ -372,6 +321,25 @@ class Slideshow {
 	}
 	*/
 	
+	
+	public function target_pages_selector() {
+	
+		global $wpdb;
+		
+		$sql = "SELECT ID, post_title FROM $wpdb->posts WHERE post_status = 'publish' AND post_type='page' ORDER BY post_title";
+		$res = $wpdb->get_results( $sql );
+		
+		$out = array('<select data-placeholder="Link to a page..." id="slideshow_page_selector" name="slideshow_page_selector" class="slideshow-page-selector chzn-select">');
+		$out[] = '<option value=""></option>';
+		foreach( $res as $r ) {
+			$out[] = '<option value="'.$r->ID.'">'.$r->post_title.'</option>';
+		}
+		$out[] = '</select>';
+		
+		return implode("\n",$out);
+	}
+		
+	
 	private function text_slide_create_form() {
 	
 		$out = array();
@@ -390,15 +358,16 @@ class Slideshow {
 		
 		$out[] = '<tr>';
 		$out[] = '<td class="slideshow-text-slide-link-box">';
-		$out[] = '<a href="" class="button slideshow-text-slide-link-btn">Link to ...</a>';
-		$out[] = '<input type="text" class="hidden slideshow-text-slide-link-input" value="">';
+		
+		$out[] = self::target_pages_selector();
+		
 		$out[] = '</td>';
 		$out[] = '</tr>';
 		
 		$out[] = '<tr>';
 		$out[] = '<td class="slideshow-text-slide-save-box">';
-		$out[] = '<a href="" class="button slideshow-text-slide-cancel-btn">Cancel</a>';
-		$out[] = '<a href="" class="button slideshow-text-slide-save-btn">Add the slide</a>';
+		$out[] = '<a href="javascript:void(0);" class="button slideshow-text-slide-cancel-btn">Cancel</a>';
+		$out[] = '<a href="javascript:void(0);" class="button slideshow-text-slide-save-btn">Add the slide</a>';
 		$out[] = '</td>';
 		$out[] = '</tr>';
 
@@ -435,13 +404,13 @@ class Slideshow {
 
 			$out[] = '</td>';
 			$out[] = '<td>'; 
-				$out[] = '<img src="'.plugins_url('/imgs/NoThumbnails.png',__FILE__) .'" data-id="slideshow-control-1" class="slideshow-control-img">';
+				$out[] = '<img src="'.plugins_url('/imgs/NoThumbnails.png',dirname(__FILE__)) .'" data-id="slideshow-control-1" class="slideshow-control-img">';
 			$out[] = '</td>';
 			$out[] = '</tr>';
 			
 			$out[] = '<tr>';
 			$out[] = '<td class="radio-box">';
-				$out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-1" value="no-thumbs">';
+				$out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-1" value="no-thumb">';
 			$out[] = '</td>';
 			$out[] = '<td>'; 
 				$out[] = '<label for="slideshow-control-1">No thumbnails</label>';
@@ -467,7 +436,7 @@ class Slideshow {
 
 			$out[] = '</td>';
 			$out[] = '<td>'; 
-				$out[] = '<img src="'.plugins_url('/imgs/VerticalThumbnails.png',__FILE__) .'" data-id="slideshow-control-2" class="slideshow-control-img">';
+				$out[] = '<img src="'.plugins_url('/imgs/VerticalThumbnails.png',dirname(__FILE__)) .'" data-id="slideshow-control-2" class="slideshow-control-img">';
 			$out[] = '</td>';
 			$out[] = '</tr>';
 			
@@ -499,7 +468,7 @@ class Slideshow {
 
 			$out[] = '</td>';
 			$out[] = '<td>'; 
-				$out[] = '<img src="'.plugins_url('/imgs/HorizontalThumbnails.png',__FILE__) .'" data-id="slideshow-control-3" class="slideshow-control-img">';
+				$out[] = '<img src="'.plugins_url('/imgs/HorizontalThumbnails.png',dirname(__FILE__)) .'" data-id="slideshow-control-3" class="slideshow-control-img">';
 			$out[] = '</td>';
 			$out[] = '</tr>';
 			
@@ -541,7 +510,7 @@ class Slideshow {
 
 			$out[] = '</td>';
 			$out[] = '<td>'; 
-				$out[] = '<img src="'.plugins_url('/imgs/HorizontalSlide.png',__FILE__) .'" data-id="slideshow-control-4" class="slideshow-control-img">';
+				$out[] = '<img src="'.plugins_url('/imgs/HorizontalSlide.png',dirname(__FILE__)) .'" data-id="slideshow-control-4" class="slideshow-control-img">';
 			$out[] = '</td>';
 			$out[] = '</tr>';
 			
@@ -573,7 +542,7 @@ class Slideshow {
 
 			$out[] = '</td>';
 			$out[] = '<td>'; 
-				$out[] = '<img src="'.plugins_url('/imgs/VerticalSlide.png',__FILE__) .'" data-id="slideshow-control-5" class="slideshow-control-img">';
+				$out[] = '<img src="'.plugins_url('/imgs/VerticalSlide.png',dirname(__FILE__)) .'" data-id="slideshow-control-5" class="slideshow-control-img">';
 			$out[] = '</td>';
 			$out[] = '</tr>';
 			
@@ -605,7 +574,7 @@ class Slideshow {
 
 			$out[] = '</td>';
 			$out[] = '<td>'; 
-				$out[] = '<img src="'.plugins_url('/imgs/Fade.png',__FILE__) .'" data-id="slideshow-control-6" class="slideshow-control-img">';
+				$out[] = '<img src="'.plugins_url('/imgs/Fade.png',dirname(__FILE__)) .'" data-id="slideshow-control-6" class="slideshow-control-img">';
 			$out[] = '</td>';
 			$out[] = '</tr>';
 			
@@ -637,22 +606,43 @@ class Slideshow {
 		return implode("\n",$out);
 	}
 	
-	public function slideshow_setup_footer_script() {
+	public function slideshow_footer() {
 	
-	/*
-		$out = array('<script type="text/javascript">');
-		$out[] = 'var slideshow_sprite = "'.$this->sprite.'"; ';
-		$out[] = '</script>';
+
+		$out = array();
+		$out[] = '<div class="alt-hover">&nbsp;</div>';
 		
 		echo implode( "\n", $out );
-	*/
+
+	
 	}
+	
+	
+	public function slideshow_delete_collection_handler() {
+		
+		global $wpdb;
+		
+		$slideshow_id = $_POST['slideshow_id'];
+		
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		
+		$ret = $wpdb->delete( $table_name, array('slideshow_id'=>$slideshow_id));
+	//	error_log( 'remove from '.$table_name .': '. $ret .' for slideshow_id: '.  $slideshow_id );
+		
+		$table_name = $wpdb->prefix . 'slideshows';
+		$ret = $wpdb->delete( $table_name, array('id'=>$slideshow_id));
+		error_log( 'remove from '.$table_name .': '. $ret .' for slideshow_id: '.  $slideshow_id );
+		
+		echo '{"result":"success", "feedback":"Slideshow deleted."}';
+		die();
+	}
+
 	
 	public function slideshow_save_collection_handler() {
 		
 		global $wpdb;
 				
-		$title = $_POST['title'];
+		$slideshow_title = $_POST['title'];
 		$slideshow_id = $_POST['slideshow_id'];
 		$is_active = $_POST['is_active'];
 		
@@ -671,13 +661,7 @@ class Slideshow {
 		if( array_key_exists('slides',$_POST) ) {
 			$slides = $_POST['slides'];
 		}
-		/*
-		if( !is_array($slides) ) {
-			error_log( 'slides are not in an array' );
-			die();
-		}
-		*/
-		
+			
 		if( empty($slideshow_id) ) {
 			$slideshow_id = self::slideshow_create_collection( $title );
 		}
@@ -685,14 +669,31 @@ class Slideshow {
 		$table_name = $wpdb->prefix . 'slideshows';
 		
 		if( $is_active == 1 ) {
-			/* erase any currently marked as active */
+			/* before we are set to the active record */
+			/* unmark any currently marked as active */
 			$sql = "UPDATE $table_name SET is_active=0 WHERE is_active=1";
 			$wpdb->query($sql);
 		}
 		
-		$sql = "UPDATE $table_name SET layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
+		$sql = "UPDATE $table_name SET title='".$slideshow_title."', layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
 		$wpdb->query($sql);
 		
+		
+		/**
+		*	Release all slides currently associated with this slideshow_id
+		*
+		*	We do this to accommodate deletions from the set.
+		**/
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		$ret = $wpdb->update($table_name, array('slideshow_id'=>0),array('slideshow_id' => $slideshow_id));
+	//	error_log( 'Releasing slides: updated '.$ret .' where slideshow_id = '.$slideshow_id);
+		
+		/**
+		*	Build the update/insert statement foreach 
+		*
+		*	Iterates the slides collection, builds appropraite query
+		*	Some slides already exist: update; others are new, insert.
+		**/
 		foreach( $slides as $s ) {
 		
 			$FIELDS = array('slideshow_id');
@@ -706,6 +707,9 @@ class Slideshow {
 				$FIELDS[] = 'post_id';
 				$VALUES[] = $s['post_id'];
 				
+				$FIELDS[] = 'text_title';
+				$VALUES[] = "'".addslashes($s['text_title'])."'";
+	
 			}
 			else {	// 'text' === $type
 				
@@ -715,14 +719,14 @@ class Slideshow {
 				$FIELDS[] = 'text_content';
 				$VALUES[] = "'".addslashes($s['text_content'])."'";
 			}
-			
 						
 			if( array_key_exists('slide_id',$s ) ) {
 			
 				$slide_id = $s['slide_id'];
 				
-				error_log( '$slide_id = ' . $slide_id); 
+			//	error_log( '$slide_id = ' . $slide_id);
 				
+				// we don't actually reset the id of each slide now do we ? :-}
 				//$FIELDS[] = 'id';
 				//$VALUES[] = $s['slide_id'];
 			}
@@ -735,6 +739,11 @@ class Slideshow {
 			if( array_key_exists('slide_link',$s ) && !empty($s['slide_link'])) {
 				$FIELDS[] = 'slide_link';
 				$VALUES[] = "'".addslashes($s['slide_link'])."'";
+			}
+			else {
+				// slide_link may have been deleted - always set to empty if not present
+				$FIELDS[] = 'slide_link';
+				$VALUES[] = "''";
 			}
 			
 			$table_name = $wpdb->prefix . 'slideshow_slides';
@@ -759,12 +768,18 @@ class Slideshow {
 				$sql .=") VALUES (" . implode(',',$VALUES) . ")";
 			}
 		
-			error_log( "\n\n".$sql."\n\n" );
+		//	error_log( "\n\n".$sql."\n\n" );
 		
 			$wpdb->query($sql);
 		}
 		
-		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Slideshow collection saved"}';
+		// clean up any orphaned slides 
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		$ret = $wpdb->delete($table_name, array('slideshow_id'=>0));
+		// $ret == num rows removed | false on error //
+		
+		
+		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Slide collection saved"}';
 		die();
 		
 	}
@@ -784,7 +799,7 @@ class Slideshow {
 		$out = array();
 		foreach( $slides as $s ) {
 			if( $s->post_id ) {
-				$out[] = '{"id":"'.$s->id.'","post_id":"'.$s->post_id.'","slide_link":"'.$s->slide_link.'","ordering":"'.$s->ordering.'"}'; 
+				$out[] = '{"id":"'.$s->id.'","post_id":"'.$s->post_id.'","text_title":"'.stripslashes($s->text_title).'","slide_link":"'.$s->slide_link.'","ordering":"'.$s->ordering.'"}'; 
 			}
 			else {
 				$out[] = '{"id":"'.$s->id.'","slide_link":"'.$s->slide_link.'","text_title":"'.stripslashes($s->text_title).'","text_content":"'.stripslashes($s->text_content).'","ordering":"'.$s->ordering.'"}'; 
@@ -805,14 +820,20 @@ class Slideshow {
 	*	return this as a nested array
 	**/
 	
-	public function slideshow_fetch_img_meta() {
+	public function slideshow_fetch_img_meta( $alt_post_id = null ) {
 		
 		global $wpdb;
 
 		// try to get the post from the local media cache first,
 		// 	fallback to looking in the network shared media collection
 
-		$post_id = $_POST['post_id'];
+		if( $alt_post_id != null ) {
+			$post_id = $alt_post_id;
+		}
+		else {
+			$post_id = $_POST['post_id'];
+		}
+		
 		$sql = "SELECT post_title FROM $wpdb->posts WHERE ID = $post_id";
 		$post_title = $wpdb->get_var($sql);
 		
@@ -849,6 +870,7 @@ class Slideshow {
 			$rootdir = 'wp-uploads';
 		}
 		
+		$postmeta['source'] = $source;
 		$postmeta['folder'] = sprintf( "/%s/%4d/%02d/",$rootdir,$year,$month);
 		$postmeta['file'] = $file;
 		$postmeta['width'] = $meta['width'];
@@ -982,7 +1004,7 @@ class Slideshow {
 	**/
 	public function slideshow_add_text_slide() {
 		
-		error_log(__FUNCTION__ );
+	//	error_log(__FUNCTION__ );
 		
 		global $wpdb;
 		
@@ -1018,259 +1040,11 @@ class Slideshow {
 		}
 		die();
 	}
-
-	
-	/**
-	*	Store / adjust settings from the global Slideshow Settings long form of options.
-	*
-	**/
-	public function slideshow_settings_admin_page() {
-				
-	//	error_log(__FUNCTION__);
-				
-		$out = array();
-		$out[] = '<div class="wrap">';
-		
-		$out[] = '<div id="icon-options-general" class="icon32">';
-		$out[] = '<br>';
-		$out[] = '</div>';
-		
-		$out[] = '<h2>Slideshow Settings</h2>';
-		$out[] = '<p>&nbsp;</p>';
-		$out[] = '<p>Instructions go here.</p>';
-		
-		$out[] = '<table class="form-table">';
-		
-		$out[] = self::slideshow_settings_parse_defaults();
-					
-		$out[] = '</table>';
-		
-		$out[] = '<p class="submit">';
-		$out[] = '<input type="submit" value="Save Changes" class="button button-primary" id="coop-slideshow-submit" name="submit">';
-		$out[] = '</p>';
-		
-		echo implode("\n",$out);
-	}
-	
-	public function slideshow_settings_save_changes() {
-		
-	//	error_log(__FUNCTION__);
-		
-		// reconstitute the keys we need to get into the $_POST object
-		$keys = stripslashes($_POST['keys']);
-		$keys = str_replace(array('[',']','"'), array('','',''), $keys );
-		$keys = explode(",",$keys) ;
-		
-		foreach( $keys as $k ) {
-			$val = $_POST[$k];
-			update_option('_'.$this->slug.'_'.$k, "$val" );
-		//	error_log( $k . ' => '. $val );
-		}
-		
-		echo '{"feedback": "'.count($keys).' settings updated"}';
-		die();
-	}	
-	
-	public function slideshow_settings_publish_config() {
-	
-		global $wpdb;
-		$tag = '_'.$this->slug.'_';
-		$sql = "SELECT option_name as name, option_value as val FROM $wpdb->options WHERE option_name LIKE '".$tag."%'";
-		
-	//	error_log($sql);
-		
-		$res = $wpdb->get_results($sql);
-		
-		$out = array('<script id="slideshow-settings" type="text/javascript">');
-		$out[] = 'window.slideshow_custom_settings = {';
-		
-		foreach( $res as $r ) {
-			$k = str_replace($tag,'',$r->name);
-			
-			if( is_numeric($r->val) || $r->val == 'true' || $r->val == 'false' || $r->val == 'undefined' ) {
-				$v = $r->val;	
-			} 
-			else {
-				$v = sprintf("'%s'",$r->val);
-			}
-			$out[] = sprintf("%s: %s,",$k,$v);
-		}
-		
-		$out[] = '};';
-		$out[] = '</script>';
-		echo implode("\n",$out);		
-	}
-	
-	private function slideshow_settings_parse_defaults() {
-	
-		$lines = file( dirname(__FILE__).'/inc/default-settings.js');
-		
-		$out = array();
-		$_fmt = '<tr><th>%s</th><td>%s</td><td>%s</td></tr>';
-		
-		foreach( $lines as $l ) 
-		{
-			/// skip lines
-			if( FALSE !== strpos($l,'/*') ) {
-				continue;
-			}
-			if( FALSE !== (strpos($l,' ')==0) ) {
-				continue;
-			}
-			
-			// Headers
-			if( FALSE !== strpos($l, '//') ) {
-				list($j,$h) = explode('//',$l);
-				$out[] = '<tr><th><h3>'.$h.'</h3></th><td>Current value</td><td>Default</td></tr>';
-				continue;
-			}
-	
-			list($t,$s) = explode(": ",rtrim($l,",\n "));
-			
-			$widget = array();
-			$_opt = get_option('_slideshow_'.$t);
-			$default = '';
-			
-			if( FALSE !== strpos($s,',')) {
-				// multiple term radio
-				$s = str_replace(array('"',"'"),array('',''),$s);
-				$pcs = explode(',',$s);
-				$default = $pcs[0];
-				$actual = (!empty($_opt) ? $_opt: $default);
-				
-				for( $i=0; $i < count($pcs); $i++ ) {
-					$id = $t.$i;
-					$checked = '';
-					if( $actual == $pcs[$i] ) {
-						$checked = ' checked="checked"';
-					}
-					$widget[] = sprintf('<input type="radio" id="%s" name="%s" value="%s"%s>',$id,$t,$pcs[$i],$checked);
-					$widget[] = sprintf('<label for="%s">%s</label>', $id,$pcs[$i]);
-				}
-			}
-			else if( FALSE !== strpos($s,'true')) {
-				// binary radio T/f
-				$default = 'true';
-				$actual = (!empty($_opt) ? $_opt: $default);
-				
-				$checked = '';
-				if( $actual == 'true' ) {
-					$checked = ' checked="checked"';
-				}
-				$widget[] = sprintf('<input type="radio" id="%s-t" name="%s" value="true"%s>',$t,$t,$checked);
-				$widget[] = sprintf('<label for="%s-t">true</label>',$t);
-				
-				$checked = '';
-				if( $actual == 'false' ) {
-					$checked = ' checked="checked"';
-				}
-				$widget[] = sprintf('<input type="radio" id="%s-f" name="%s" value="false"%s>',$t,$t,$checked);
-				$widget[] = sprintf('<label for="%s-f">false</label>',$t);
-				
-			}
-			else if( FALSE !== strpos($s,'false')) {
-				// binary radio t/F
-				$default = 'false';
-				$actual = (!empty($_opt) ? $_opt: $default);
-				
-				$checked = '';
-				if( $actual == 'true' ) {
-					$checked = ' checked="checked"';
-				}
-				$widget[] = sprintf('<input type="radio" id="%s-t" name="%s" value="true"%s>',$t,$t,$checked);
-				$widget[] = sprintf('<label for="%s-t">true</label>',$t);
-				
-				$checked = '';
-				if( $actual == 'false' ) {
-					$checked = ' checked="checked"';
-				}
-				$widget[] = sprintf('<input type="radio" id="%s-f" name="%s" value="false"%s>',$t,$t,$checked);
-				$widget[] = sprintf('<label for="%s-f">false</label>',$t);
-				
-			}
-			else if( FALSE !== strpos($s,"'")) {
-				// quoted string value - strip quotes
-				$default = str_replace(array('"',"'"),array('',''),$s);
-				$actual = (!empty($_opt) ? $_opt: $default);
-								
-				$widget[] = sprintf('<input type="text" id="%s" name="%s" value="%s">',$t,$t,$actual);
-
-			}
-			else {
-				// text field
-				$default = $s;
-				$actual = (!empty($_opt) ? $_opt: $default);
-				
-				$widget[] = sprintf('<input type="text" id="%s" name="%s" value="%s">',$t,$t,$actual);
-
-			}	
-			
-			$out[] = sprintf($_fmt,$t,implode("&nbsp;&nbsp;",$widget),$default);
-		}
-		
-		return implode("\n",$out);
-	}
-		
-		
-	
-	/**
-	*	Create slideshow-related tables any time a blog
-	*	loads this plugin and that blog does _not_already_
-	*	have the necessary tables.
-	**/
-	
-	public function slideshow_create_db_table_handler() {
-		global $wpdb;
-		
-
-	/*	MAINTENANCE utility 
-		$del = "DELETE FROM $wpdb->options WHERE option_name='_slideshow_db_version'";
-		$wpdb->query($del);
-	*/
-		$slideshow_db_version = get_option('_slideshow_db_version');
-		if( FALSE !== $slideshow_db_version ) {
-		
-			// return or run an update ...
-	//		error_log( '_slideshow_db_version: ' . $slideshow_db_version );
-			return;
-		}
-		
-	//	error_log( 'creating the slideshow table' );
-		
-		
-		$table_name = $wpdb->prefix . 'slideshows';
-		$sql = "CREATE TABLE $table_name ("
-				." id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-				." title varchar(60) NOT NULL, "
-				." layout varchar(20) NOT NULL DEFAULT 'no-thumb', "
-				." transition varchar(20) NOT NULL DEFAULT 'horizontal',"
-				." date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL ,"
-				." is_active tinyint NOT NULL DEFAULT 0 );";
-		$wpdb->query($sql);
-
-		
-		
-		$table_name = $wpdb->prefix . 'slideshow_slides';
-		$sql = "CREATE TABLE $table_name ("
-				." id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-				." slideshow_id int(11)  NOT NULL, "
-				." post_id int(11), "
-				." slide_link varchar(250), "
-				." ordering tinyint DEFAULT 0 NOT NULL, "
-				." text_title varchar(250), "
-				." text_content text "
-				." );";
-		$wpdb->query($sql);
-
-		
-		update_option('_slideshow_db_version', '1.0');
-		
-	}
-	
 }
-
-if ( ! isset($slideshow) ) {
-	$slideshow = new Slideshow();
+	
+if ( ! isset( $slideshow_setup ) ) {
+	global $slideshow_setup; 
+	$slideshow_setup = new SlideshowSetup();
 }
 	
 endif; /* ! class_exists */

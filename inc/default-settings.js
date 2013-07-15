@@ -36,6 +36,12 @@ pagerSelector: null,
 buildPager: null,
 pagerCustom: null,
 
+// PAGER-LAYOUT (custom attributes)
+prevNextCSSFile: '',
+verticalThumbsCSSFile: '',
+horizontalThumbsCSSFile: '',
+currentLayout: 'vertical',
+
 // CONTROLS
 controls: true,
 nextText: 'Next',
