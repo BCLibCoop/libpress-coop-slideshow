@@ -47,7 +47,7 @@ class SlideshowManager {
 	}
 
 
-	public function slideshow_setup_page() {
+	public function slideshow_manager_page() {
 	
 		global $wpdb;
 		

@@ -44,10 +44,10 @@ class SlideshowAdmin {
 	
 	public function frontside_enqueue_styles_scripts() {
 	
-		global $slideshow_settings;
+		global $slideshow_defaults;
 	
 		// echos the current slideshow settings file into JS, frontside
-		$slideshow_settings::slideshow_settings_publish_config();
+		$slideshow_settings::slideshow_defaults_publish_config();
 	
 	}
 	
@@ -55,7 +55,7 @@ class SlideshowAdmin {
 	
 	//	error_log($hook);
 	
-		if( 'site-manager_page_top-slides' == $hook || 'site-manager_page_slides-settings' == $hook ) {
+		if( 'site-manager_page_top-slides' == $hook || 'site-manager_page_slides-manager' == $hook ) {
 		
 			wp_enqueue_script( 'jquery-ui-core' );
 			wp_enqueue_script( 'jquery-ui-draggable' );
@@ -90,15 +90,15 @@ class SlideshowAdmin {
 	
 	public function add_slideshow_menu() {
 	
-		global $slideshow_manager, $slideshow_settings;
+		global $slideshow_manager, $slideshow_defaults;
 	
-		$plugin_page = add_submenu_page( 'site-manager', 'Slideshow Manager', 'Slideshow Manager', 'manage_local_site', 'top-slides', array(&$slideshow_manager,'slideshow_setup_page'));
+		$plugin_page = add_submenu_page( 'site-manager', 'Slideshow Manager', 'Slideshow Manager', 'manage_local_site', 'top-slides', array(&$slideshow_manager,'slideshow_manager_page'));
 		
-		add_submenu_page( 'site-manager', 'Slideshow Defaults', 'Slideshow Defaults', 'manage_local_site','slides-settings', array( &$slideshow_settings,'slideshow_settings_admin_page'));
+		add_submenu_page( 'site-manager', 'Slideshow Defaults', 'Slideshow Defaults', 'manage_local_site','slides-manager', array( &$slideshow_defaults,'slideshow_defaults_page'));
 		
 		error_log('plugin_page: '. $plugin_page );
 		
-		add_action( 'admin_footer-'.$plugin_page, array(&$slideshow_setup,'slideshow_footer' ));
+		add_action( 'admin_footer-'.$plugin_page, array(&$slideshow_manager,'slideshow_footer' ));
 		
 	}
 	
@@ -162,9 +162,9 @@ class SlideshowAdmin {
 
 if ( ! isset($slideshow_admin) ) {
 
-	require_once( 'inc/slideshow-settings-admin.php' );
+	require_once( 'inc/slideshow-defaults.php' );
 	require_once( 'inc/slideshow-manager.php' );
-	require_once( 'inc/slideshow.php' );
+	require_once( 'inc/slideshow-frontside.php' );
 	
 	$slideshow_admin = new SlideshowAdmin();
 }

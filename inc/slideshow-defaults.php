@@ -1,20 +1,20 @@
 <?php defined('ABSPATH') || die(-1);
 
 /**
- * @package Slideshow 
+ * @package Slideshow Defaults 
  * @copyright BC Libraries Coop 2013
  *
  **/
 /**
- * Plugin Name: Slideshow Settings administration UI
+ * Plugin Name: Slideshow Defaults administration UI
  * Description: Global configuration of a slideshow environment within a blog.  NETWORK ACTIVATE.
  * Author: Erik Stainsby, Roaring Sky Software
  * Version: 0.2.0
  **/
  
-if ( ! class_exists( 'SlideshowSettings' )) :
+if ( ! class_exists( 'SlideshowDefaults' )) :
 	
-class SlideshowSettings {
+class SlideshowDefaults {
 
 	var $slug = 'slideshow';
 
@@ -37,7 +37,7 @@ class SlideshowSettings {
 	*	Store / adjust settings from the global Slideshow Settings long form of options.
 	*
 	**/
-	public function slideshow_settings_admin_page() {
+	public function slideshow_defaults_page() {
 				
 	//	error_log(__FUNCTION__);
 				
@@ -54,7 +54,7 @@ class SlideshowSettings {
 		
 		$out[] = '<table class="form-table">';
 		
-		$out[] = self::slideshow_settings_parse_defaults();
+		$out[] = self::slideshow_defaults_parse_defaults();
 					
 		$out[] = '</table>';
 		
@@ -65,7 +65,7 @@ class SlideshowSettings {
 		echo implode("\n",$out);
 	}
 	
-	public function slideshow_settings_save_changes() {
+	public function slideshow_defaults_save_changes() {
 		
 	//	error_log(__FUNCTION__);
 		
@@ -84,7 +84,7 @@ class SlideshowSettings {
 		die();
 	}	
 	
-	public function slideshow_settings_publish_config() {
+	public function slideshow_defaults_publish_config() {
 	
 		global $wpdb;
 		
@@ -117,7 +117,7 @@ class SlideshowSettings {
 		echo implode("\n",$out);		
 	}
 	
-	private function slideshow_settings_parse_defaults() {
+	private function slideshow_defaults_parse_defaults() {
 	
 		$lines = file( dirname(__FILE__).'/default-settings.js');
 		
@@ -230,9 +230,9 @@ class SlideshowSettings {
 
 
 	
-if ( ! isset( $slideshow_settings ) ) {
-	global $slideshow_settings; 
-	$slideshow_settings = new SlideshowSettings();
+if ( ! isset( $slideshow_defaults ) ) {
+	global $slideshow_defaults; 
+	$slideshow_defaults = new SlideshowDefaults();
 }
 	
 endif; /* ! class_exists */

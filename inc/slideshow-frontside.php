@@ -37,16 +37,13 @@ class Slideshow {
 		global $wpdb;
 		
 		$table_name =  $wpdb->prefix . 'slideshows';
-		$shows = $wpdb->get_results("SELECT * FROM $table_name WHERE is_active=1");
-		
-		$layout;
-		$transition;
-
-		foreach( $shows as $show ) {
-			$layout = $show->layout;
-			$transition = $show->transition;
-			break;
+		$show = $wpdb->get_row("SELECT * FROM $table_name WHERE is_active=1");
+		if( $show == NULL ) {
+			$show = $wpdb->get_row("SELECT * FROM $table_name ORDER BY date DESC LIMIT 1");	
 		}
+		
+		$layout = $show->layout;
+		$transition = $show->transition;
 		
 		$out = array('<script type="text/javascript">');
 		$out[] = 'jQuery().ready(function() { ';
@@ -71,38 +68,31 @@ class Slideshow {
 		global $wpdb;
 		
 		$table_name =  $wpdb->prefix . 'slideshows';
-		$shows = $wpdb->get_results("SELECT * FROM $table_name WHERE is_active=1");
-		$done_one = false;
-		foreach( $shows as $show ) {
-			if( $done_one ) {
-				break;
-			}
-			
-			if( $show->layout == 'no-thumb' ) {
-			
-				$theme = get_option('_'.$this->slug.'_prevNextCSSFile');
-				$dir = str_replace('.css','',$theme);
-			
-				return get_template_directory_uri() . '/bxslider/themes/'.$dir.'/'.$theme;
-			}
-			else if(  $show->layout == 'vertical' ) {
-			
-				$theme = get_option('_'.$this->slug.'_verticalThumbsCSSFile');
-				$dir = str_replace('.css','',$theme);
-			
-				return get_template_directory_uri() . '/bxslider/themes/'.$dir.'/'.$theme;
-			}
-			
-			$theme = get_option('_'.$this->slug.'_horizontalThumbsCSSFile');
-			$dir = str_replace('.css','',$theme);
-			
-			return get_template_directory_uri() . '/bxslider/themes/'.$dir.'/'.$theme;
-			
-			
-			// we should never get here ...
-			error_log( __CLASS__.'::'.__FUNCTION__.': failed to return stylesheet uri');
-			$done_one = true;
+		$show = $wpdb->get_row("SELECT * FROM $table_name WHERE is_active=1");
+		if( $show == NULL ) {
+			$show = $wpdb->get_row("SELECT * FROM $table_name ORDER BY date DESC LIMIT 1");	
 		}
+			
+		if( $show->layout == 'no-thumb' ) {
+		
+			$theme = get_option('_'.$this->slug.'_prevNextCSSFile');
+			$dir = str_replace('.css','',$theme);
+		
+			return get_template_directory_uri() . '/bxslider/themes/'.$dir.'/'.$theme;
+		}
+		else if(  $show->layout == 'vertical' ) {
+		
+			$theme = get_option('_'.$this->slug.'_verticalThumbsCSSFile');
+			$dir = str_replace('.css','',$theme);
+		
+			return get_template_directory_uri() . '/bxslider/themes/'.$dir.'/'.$theme;
+		}
+		
+		$theme = get_option('_'.$this->slug.'_horizontalThumbsCSSFile');
+		$dir = str_replace('.css','',$theme);
+		
+		return get_template_directory_uri() . '/bxslider/themes/'.$dir.'/'.$theme;
+		
 	}
 	
 	
@@ -115,53 +105,41 @@ class Slideshow {
 		$pager_ml = array();
 		
 		$table_name =  $wpdb->prefix . 'slideshows';
-		$shows = $wpdb->get_results("SELECT * FROM $table_name WHERE is_active=1");
+		$show = $wpdb->get_row("SELECT * FROM $table_name WHERE is_active=1");
+		if( $show == NULL ) {
+			$show = $wpdb->get_row("SELECT * FROM $table_name ORDER BY date DESC LIMIT 1");	
+		}
 		
 		$out[] = '<div class="hero row" role="banner">';
 		$out[] = '<div id="slider" class="row slider">';
-				
-		// there should only be one active at any given moment
-		// but a safe guard is worthwhile I suppose
-		$done_one = false;
-		foreach( $shows as $show ) {
-			
-			if( $done_one ) {
-				break;
-			}
-		//	error_log( $show->title );
-			
-			if( $show->layout !== 'no-thumb' ) {
-				$pager_class = get_option('_slideshow_pagerCustom');
-				$pager_class = str_replace('.','',$pager_class);
-				$pager_ml[] = '<div class="row '.$pager_class.' '.$show->layout.'">';
-			}
-			
+									
+		if( $show->layout !== 'no-thumb' ) {
+			$pager_class = get_option('_slideshow_pagerCustom');
+			$pager_class = str_replace('.','',$pager_class);
+			$pager_ml[] = '<div class="row '.$pager_class.' '.$show->layout.'">';
+		}
+		
 
-			$table_name =  $wpdb->prefix . 'slideshow_slides';
-			$slides = $wpdb->get_results("SELECT * FROM $table_name WHERE slideshow_id = $show->id ORDER BY ordering");
-			foreach( $slides as $slide ) {
-				
-				if( $slide->post_id != null ) {
-					$meta = $slideshow_manager->slideshow_fetch_img_meta($slide->post_id);
-					self::build_image_slide( $show, $slide, $meta, &$slide_ml, &$pager_ml );
-				}
-				else {
-					self::build_text_slide( $show, $slide, &$slide_ml, &$pager_ml );
-				}
-			}
+		$table_name =  $wpdb->prefix . 'slideshow_slides';
+		$slides = $wpdb->get_results("SELECT * FROM $table_name WHERE slideshow_id = $show->id ORDER BY ordering");
+		foreach( $slides as $slide ) {
 			
-			if( $show->layout !== 'no-thumb' ) {
-				$pager_ml[] = '</div><!-- end of pager -->';
+			if( $slide->post_id != null ) {
+				$meta = $slideshow_manager->slideshow_fetch_img_meta($slide->post_id);
+				self::build_image_slide( $show, $slide, $meta, &$slide_ml, &$pager_ml );
 			}
-			
-			// make certain we don't list two slideshows at one time
-			$done_one = true;
+			else {
+				self::build_text_slide( $show, $slide, &$slide_ml, &$pager_ml );
+			}
+		}
+		
+		if( $show->layout !== 'no-thumb' ) {
+			$pager_ml[] = '</div><!-- end of pager -->';
 		}
 		
 		$slide_ml[] = '</div><!-- #slider.row.slider -->';
 		
 		$out = array_merge( $out, $slide_ml,  $pager_ml );
-				
 		$out[] = '</div><!-- .hero.row -->';
 		
 		return implode( "\n", $out );
