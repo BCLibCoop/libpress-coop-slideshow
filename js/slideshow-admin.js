@@ -841,19 +841,18 @@
 				if( undefined === layout ) {
 					layout = 'no-thumb';
 				}
+				console.log( 'layout: ' + layout );
 				
 			var transition = $('input[name="slideshow-transition"]').filter(':checked').val();
 				if( undefined === transition ) {
 					transition = window.coop_slideshow_settings.current.mode;
 				}
-			
+				console.log( 'transition: ' + transition );
 			
 			var data = {
 				action: 'slideshow-save-slide-collection',
 				title:	$('.slideshow-collection-name').val(),
 				slideshow_id: $('#slideshow_select').val(),
-				layout: $('input[name="slideshow-layout"]').filter(':checked').val(),
-				transition: $('input[name="slideshow-transition"]').filter(':checked').val(),
 				layout: layout,
 				transition: transition,
 				is_active: is_active,

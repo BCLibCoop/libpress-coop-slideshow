@@ -1,13 +1,13 @@
 <?php defined('ABSPATH') || die(-1);
 
 /**
- * @package Slideshow Setup
+ * @package Slideshow Manager
  * @copyright BC Libraries Coop 2013
  *
  **/
 /**
- * Plugin Name: Slideshow Setup
- * Description: Slideshow configurator. User interaction interface.  NETWORK ACTIVATE.
+ * Plugin Name: Slideshow Manager
+ * Description: Slideshow collection manager. User interaction interface.  NETWORK ACTIVATE.
  * Author: Erik Stainsby, Roaring Sky Software
  * Version: 0.2.0
  
@@ -17,7 +17,7 @@
  
 if ( ! class_exists( 'SlideshowSetup' )) :
 
-class SlideshowSetup {
+class SlideshowManager {
 
 
 	var $slug = 'slideshow';
@@ -70,7 +70,7 @@ class SlideshowSetup {
 		$out[] = '<br>';
 		$out[] = '</div>';
 		
-		$out[] = '<h2>Slideshow Setup</h2>';
+		$out[] = '<h2>Slideshow Collection Manager</h2>';
 		
 		$out[] = '<p>&nbsp;</p>';
 		
@@ -640,6 +640,8 @@ class SlideshowSetup {
 	
 	public function slideshow_save_collection_handler() {
 		
+	//	error_log(__FUNCTION__);
+		
 		global $wpdb;
 				
 		$slideshow_title = $_POST['title'];
@@ -656,6 +658,8 @@ class SlideshowSetup {
 		
 		$layout = $_POST['layout'];
 		$transition = $_POST['transition'];
+		
+	//	error_log( 'layout: '.$layout .', transition: '.$transition);
 		
 		$slides = array();
 		if( array_key_exists('slides',$_POST) ) {
@@ -677,6 +681,7 @@ class SlideshowSetup {
 		
 		$sql = "UPDATE $table_name SET title='".$slideshow_title."', layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
 		$wpdb->query($sql);
+		
 		
 		
 		/**
@@ -721,14 +726,8 @@ class SlideshowSetup {
 			}
 						
 			if( array_key_exists('slide_id',$s ) ) {
-			
+				// don't change the slide's id 
 				$slide_id = $s['slide_id'];
-				
-			//	error_log( '$slide_id = ' . $slide_id);
-				
-				// we don't actually reset the id of each slide now do we ? :-}
-				//$FIELDS[] = 'id';
-				//$VALUES[] = $s['slide_id'];
 			}
 			
 			if( array_key_exists('ordering',$s) && is_numeric($s['ordering'])) {
@@ -1042,9 +1041,9 @@ class SlideshowSetup {
 	}
 }
 	
-if ( ! isset( $slideshow_setup ) ) {
-	global $slideshow_setup; 
-	$slideshow_setup = new SlideshowSetup();
+if ( ! isset( $slideshow_manager ) ) {
+	global $slideshow_manager; 
+	$slideshow_manager = new SlideshowManager();
 }
 	
 endif; /* ! class_exists */

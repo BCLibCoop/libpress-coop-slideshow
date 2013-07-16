@@ -16,7 +16,6 @@ if ( ! class_exists( 'Slideshow' )) :
 
 class Slideshow {
 
-
 	var $slug = 'slideshow';
 	var $sprite = '';
 
@@ -32,6 +31,36 @@ class Slideshow {
 	//		error_log( __CLASS__ .'::'. __FUNCTION__ );		
 		}
 	}
+	
+	public function loader_script() {
+		
+		global $wpdb;
+		
+		$table_name =  $wpdb->prefix . 'slideshows';
+		$shows = $wpdb->get_results("SELECT * FROM $table_name WHERE is_active=1");
+		
+		$layout;
+		$transition;
+
+		foreach( $shows as $show ) {
+			$layout = $show->layout;
+			$transition = $show->transition;
+			break;
+		}
+		
+		$out = array('<script type="text/javascript">');
+		$out[] = 'jQuery().ready(function() { ';
+		
+		$out[] = '  window.slideshow_custom_settings.layout = "'.$layout.'";';
+		$out[] = '  window.slideshow_custom_settings.transition = "'.$transition.'";';
+				
+		$out[] = '	jQuery(".slider").bxSlider( window.slideshow_custom_settings ); ';
+		$out[] = '});';
+		$out[] = '</script>';
+		
+		echo implode("\n",$out);
+	}
+	
 	
 	public function fetch_styles_uri() {
 		
@@ -79,7 +108,7 @@ class Slideshow {
 	
 	public function fetch_markup() {
 		
-		global $wpdb, $slideshow_setup;
+		global $wpdb, $slideshow_manager;
 		
 		$out = array();
 		$slide_ml = array();
@@ -113,7 +142,7 @@ class Slideshow {
 			foreach( $slides as $slide ) {
 				
 				if( $slide->post_id != null ) {
-					$meta = $slideshow_setup->slideshow_fetch_img_meta($slide->post_id);
+					$meta = $slideshow_manager->slideshow_fetch_img_meta($slide->post_id);
 					self::build_image_slide( $show, $slide, $meta, &$slide_ml, &$pager_ml );
 				}
 				else {
@@ -190,11 +219,8 @@ class Slideshow {
 			$pager_ml[] = '<div class="pager-thumb text-thumb">T</div>';
 			$pager_ml[] = '</div></a>';
 			
-		}
-		
-	}
-	
-	
+		}	
+	}	
 }
 
 if ( ! isset( $slideshow ) ) {

@@ -90,11 +90,11 @@ class SlideshowAdmin {
 	
 	public function add_slideshow_menu() {
 	
-		global $slideshow_setup, $slideshow_settings;
+		global $slideshow_manager, $slideshow_settings;
 	
-		$plugin_page = add_submenu_page( 'site-manager', 'Slideshow Admin', 'Slideshow Admin', 'edit_options', 'top-slides', array(&$slideshow_setup,'slideshow_setup_page'));
+		$plugin_page = add_submenu_page( 'site-manager', 'Slideshow Manager', 'Slideshow Manager', 'manage_local_site', 'top-slides', array(&$slideshow_manager,'slideshow_setup_page'));
 		
-		add_submenu_page( 'site-manager', 'Slideshow Settings', 'Slideshow Settings', 'manage_network','slides-settings', array( &$slideshow_settings,'slideshow_settings_admin_page'));
+		add_submenu_page( 'site-manager', 'Slideshow Defaults', 'Slideshow Defaults', 'manage_local_site','slides-settings', array( &$slideshow_settings,'slideshow_settings_admin_page'));
 		
 		error_log('plugin_page: '. $plugin_page );
 		
@@ -163,7 +163,7 @@ class SlideshowAdmin {
 if ( ! isset($slideshow_admin) ) {
 
 	require_once( 'inc/slideshow-settings-admin.php' );
-	require_once( 'inc/slideshow-setup.php' );
+	require_once( 'inc/slideshow-manager.php' );
 	require_once( 'inc/slideshow.php' );
 	
 	$slideshow_admin = new SlideshowAdmin();
