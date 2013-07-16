@@ -129,9 +129,9 @@ class Slideshow {
 			$done_one = true;
 		}
 		
-		$out[] = '</div><!-- #slider.row.slider -->';
+		$slide_ml[] = '</div><!-- #slider.row.slider -->';
 		
-		$out = array_merge( $out, $slide_ml, $pager_ml );
+		$out = array_merge( $out, $slide_ml,  $pager_ml );
 				
 		$out[] = '</div><!-- .hero.row -->';
 		
