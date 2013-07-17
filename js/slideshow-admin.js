@@ -94,11 +94,18 @@
 			// bind clicking on graphics to radio buttons
 			$('.slideshow-control-img').click( self.set_layout_control );
 		
-			// fetch and set current/default values 
+		
+			// fetch and set current/default values - WRONG
+			// we need to reset values this way only on creating a blank collection name form
+			//
+			// routinely the fetch_collection routine should reset the current slideshow's settings
+			
+			/*
 			var layout = window.coop_slideshow_settings.current.currentLayout;
 			var transition = window.coop_slideshow_settings.current.mode;
 			$('input[value="'+layout+'"][name="slideshow-layout"]').attr('checked','checked');
-			$('input[value="'+transition+'"][name="slideshow-transition"]').attr('checked','checked');			
+			$('input[value="'+transition+'"][name="slideshow-transition"]').attr('checked','checked');
+			*/			
 		},
 		
 		alt_hover_in: function(obj) {
@@ -482,6 +489,16 @@
 						self.place_slide_img( slides[i].id, slides[i].post_id, slides[i].text_title, slides[i].slide_link, row );
 					}
 				}
+				
+				/* the layout and transition settings also need restoring */
+							
+				var layout = res.layout;
+				var transition = res.transition;
+				
+				$('input[value="'+layout+'"][name="slideshow-layout"]').attr('checked','checked');
+				$('input[value="'+transition+'"][name="slideshow-transition"]').attr('checked','checked');
+				
+				
 			});
 		},
 		
@@ -1069,8 +1086,8 @@
 			$.post( ajaxurl, changed ).complete(function(r) {
 			
 				if( self._debug ) console.log( 'response returned ' );
-			
 				var res = JSON.parse(r.responseText);
+				
 				alert( res.feedback );
 				
 				self._touched = [];

@@ -28,7 +28,7 @@ class SlideshowDefaults {
 	
 		if( is_admin() ) 
 		{
-			add_action( 'wp_ajax_coop-save-slideshow-change', array( &$this, 'slideshow_settings_save_changes'));
+			add_action( 'wp_ajax_coop-save-slideshow-change', array( &$this, 'slideshow_defaults_save_changes'));
 		}
 	
 	}

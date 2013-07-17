@@ -55,8 +55,20 @@ class Slideshow {
 		$out = array('<script type="text/javascript">');
 		$out[] = 'jQuery().ready(function() { ';
 		
+		if( $layout == 'no-thumb' ) {
+			$out[] = '  window.slideshow_custom_settings.pager = false;';
+			$out[] = '  window.slideshow_custom_settings.controls = true;';
+		}
+		else {
+			$out[] = '  window.slideshow_custom_settings.pager = true;';
+			$out[] = '  window.slideshow_custom_settings.controls = false;';
+		}
+		
+		$out[] = '  window.slideshow_custom_settings.autoPlay = true;';
+		$out[] = '  window.slideshow_custom_settings.easing = null;';
+		
 		$out[] = '  window.slideshow_custom_settings.layout = "'.$layout.'";';
-		$out[] = '  window.slideshow_custom_settings.transition = "'.$transition.'";';
+		$out[] = '  window.slideshow_custom_settings.mode = "'.$transition.'";';
 				
 		$out[] = '	jQuery(".slider").bxSlider( window.slideshow_custom_settings ); ';
 		$out[] = '});';

@@ -391,6 +391,9 @@ class SlideshowManager {
 		*
 		*	this is the matrix at the bottom of the form for setting 
 		*	thumbnails style and slide transition direction/fade 
+		*
+		*	Makes no db calls to reset state; this is handled in 
+		*	javascript on collection reloading.
 		**/
 		
 		
@@ -680,7 +683,7 @@ class SlideshowManager {
 		$layout = $_POST['layout'];
 		$transition = $_POST['transition'];
 		
-	//	error_log( 'layout: '.$layout .', transition: '.$transition);
+		error_log( 'layout: '.$layout .', transition: '.$transition);
 		
 		$slides = array();
 		if( array_key_exists('slides',$_POST) ) {
@@ -701,9 +704,20 @@ class SlideshowManager {
 			$wpdb->query($sql);
 		}
 		
-		$sql = "UPDATE $table_name SET title='".$slideshow_title."', layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
+		//  update top-level defs for the slideshow itself
+		/*
+			$sql = "UPDATE $table_name SET title='".$slideshow_title."', layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
 		$wpdb->query($sql);
-		
+*/
+
+		$wpdb->update( $table_name,
+					array( 'title' => $slideshow_title,
+							'layout' => $layout,
+							'transition' => $transition,
+							'date' => 'now()',
+							'is_active' => $is_active ),
+					array( 'id' => $slideshow_id )					
+				);
 		
 		
 		/**
@@ -812,7 +826,8 @@ class SlideshowManager {
 		$slideshow_id = $_POST['slideshow_id'];
 		
 		$table_name = $wpdb->prefix.'slideshows';
-		$is_active = $wpdb->get_var("SELECT is_active FROM $table_name WHERE id =$slideshow_id");
+		$show = $wpdb->get_row("SELECT * FROM $table_name WHERE id=$slideshow_id");
+		
 				
 		$table_name = $wpdb->prefix . 'slideshow_slides';
 		$sql = "SELECT * FROM $table_name WHERE slideshow_id=$slideshow_id ORDER BY ordering";
@@ -829,7 +844,7 @@ class SlideshowManager {
 		
 	//	error_log( implode( "\n", $out ));
 			
-		echo '{"slides":['. implode(',',$out).'], "is_active":"'.$is_active.'"}';
+		echo '{"slides":['. implode(',',$out).'], "is_active":"'.$show->is_active.'","layout":"'.$show->layout.'", "transition":"'.$show->transition.'"}';
 		die();
 		
 	}
