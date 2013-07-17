@@ -42,7 +42,7 @@ class Slideshow {
 		$table_name =  $wpdb->prefix . 'slideshows';
 		$this->show = $wpdb->get_row("SELECT * FROM $table_name WHERE is_active=1");
 		if( $this->show == NULL ) {
-			$$this->show = $wpdb->get_row("SELECT * FROM $table_name ORDER BY date DESC LIMIT 1");	
+			$this->show = $wpdb->get_row("SELECT * FROM $table_name ORDER BY date DESC LIMIT 1");	
 		}
 	}
 	
@@ -56,6 +56,7 @@ class Slideshow {
 		$out[] = 'jQuery().ready(function() { ';
 		
 		if( $layout == 'no-thumb' ) {
+		
 			$out[] = '  window.slideshow_custom_settings.pager = false;';
 			$out[] = '  window.slideshow_custom_settings.controls = true;';
 		}
