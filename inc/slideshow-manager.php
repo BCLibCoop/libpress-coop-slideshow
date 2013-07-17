@@ -15,7 +15,7 @@
  
 //require_once( 'inc/slide-custom-post-type.php' );
  
-if ( ! class_exists( 'SlideshowSetup' )) :
+if ( ! class_exists( 'SlideshowManager' )) :
 
 class SlideshowManager {
 
@@ -259,7 +259,13 @@ class SlideshowManager {
 		$out[] = '<option value=""></option>';
 
 		foreach($res as $r) {
-			$out[] = '<option value="'.$r->id .'" >'.$r->title.'</option>';
+			
+			if( $r->is_active == "1" ) {
+				$out[] = '<option value="'.$r->id .'" selected="selected">'.$r->title.'</option>';
+			}
+			else {
+				$out[] = '<option value="'.$r->id .'" >'.$r->title.'</option>';
+			}
 		}
 		
 		$out[] = '</select>';
@@ -618,26 +624,40 @@ class SlideshowManager {
 	}
 	
 	
-	public function slideshow_delete_collection_handler() {
+	public function slideshow_precheck_collection_name() {
 		
 		global $wpdb;
 		
-		$slideshow_id = $_POST['slideshow_id'];
-		
-		$table_name = $wpdb->prefix . 'slideshow_slides';
-		
-		$ret = $wpdb->delete( $table_name, array('slideshow_id'=>$slideshow_id));
-	//	error_log( 'remove from '.$table_name .': '. $ret .' for slideshow_id: '.  $slideshow_id );
-		
+		$slideshow_name = sanitize_text_field($_POST['slideshow_name']);
 		$table_name = $wpdb->prefix . 'slideshows';
-		$ret = $wpdb->delete( $table_name, array('id'=>$slideshow_id));
-		error_log( 'remove from '.$table_name .': '. $ret .' for slideshow_id: '.  $slideshow_id );
 		
-		echo '{"result":"success", "feedback":"Slideshow deleted."}';
+		$sql = "SELECT id FROM $table_name WHERE title = '".$slideshow_name."'";
+		
+		$id = $wpdb->get_var($sql, FALSE);
+		
+		if( $id ) {		
+			/* found - not okay to use */
+			echo '{"result":"found", "slideshow_id":"'.$id.'"}';
+		}
+		else {	
+			/* failed - is okay to use */
+			echo '{"result":"not found"}';
+		}
 		die();
 	}
-
 	
+	public function slideshow_create_collection( $slideshow_name = '' ) {
+		
+		global $wpdb;
+		
+		$table_name = $wpdb->prefix . 'slideshows';
+		$sql = "INSERT INTO $table_name (title) VALUES ( '".addslashes($slideshow_name)."' )";
+		$wpdb->query($sql);
+		
+		return $wpdb->insert_id;
+	}
+	
+		
 	public function slideshow_save_collection_handler() {
 		
 	//	error_log(__FUNCTION__);
@@ -646,6 +666,7 @@ class SlideshowManager {
 				
 		$slideshow_title = $_POST['title'];
 		$slideshow_id = $_POST['slideshow_id'];
+		
 		$is_active = $_POST['is_active'];
 		
 		if( empty($is_active) || $is_active == 'false' ) {
@@ -667,6 +688,7 @@ class SlideshowManager {
 		}
 			
 		if( empty($slideshow_id) ) {
+			
 			$slideshow_id = self::slideshow_create_collection( $title );
 		}
 		
@@ -778,7 +800,7 @@ class SlideshowManager {
 		// $ret == num rows removed | false on error //
 		
 		
-		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Slide collection saved"}';
+		echo '{"result":"success","slideshow_id":"'.$slideshow_id.'", "feedback":"Collection saved"}';
 		die();
 		
 	}
@@ -811,6 +833,30 @@ class SlideshowManager {
 		die();
 		
 	}
+	
+	
+	
+	public function slideshow_delete_collection_handler() {
+		
+		global $wpdb;
+		
+		$slideshow_id = $_POST['slideshow_id'];
+		
+		$table_name = $wpdb->prefix . 'slideshow_slides';
+		
+		$ret = $wpdb->delete( $table_name, array('slideshow_id'=>$slideshow_id));
+	//	error_log( 'remove from '.$table_name .': '. $ret .' for slideshow_id: '.  $slideshow_id );
+		
+		$table_name = $wpdb->prefix . 'slideshows';
+		$ret = $wpdb->delete( $table_name, array('id'=>$slideshow_id));
+		error_log( 'remove from '.$table_name .': '. $ret .' for slideshow_id: '.  $slideshow_id );
+		
+		echo '{"result":"success", "feedback":"Slideshow deleted."}';
+		die();
+	}
+
+
+	
 	
 	
 	/**
@@ -963,39 +1009,7 @@ class SlideshowManager {
 
 	}
 	
-	public function slideshow_precheck_collection_name() {
 		
-		global $wpdb;
-		
-		$slideshow_name = sanitize_text_field($_POST['slideshow_name']);
-		$table_name = $wpdb->prefix . 'slideshows';
-		
-		$sql = "SELECT id FROM $table_name WHERE title = '".$slideshow_name."'";
-		
-		$id = $wpdb->get_var($sql, FALSE);
-		
-		if( $id ) {		
-			/* found - not okay to use */
-			echo '{"result":"found", "slideshow_id":"'.$id.'"}';
-		}
-		else {	
-			/* failed - is okay to use */
-			echo '{"result":"not found"}';
-		}
-		die();
-	}
-	
-	public function slideshow_create_collection( $slideshow_name = '' ) {
-		
-		global $wpdb;
-		
-		$table_name = $wpdb->prefix . 'slideshows';
-		$sql = "INSERT INTO $table_name (title) VALUES ( '".addslashes($slideshow_name)."' )";
-		$wpdb->query($sql);
-		
-		return $wpdb->insert_id;
-	}
-	
 	
 	/**
 	*	Store the content of the Add Text-only slide subform

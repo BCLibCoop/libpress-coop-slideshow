@@ -48,7 +48,6 @@
 				self.delete_this_collection();
 				return false;
 			});
-
 			
 /*
 			$('.slideshow-text-slide-link-btn').click( function(evt){
@@ -85,8 +84,11 @@
 						
 			self.init_quick_set_layout();
 			
+			// retrieve the currently active slideshow by default
+			self.fetch_selected_slideshow();
+			
 		},
-				
+		
 		init_quick_set_layout: function() {
 		
 			// bind clicking on graphics to radio buttons
@@ -444,6 +446,7 @@
 		
 		//	console.log( $(this) );
 			var opt = $('#slideshow_select option').filter(':selected');
+			
 			$('.slideshow-collection-name').val( $(opt).text() );
 			
 			var data = {
@@ -456,7 +459,10 @@
 				var res = JSON.parse(r.responseText);
 				var slides = res.slides;
 				self.slideshow_id = opt.val();
-				if( res.is_active === 1 ) {
+				
+				console.log( res.is_active + ' === "1" ? ' + (res.is_active==="1") );
+				
+				if( res.is_active === "1" ) {
 					$('#slideshow-is-active-collection').attr('checked','checked');
 				}
 				else {
@@ -721,6 +727,7 @@
 			self.alt_hover_out(evt);
 		},
 			
+	/*
 		save_collection_name: function() {
 		
 			var is_active = $('#slideshow-is-active-collection').is(':checked');
@@ -761,8 +768,9 @@
 				}		
 			});			
 					
-		},
-		
+		},	
+	*/
+	
 		save_collection: function() {
 		
 			var slides = [];
@@ -812,9 +820,8 @@
 					post_id = img_id;
 				}	
 				
-				console.log( type + ': ' + text_title + ': ' + text_content + ': ' + post_id + ': ' + slide_id + ': ' + slide_link );
-				
-				
+			//	console.log( type + ': ' + text_title + ': ' + text_content + ': ' + post_id + ': ' + slide_id + ': ' + slide_link );
+					
 				if( (type === 'image' && post_id > 0) || (type == 'text')) { 
 	
 					var slide = {
@@ -922,7 +929,7 @@
 		}		
 	}
 	
-	$.fn.coop_slideshow_setup = function(opts) {
+	$.fn.coop_slideshow_manager = function(opts) {
 		//alert('here');
 		return new SlideShowSetup(opts);
 	} 
@@ -1102,24 +1109,24 @@
 jQuery().ready(function(){
 	
 	window.coop_slideshow_settings = jQuery().coop_slideshow_settings();
-	window.slideshow_setup = jQuery().coop_slideshow_setup();
+	window.slideshow_manager = jQuery().coop_slideshow_manager();
 	
 	jQuery('.draggable').draggable({ cursor:'move', 
 									 stack:	'.slide', 
-									 start:  slideshow_setup.dragstart, 
-									 stop:   slideshow_setup.dragstop,
-									 helper: slideshow_setup.drag_representation
+									 start:  slideshow_manager.dragstart, 
+									 stop:   slideshow_manager.dragstop,
+									 helper: slideshow_manager.drag_representation
 								});
 									 
-	jQuery('.droppable').droppable({ drop:  slideshow_setup.drop_on_row,
-									 over:  slideshow_setup.over_drop,
-									 out:   slideshow_setup.leave_drop,
+	jQuery('.droppable').droppable({ drop:  slideshow_manager.drop_on_row,
+									 over:  slideshow_manager.over_drop,
+									 out:   slideshow_manager.leave_drop,
 									 hoverClass: 'drop_highlight' 
 								});
 	
-	jQuery('.returnable').droppable({ drop: slideshow_setup.return_to_source,
-									  over: slideshow_setup.over_source,
-									  out:	slideshow_setup.leave_source,
+	jQuery('.returnable').droppable({ drop: slideshow_manager.return_to_source,
+									  over: slideshow_manager.over_source,
+									  out:	slideshow_manager.leave_source,
 									  hoverClass: 'return_highlight' 
 								});							
 	

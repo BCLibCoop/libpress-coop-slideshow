@@ -18,6 +18,7 @@ class Slideshow {
 
 	var $slug = 'slideshow';
 	var $sprite = '';
+	var $show;
 
 	public function __construct() {
 		add_action( 'init', array( &$this, '_init' ));
@@ -26,24 +27,30 @@ class Slideshow {
 
 	public function _init() {
 		
+		self::init_slideshow();
+		
 		if( ! is_admin() ) 
 		{
 	//		error_log( __CLASS__ .'::'. __FUNCTION__ );		
 		}
 	}
 	
+	private function init_slideshow() {
+		
+		global $wpdb;		
+
+		$table_name =  $wpdb->prefix . 'slideshows';
+		$this->show = $wpdb->get_row("SELECT * FROM $table_name WHERE is_active=1");
+		if( $this->show == NULL ) {
+			$$this->show = $wpdb->get_row("SELECT * FROM $table_name ORDER BY date DESC LIMIT 1");	
+		}
+	}
+	
+	
 	public function loader_script() {
 		
-		global $wpdb;
-		
-		$table_name =  $wpdb->prefix . 'slideshows';
-		$show = $wpdb->get_row("SELECT * FROM $table_name WHERE is_active=1");
-		if( $show == NULL ) {
-			$show = $wpdb->get_row("SELECT * FROM $table_name ORDER BY date DESC LIMIT 1");	
-		}
-		
-		$layout = $show->layout;
-		$transition = $show->transition;
+		$layout = $this->show->layout;
+		$transition = $this->show->transition;
 		
 		$out = array('<script type="text/javascript">');
 		$out[] = 'jQuery().ready(function() { ';
@@ -65,22 +72,15 @@ class Slideshow {
 		//  get_template_directory_uri() . '/bxslider/themes/v-theme/v-theme.css
 		//  get_template_directory_uri() . '/bxslider/themes/h-theme/h-theme.css
 		
-		global $wpdb;
-		
-		$table_name =  $wpdb->prefix . 'slideshows';
-		$show = $wpdb->get_row("SELECT * FROM $table_name WHERE is_active=1");
-		if( $show == NULL ) {
-			$show = $wpdb->get_row("SELECT * FROM $table_name ORDER BY date DESC LIMIT 1");	
-		}
 			
-		if( $show->layout == 'no-thumb' ) {
+		if( $this->show->layout == 'no-thumb' ) {
 		
 			$theme = get_option('_'.$this->slug.'_prevNextCSSFile');
 			$dir = str_replace('.css','',$theme);
 		
 			return get_template_directory_uri() . '/bxslider/themes/'.$dir.'/'.$theme;
 		}
-		else if(  $show->layout == 'vertical' ) {
+		else if(  $this->show->layout == 'vertical' ) {
 		
 			$theme = get_option('_'.$this->slug.'_verticalThumbsCSSFile');
 			$dir = str_replace('.css','',$theme);
@@ -103,37 +103,32 @@ class Slideshow {
 		$out = array();
 		$slide_ml = array();
 		$pager_ml = array();
-		
-		$table_name =  $wpdb->prefix . 'slideshows';
-		$show = $wpdb->get_row("SELECT * FROM $table_name WHERE is_active=1");
-		if( $show == NULL ) {
-			$show = $wpdb->get_row("SELECT * FROM $table_name ORDER BY date DESC LIMIT 1");	
-		}
-		
+				
 		$out[] = '<div class="hero row" role="banner">';
 		$out[] = '<div id="slider" class="row slider">';
 									
-		if( $show->layout !== 'no-thumb' ) {
+		if( $this->show->layout !== 'no-thumb' ) {
 			$pager_class = get_option('_slideshow_pagerCustom');
 			$pager_class = str_replace('.','',$pager_class);
-			$pager_ml[] = '<div class="row '.$pager_class.' '.$show->layout.'">';
+			$pager_ml[] = '<div class="row '.$pager_class.' '.$this->show->layout.'">';
 		}
 		
 
 		$table_name =  $wpdb->prefix . 'slideshow_slides';
-		$slides = $wpdb->get_results("SELECT * FROM $table_name WHERE slideshow_id = $show->id ORDER BY ordering");
+		$id = $this->show->id;
+		$slides = $wpdb->get_results("SELECT * FROM $table_name WHERE slideshow_id = $id ORDER BY ordering");
 		foreach( $slides as $slide ) {
 			
 			if( $slide->post_id != null ) {
 				$meta = $slideshow_manager->slideshow_fetch_img_meta($slide->post_id);
-				self::build_image_slide( $show, $slide, $meta, &$slide_ml, &$pager_ml );
+				self::build_image_slide( $this->show, $slide, $meta, &$slide_ml, &$pager_ml );
 			}
 			else {
-				self::build_text_slide( $show, $slide, &$slide_ml, &$pager_ml );
+				self::build_text_slide( $this->show, $slide, &$slide_ml, &$pager_ml );
 			}
 		}
 		
-		if( $show->layout !== 'no-thumb' ) {
+		if( $this->show->layout !== 'no-thumb' ) {
 			$pager_ml[] = '</div><!-- end of pager -->';
 		}
 		
