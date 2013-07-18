@@ -46,7 +46,6 @@ class Slideshow {
 		}
 	}
 	
-	
 	public function loader_script() {
 		
 		$layout = $this->show->layout;
@@ -159,14 +158,8 @@ class Slideshow {
 		if( $slide->slide_link != null ) {
 			$slide_ml[] = '<a href="'.$slide->slide_link.'">';	
 		}
-		//$slide_ml[] = '<h2>'.$slide->text_title.'</h2>';
-		
-		$hostdomain = '';	// allow to default to current domain in browser
-		if( $meta['source'] == 'network' ) {
-			$hostdomain = get_bloginfo('wpurl');	// should be url of blog 1		
-		}
-		
-		$url = $hostdomain . $meta['folder'] . $meta['large']['file'];
+			
+		$url = $meta['folder'] . $meta['large']['file'];
 		
 		$slide_ml[] = '<img src="'.$url.'" >';
 		if( $slide->slide_link != null ) {

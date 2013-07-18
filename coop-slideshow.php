@@ -26,7 +26,6 @@ class SlideshowAdmin {
 
 	public function _init() {
 	
-		
 		if( is_admin() ) {
 		
 			add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_styles_scripts' ));
@@ -38,8 +37,7 @@ class SlideshowAdmin {
 		}
 		else {
 			add_action( 'wp_enqueue_scripts', array( &$this, 'frontside_enqueue_styles_scripts' ));
-		}
-		
+		}	
 	}
 	
 	public function frontside_enqueue_styles_scripts() {
@@ -48,7 +46,6 @@ class SlideshowAdmin {
 	
 		// echos the current slideshow settings file into JS, frontside
 		$slideshow_defaults::slideshow_defaults_publish_config();
-	
 	}
 	
 	public function admin_enqueue_styles_scripts($hook) {

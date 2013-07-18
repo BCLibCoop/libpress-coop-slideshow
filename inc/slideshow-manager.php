@@ -216,14 +216,14 @@ class SlideshowManager {
 			var_dump($meta);
 			echo '</pre>';
 */
-						
+			$dragslide = $meta['sizes']['drag-slide'];
 			$thumbnail = $meta['sizes']['thumbnail'];
 			$medium = $meta['sizes']['medium'];
-			$large = $meta['sizes']['large'];
+			$large = $meta['file'];
 			
 			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s/wp-uploads/%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$siteurl,$folder, $thumbnail['file'], $thumb_w, $thumb_h);
 			
-			$out[] = sprintf('<img id="slotview%d" src="%s/wp-uploads/%s%s" height="%d" class="slotview"></div>',$r->ID,$siteurl,$folder,$large['file'],$thumb_h);
+			$out[] = sprintf('<img id="slotview%d" src="%s/wp-uploads/%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$siteurl,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
 	
 		}
 		
@@ -828,7 +828,6 @@ class SlideshowManager {
 		$table_name = $wpdb->prefix.'slideshows';
 		$show = $wpdb->get_row("SELECT * FROM $table_name WHERE id=$slideshow_id");
 		
-				
 		$table_name = $wpdb->prefix . 'slideshow_slides';
 		$sql = "SELECT * FROM $table_name WHERE slideshow_id=$slideshow_id ORDER BY ordering";
 		$slides = $wpdb->get_results($sql);
@@ -871,8 +870,6 @@ class SlideshowManager {
 	}
 
 
-	
-	
 	
 	/**
 	*	Build a simpler data structure for metadata
@@ -919,19 +916,27 @@ class SlideshowManager {
 		}
 		$meta = maybe_unserialize($meta);
 		
-		$postmeta = array();
+	//	error_log( $source );
 		
+		$postmeta = array();
 		$postmeta['title'] = $post_title;
 		
 		list( $year, $month, $file ) = explode( '/',$meta['file']);
 		
+		
 		$rootdir = 'files';		// default for 'local' source
 		if( $source === 'network' ) {
-			$rootdir = 'wp-uploads';
+			$site = $wpdb->get_var("SELECT domain FROM wp_site");
+			$rootdir = 'http://'.$site .'/wp-uploads';
+		}
+		else {
+			// get the subdomain's url
+			$site = get_bloginfo('url');
+			$rootdir = 'http://'.$site .'/'. $rootdir;
 		}
 		
 		$postmeta['source'] = $source;
-		$postmeta['folder'] = sprintf( "/%s/%4d/%02d/",$rootdir,$year,$month);
+		$postmeta['folder'] = sprintf( "%s/%4d/%02d/",$rootdir,$year,$month);
 		$postmeta['file'] = $file;
 		$postmeta['width'] = $meta['width'];
 		$postmeta['height'] = $meta['height'];
@@ -946,14 +951,23 @@ class SlideshowManager {
 			'width'=> $meta['sizes']['medium']['width'],
 			'height'=> $meta['sizes']['medium']['height'] 
 		);
-
+	
 		$postmeta['large'] = array( 
-			'file' => $meta['sizes']['large']['file'],
-			'width'=> $meta['sizes']['large']['width'],
-			'height'=> $meta['sizes']['large']['height'] 
+			'file' => $file,
+			'width'=> $meta['width'],
+			'height'=> $meta['height'] 
 		);
 
-		/*		
+		$postmeta['drag-slide'] = array( 
+			'file' => $meta['sizes']['drag-slide']['file'],
+			'width'=> $meta['sizes']['drag-slide']['width'],
+			'height'=> $meta['sizes']['drag-slide']['height'] 
+		);
+
+
+
+/*
+				
 		foreach( $meta as $k => $v ) {
 			if( is_array($v) ) {
 				foreach( $v as $j => $l ) {
@@ -977,9 +991,10 @@ class SlideshowManager {
 			else {
 				error_log( $k .' = > '. $v );
 			}
-		}
-*/		
-		
+		}	
+*/	
+
+
 		return $postmeta;
 		
 	}
@@ -1013,15 +1028,15 @@ class SlideshowManager {
 		$out[] = '"medium": {"file":"'.$meta['medium']['file'].'"';
 		$out[] = '"width":"'.$meta['medium']['width'].'"';
 		$out[] = '"height":"'.$meta['medium']['height'].'"}';
-		
+
 		$out[] = '"large": {"file":"'.$meta['large']['file'].'"';
 		$out[] = '"width":"'.$meta['large']['width'].'"';
-		$out[] = '"height":"'.$meta['large']['height'].'"}}}';
-		
+		$out[] = '"height":"'.$meta['large']['height'].'"}}}';  // meta // result
+	
+
 		echo implode(',',$out);
 		die();
 		
-
 	}
 	
 		

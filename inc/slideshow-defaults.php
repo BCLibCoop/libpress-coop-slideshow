@@ -114,7 +114,7 @@ class SlideshowDefaults {
 		$out[] = '};';
 		$out[] = '</script>';
 		
-		echo implode("\n",$out);		
+		echo implode("\n",$out);
 	}
 	
 	private function slideshow_defaults_parse_defaults() {
