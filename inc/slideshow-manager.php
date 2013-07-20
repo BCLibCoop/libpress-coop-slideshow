@@ -98,14 +98,7 @@ class SlideshowManager {
 
 		$out[] = '</td></tr>';
 		$out[] = '</table>';
-		
-		
-		// $sql = "SELECT * FROM $wpdb->posts WHERE post_type='attachment' ORDER BY post_title";
-		$sql = "SELECT * FROM $wpdb->posts WHERE post_type='attachment' 
-				AND ID IN (SELECT object_id FROM $wpdb->term_relationships tr JOIN $wpdb->term_taxonomy tt ON tr.term_taxonomy_id=tt.term_taxonomy_id WHERE tt.taxonomy = 'media_tag') ORDER BY post_title";
-		$res = $wpdb->get_results($sql);
-		
-		
+				
 		$out[] = self::slideshow_droppable_table();
 		
 		$out[] = '<h3 class="slideshow-runtime-heading">Runtime information:</h3>';
@@ -126,54 +119,31 @@ class SlideshowManager {
 		$out[] = '<tr><th class="alignleft">Your Slide Images</th></tr>';
 		$out[] = '<tr><td id="slide-remove-local" class="slideshow-draggable-items returnable local">';
 		
+		$sql = "SELECT * FROM $wpdb->posts WHERE post_type='attachment' AND ID IN (SELECT object_id FROM $wpdb->term_relationships tr JOIN $wpdb->term_taxonomy tt ON tr.term_taxonomy_id=tt.term_taxonomy_id WHERE tt.taxonomy = 'media_tag') ORDER BY post_title";
+		
+		$res = $wpdb->get_results($sql);
+		
 		foreach( $res as $r ) {
 		
-			$title = $r->post_title;
-			
+			$title = $r->post_title;			
 			$file = get_post_meta($r->ID,'_wp_attached_file', true);
 			
 			$d = date_parse($r->post_date);
-			$folder = sprintf('%4d/%02d/',$d['year'],$d['month']);
+			$folder = sprintf('/files/%4d/%02d/',$d['year'],$d['month']);
 			
-			$meta = get_post_meta($r->ID,'_wp_attachment_metadata');
+			$sql = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key='_wp_attachment_metadata' AND post_id=$r->ID";
+			$meta = $wpdb->get_var($sql);	
+			$meta = maybe_unserialize($meta);
 			
-			$thumbnail = $meta[0]['sizes']['thumbnail'];
-			$medium = $meta[0]['sizes']['medium'];
-			$large = $meta[0]['sizes']['large'];
+			$dragslide = $meta['sizes']['drag-slide'];
+			$thumbnail = $meta['sizes']['thumbnail'];
+			$medium = $meta['sizes']['medium'];
+			$large = $meta['file'];
 			
-		//	error_log( $large['width'] . ', '. $large['height'] );
+						
+			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$thumbnail['file'], $thumbnail['width'],$thumbnail['height']);
 			
-			/*
-			foreach( $meta[0] as $k => $v ) {						
-				if( $k == 'image_meta' ) {
-					// no op
-				}
-				else if( $k == 'sizes' ) {
-					foreach( $v as $size ) {
-						if( is_array($size) ) {
-							foreach( $size as $z => $q ) {
-								error_log( "\t" .$z .' => '. $q );
-							}
-						}
-						else {
-							error_log( 'offset: ' . $size );												
-							$x = $v[$size];
-							foreach( $x as $k2 => $v2 ) {
-								error_log( '['.$SIZE.'] '. $k2 .' => '. $v2 );			
-							}
-						}
-					}
-				}
-				else {
-					error_log( $k .' => '. $v );
-				}
-			}
-			*/
-			
-			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="/files/%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder, $thumbnail['file'], $thumb_w, $thumb_h);
-			
-			$out[] = sprintf('<img id="slotview%d" src="/files/%s%s" height="%d" class="slotview"></div>',$r->ID,$folder,$large['file'],$thumb_h);
-	
+			$out[] = sprintf('<img id="slotview%d" src="%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
 		}
 		
 		$out[] = '</td></tr>';
@@ -203,8 +173,13 @@ class SlideshowManager {
 			$select = "SELECT meta_value FROM wp_postmeta WHERE post_id = $r->ID AND meta_key = '_wp_attached_file'";
 			$file = $wpdb->get_var($select);
 			
+			// get teh url of the shared media repos site
+			switch_to_blog(1);
+			$site = site_url();
+			restore_current_blog();
+			
 			$d = date_parse($r->post_date);
-			$folder = sprintf('%4d/%02d/',$d['year'],$d['month']);
+			$folder = sprintf('%s/wp-uploads/%4d/%02d/',$site,$d['year'],$d['month']);
 			
 			$sql = "SELECT meta_value FROM wp_postmeta WHERE post_id=$r->ID AND meta_key = '_wp_attachment_metadata'";
 			
@@ -221,12 +196,11 @@ class SlideshowManager {
 			$medium = $meta['sizes']['medium'];
 			$large = $meta['file'];
 			
-			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s/wp-uploads/%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$siteurl,$folder, $thumbnail['file'], $thumb_w, $thumb_h);
+			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$thumbnail['file'], $thumb_w, $thumb_h);
 			
-			$out[] = sprintf('<img id="slotview%d" src="%s/wp-uploads/%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$siteurl,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
+			$out[] = sprintf('<img id="slotview%d" src="%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
 	
 		}
-		
 		
 		$out[] = '</table>';
 		$out[] = '</form><!-- .slideshow-definition-form -->';
@@ -891,49 +865,60 @@ class SlideshowManager {
 			$post_id = $_POST['post_id'];
 		}
 		
-		$sql = "SELECT post_title FROM $wpdb->posts WHERE ID = $post_id";
+		$sql = "SELECT post_title FROM $wpdb->posts WHERE ID = $post_id AND post_type='attachment'";
+	
+	//	error_log('sql: ' . $sql );
+	
 		$post_title = $wpdb->get_var($sql);
 		
 		$source = 'local';	// originates in the blog owner's media dirs vs. network shared media
 		
 		$meta;
-		
 		if( $post_title == NULL ) {
-			$sql = "SELECT post_title FROM wp_posts WHERE ID = $post_id";
+		
+			$sql = "SELECT post_title FROM wp_posts WHERE ID=$post_id AND post_type='attachment'";
 			$post_title = $wpdb->get_var($sql);
 			if( $post_title == NULL ) {
+				error_log( 'select post_title failed where ID = '.$post_id );
 				echo '{"result":"failed"}';
 				die();
 			}
 			$source = 'network';
-			$sql = "SELECT meta_value FROM wp_postmeta WHERE meta_key='_wp_attachment_metadata' AND post_id = $post_id";
+			$sql = "SELECT meta_value FROM wp_postmeta WHERE meta_key='_wp_attachment_metadata' AND post_id=$post_id";
 			$meta = $wpdb->get_var($sql);
+		//	error_log( 'network meta: ' .$meta );
 		}
 		else {
 			// 'local' again/still
-			$sql = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key='_wp_attachment_metadata' AND post_id= $post_id";
+			$sql = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key='_wp_attachment_metadata' AND post_id=$post_id";
 			$meta = $wpdb->get_var($sql);
+		//	error_log( 'local meta: ' .$meta );	
 		}
 		$meta = maybe_unserialize($meta);
 		
-	//	error_log( $source );
+	//	error_log( 'meta: ' .$meta );
 		
 		$postmeta = array();
 		$postmeta['title'] = $post_title;
 		
 		list( $year, $month, $file ) = explode( '/',$meta['file']);
 		
-		
 		$rootdir = 'files';		// default for 'local' source
 		if( $source === 'network' ) {
-			$site = $wpdb->get_var("SELECT domain FROM wp_site");
-			$rootdir = 'http://'.$site .'/wp-uploads';
+			
+			switch_to_blog(1);
+			$site = site_url();
+			restore_current_blog();
+			
+			$rootdir = $site .'/wp-uploads';
 		}
 		else {
 			// get the subdomain's url
-			$site = get_bloginfo('url');
-			$rootdir = 'http://'.$site .'/'. $rootdir;
+			$site = site_url();
+			$rootdir = $site .'/'. $rootdir;
 		}
+		
+	//	error_log( 'source : ' .$source . ', ' . $site .', '. $rootdir );
 		
 		$postmeta['source'] = $source;
 		$postmeta['folder'] = sprintf( "%s/%4d/%02d/",$rootdir,$year,$month);
@@ -964,10 +949,8 @@ class SlideshowManager {
 			'height'=> $meta['sizes']['drag-slide']['height'] 
 		);
 
-
-
-/*
-				
+		/*
+			
 		foreach( $meta as $k => $v ) {
 			if( is_array($v) ) {
 				foreach( $v as $j => $l ) {
@@ -992,7 +975,8 @@ class SlideshowManager {
 				error_log( $k .' = > '. $v );
 			}
 		}	
-*/	
+
+		*/
 
 
 		return $postmeta;
@@ -1031,9 +1015,12 @@ class SlideshowManager {
 
 		$out[] = '"large": {"file":"'.$meta['large']['file'].'"';
 		$out[] = '"width":"'.$meta['large']['width'].'"';
-		$out[] = '"height":"'.$meta['large']['height'].'"}}}';  // meta // result
+		$out[] = '"height":"'.$meta['large']['height'].'"}';
+		
+		$out[] = '"drag-slide": {"file":"'.$meta['drag-slide']['file'].'"';
+		$out[] = '"width":"'.$meta['drag-slide']['width'].'"';
+		$out[] = '"height":"'.$meta['drag-slide']['height'].'"}}}';  // meta // result
 	
-
 		echo implode(',',$out);
 		die();
 		
