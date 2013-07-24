@@ -232,8 +232,7 @@ class SlideshowManager {
 		
 		$out[] = '<option value=""></option>';
 
-		foreach($res as $r) {
-			
+		foreach($res as $r) {	
 			if( $r->is_active == "1" ) {
 				$out[] = '<option value="'.$r->id .'" selected="selected">'.$r->title.'</option>';
 			}
@@ -644,12 +643,15 @@ class SlideshowManager {
 		global $wpdb;
 				
 		$slideshow_title = $_POST['title'];
-		$slideshow_id = $_POST['slideshow_id'];
+		
+		if( array_key_exists('slideshow_id',$_POST) ) {
+			$slideshow_id = $_POST['slideshow_id'];
+		}
 		
 		$is_active = $_POST['is_active'];
 		
-		if( empty($is_active) || $is_active == 'false' ) {
-		//	error_log( 'is_active setting to zero' );
+		if( empty($is_active) || $is_active == 'false' || $is_active == '0' ) {
+			error_log( 'is_active setting to zero' );
 			$is_active = 0;
 		}
 		else {
@@ -659,7 +661,7 @@ class SlideshowManager {
 		$layout = $_POST['layout'];
 		$transition = $_POST['transition'];
 		
-		error_log( 'layout: '.$layout .', transition: '.$transition);
+		// error_log( 'layout: '.$layout .', transition: '.$transition);
 		
 		$slides = array();
 		if( array_key_exists('slides',$_POST) ) {
@@ -667,7 +669,6 @@ class SlideshowManager {
 		}
 			
 		if( empty($slideshow_id) ) {
-			
 			$slideshow_id = self::slideshow_create_collection( $title );
 		}
 		
@@ -680,12 +681,6 @@ class SlideshowManager {
 			$wpdb->query($sql);
 		}
 		
-		//  update top-level defs for the slideshow itself
-		/*
-			$sql = "UPDATE $table_name SET title='".$slideshow_title."', layout='".$layout."', transition='".$transition."', date=now(), is_active=$is_active WHERE id = $slideshow_id";
-		$wpdb->query($sql);
-*/
-
 		$wpdb->update( $table_name,
 					array( 'title' => $slideshow_title,
 							'layout' => $layout,

@@ -104,6 +104,7 @@
 			if( activated.length ) {
 				$('#slideshow-is-active-collection').click();
 			}
+			$('#slideshow-is-active-collection').removeAttr('checked');
 			// clear the input field, show and set focus
 			$('.slideshow-collection-name').show().val('').focus();
 			
@@ -488,7 +489,7 @@
 				var slides = res.slides;
 				self.slideshow_id = opt.val();
 				
-				console.log( res.is_active + ' === "1" ? ' + (res.is_active==="1") );
+			//	console.log( res.is_active + ' === "1" ? ' + (res.is_active==="1") );
 				
 				if( res.is_active === "1" ) {
 					$('#slideshow-is-active-collection').attr('checked','checked');
@@ -885,7 +886,7 @@
 			}
 				
 			
-			var is_active = $('#slideshow-is-active-collection').val();
+			var is_active = $('#slideshow-is-active-collection').filter(':checked').val();
 				if( undefined === is_active ) {
 					is_active = String() + '0';
 				}
@@ -902,10 +903,12 @@
 				}
 				console.log( 'transition: ' + transition );
 			
+			var slideshow_id = $('#slideshow_select').val();
+			
 			var data = {
 				action: 'slideshow-save-slide-collection',
 				title:	$('.slideshow-collection-name').val(),
-				slideshow_id: $('#slideshow_select').val(),
+				slideshow_id: slideshow_id,
 				layout: layout,
 				transition: transition,
 				is_active: is_active,
@@ -918,7 +921,8 @@
 				/// do something in response to the save attempt feedback ...
 				if( res.result === 'success' ) {
 					alert( 'Slide collection saved' );	
-					self.fetch_selected_slideshow();				
+				//	self.fetch_selected_slideshow();
+					window.history.go(0);			
 				}
 				else {
 					alert( res.feedback );
