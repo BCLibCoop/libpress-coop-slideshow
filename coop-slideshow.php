@@ -67,13 +67,13 @@ class SlideshowAdmin {
 			wp_register_script( 'coop-slideshow-defaults-js', plugins_url( '/inc/default-settings.js',__FILE__));
 			wp_enqueue_script( 'coop-slideshow-defaults-js' );	//  template of bxSlider's default values.
 			
-			wp_register_style( 'coop-slideshow-settings-admin', plugins_url( '/css/slideshow-settings-admin.css', __FILE__ ), false );
-			wp_enqueue_style( 'coop-slideshow-settings-admin' );
+			wp_register_style( 'coop-slideshow-manager-admin', plugins_url( '/css/slideshow-manager-admin.css', __FILE__ ), false );
+			wp_enqueue_style( 'coop-slideshow-manager-admin' );
 			
-			wp_register_style( 'coop-slideshow-setup-admin', plugins_url( '/css/slideshow-setup-admin.css', __FILE__ ), false );
-			wp_enqueue_style( 'coop-slideshow-setup-admin' );
+			wp_register_style( 'coop-slideshow-defaults-admin', plugins_url( '/css/slideshow-defaults-admin.css', __FILE__ ), false );
+			wp_enqueue_style( 'coop-slideshow-defaults-admin' );
 			
-			wp_register_script( 'coop-slideshow-admin-js', plugins_url( '/js/slideshow-admin.js',__FILE__), array('jquery'));
+			wp_register_script( 'coop-slideshow-admin-js', plugins_url( '/js/slideshow-admin.js',__FILE__), array('jquery','jquery-ui-core','jquery-ui-draggable','jquery-ui-droppable'));
 			wp_enqueue_script( 'coop-slideshow-admin-js' );
 			
 			wp_register_style( 'coop-signals', plugins_url( '/css/signals.css', __FILE__ ), false );

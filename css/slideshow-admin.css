@@ -1,3 +1,7 @@
+#wp-admin-bar-ubermenu_update_notifier {
+	display:none;
+}
+
 .hidden {
 	display: none;
 }
@@ -8,6 +12,9 @@
 
 .update-halo {
 	box-shadow: 6px 6px 6px rgba(0,250,50,0.5)
+}
+span.placeholder {
+	color: #ccc;
 }
 
 

@@ -1,3 +1,7 @@
+#wp-admin-bar-ubermenu_update_notifier {
+	display:none;
+}
+
 .hidden {
 	display: none;
 }
@@ -10,6 +14,9 @@
 	box-shadow: 6px 6px 6px rgba(0,250,50,0.5)
 }
 
+span.placeholder {
+	color: #ccc;
+}
 
 div.alt-hover {
 	background-color: rgba(209,227,152,0.83);
@@ -49,12 +56,14 @@ div.alt-hover {
 }
 
 #collection-name-signal {
+	display: none;
+	/*
 	z-index: 1000;
 	float: right;
 	top: -35px;
 	margin-right: 109%;
 	position: relative;
-	
+	*/
 }
 
 .slideshow-signals {
@@ -95,9 +104,11 @@ div.collection-name-status-msg {
 }
 
 input.slideshow-collection-name {
-	font-size: 2em;
-	width: 100%;
+	font-size: 1.4em;
+	width: 84%;
 	margin: 0;
+	float: right;
+	display: none;	
 }
 
 .slideshow_select {
@@ -303,11 +314,11 @@ textarea.slideshow-text-slide-content {
 
 .slideshow-text-slide-link-box {
 	text-align: left;
+	width: 100%;
 }
-.slideshow-text-slide-link-input {
-	width: 82%;
-	float: right;
-	display: none;
+
+#slideshow_page_selector {
+	width: 100%;
 }
 
 .slideshow-text-slide-save-box {

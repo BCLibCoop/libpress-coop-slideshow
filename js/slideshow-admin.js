@@ -26,15 +26,20 @@
 			self.editing_node = null;
 			
 			// init hook-ups listed more-or-less in page order
+			$('A.add-new').click( function(evt){
+				evt.stopImmediatePropagation();
+				self.init_add_new_state();
+				return false;
+			});
 			
 			$('.slideshow-collection-name').change( self.collection_name_monitor_changes );
 			
 			$('#collection-name-signal img').hover( self.alt_hover_in, self.alt_hover_out )
 				.attr('alt','enter a new name');
 			
-			$('#slideshow_select').chosen().change( self.fetch_selected_slideshow );
-			$('#slideshow_select').chosen().change( self.reset_collection_name_signal );		
-			$('#slideshow_page_selector').chosen();
+			$('#slideshow_select').chosen({disable_search_threshold: 10}).change( self.fetch_selected_slideshow );
+		//	$('#slideshow_select').chosen().change( self.reset_collection_name_signal );		
+			$('#slideshow_page_selector').chosen({disable_search_threshold: 10});
 			
 						 
 			$('.slideshow-save-collection-btn').click( function(evt) {
@@ -88,7 +93,22 @@
 			self.fetch_selected_slideshow();
 			
 		},
+				
+		init_add_new_state: function() {
 		
+			$('#slideshow_select').remove();
+			$('#slideshow_select_chzn').remove();
+			self.clear_drop_table_rows();
+			// clear activated collection flag
+			var activated = $('#slideshow-is-active-collection').filter(':checked');
+			if( activated.length ) {
+				$('#slideshow-is-active-collection').click();
+			}
+			// clear the input field, show and set focus
+			$('.slideshow-collection-name').show().val('').focus();
+			
+		},
+				
 		init_quick_set_layout: function() {
 		
 			// bind clicking on graphics to radio buttons
@@ -199,12 +219,13 @@
 		clear_drop_table_rows: function() {
 		
 			var rows = $('.slideshow-collection-row');
+			var caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
+			var link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
 			for( i=0;i<rows.length;i++) {	
 			//	console.log( 'clearing row ' + i );
 				$('.thumbbox',rows[i]).empty();
 				$(rows[i]).data('slide-id','');
-				$(rows[i]).children().last().text('');
-				$(rows[i]).children().last().children('span').empty();
+				$(rows[i]).children().last().empty().append($(caption).clone()).append($(link).clone());
 			}
 		},
 		
@@ -521,10 +542,8 @@
 			
 			// guard - only one active inline-editor at one time
 			if( self.editing_node !== null && target.attr('id') == undefined ) {
-				
 				// restore the graphic for all targets to neutral 
-				$('.slideshow-inline-edit-toggle').css('background-position','-266px -6px');
-							
+				$('.slideshow-inline-edit-toggle').css('background-position','-266px -6px');	
 				return;
 			}
 			
@@ -538,7 +557,6 @@
 				// RESTORE non-edit view
 				var div = self.editing_node;
 				if( div.hasClass('slide-title')) {
-				
 					// guard against empty titles (not permitted: business rule)
 					var newtxt = target.val();
 					if( newtxt.trim() == '' ) {
@@ -550,7 +568,6 @@
 					}
 					// naked content
 					div.text( newtxt );
-				
 				}
 				else {
 					// content wrapped in anchor tag
@@ -569,10 +586,16 @@
 			else {		
 				// CONVERT to edit view
 				var input = $('<input type="text" id="inline-edit" value="'+txt+'"/>');
+				
+					if( target.hasClass('slide-title')) {
+						input.attr('placeholder','Caption/Title (required)');
+					}
+					else {
+						input.attr('placeholder','/?page_id=123');
+					}
 					input.css('top',top).css('width',width).css('left',left);
 					self.editing_node = target.replaceWith( input );
-					input.bind('focusout', self.inline_edit_toggle ).focus();
-					
+					input.bind('focusout', self.inline_edit_toggle ).focus();	
 			}
 		},
 		
@@ -793,11 +816,15 @@
 			var slides = [];
 			var rows = $('.slideshow-collection-row');
 			
+		
 			for( i=0;i<rows.length;i++) {
+			
+				// remove the placeholder spans which are purely eyecandy
+				$('span.placeholder',rows[i]).remove();
 			
 				// slide_id is set in the case of a collection having been reloaded into the editor 
 				
-				var type = 'image';		// bias inherent in the system :-)
+				var type = 'none';		// bias inherent in the system :-)
 				var text_title = '';
 				var text_content = '';
 				var post_id = '';
@@ -808,39 +835,40 @@
 				var img_id = $(img).data('img-id');
 				
 				// read the title from it's box
-				text_title = $(rows[i]).children().last().children('div').first().text();	// now in fact, .first()
-				
+				text_title = $(rows[i]).children().last().children('div.slide-title').first().text();
+								
 				// link? - read the link URL from the anchor
 				slide_link = $(rows[i]).children().last().children('div.slide-link').children('a').attr('href');  // slide link box
 				
 				if( img_id == undefined ) {
 
-					console.log( 'no img_id - text slide - ' + text_title );		
-					type = 'text';		
-
-					// read the content of the content div 
+					console.log( 'no img_id - text slide ? - "' + text_title +'"');		
+							
+					// read the content of the content div
 					text_content = $(rows[i]).children().last().children('div').last().text();
+					if( text_title.length > 0 && text_content.length > 0 ) {
+						type = 'text';	
+					}
 				}
+				else {
+					type = 'image';
+					post_id = img_id;
+				}
+				
 				
 				if( type == 'text' && text_title == '' ) {
 					console.log( 'not a text slide (empty title) - ' );
-					// skip the rest of the loop
-					continue;
+					
 				}
-				
+
 				// if this slide has already been saved it has a slide_id index
 				slide_id = $(rows[i]).data('slide-id');
 														
-				if( type == 'image' ) {
-					// this is all we need for an image slide, 
-					// along with possible slide_id and slide_link values
-					post_id = img_id;
-				}	
 				
 			//	console.log( type + ': ' + text_title + ': ' + text_content + ': ' + post_id + ': ' + slide_id + ': ' + slide_link );
 					
-				if( (type === 'image' && post_id > 0) || (type == 'text')) { 
-	
+				if( (type === 'image' && post_id > 0) || (type == 'text' && text_title.length > 0)) 
+				{ 
 					var slide = {
 						type: type,
 						slide_id: slide_id,
@@ -852,6 +880,7 @@
 					}
 					slides.push( slide );
 				}
+				
 				//	console.log( 'slides.length: ' + slides.length );			
 			}
 				
@@ -912,10 +941,8 @@
 			$('#collection-name-signal img').addClass('tick-active').fadeOut(2000);
 		},	
 		
-		slide_remove_local: function( dragged ) {
-			
-			console.log( 'slide_remove_local()' );
-		
+		slide_remove_local: function( dragged ) {	
+		//	console.log( 'slide_remove_local()' );
 			var img_id = $('img',dragged).data('img-id');
 			$('#thumb'+img_id).removeClass('ghosted').parent().draggable('option','disabled',false);
 			self.clear_and_reinsert_row(dragged);

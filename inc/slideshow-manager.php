@@ -79,7 +79,7 @@ class SlideshowManager {
 		$out[] = '<table class="slideshow-header-controls">';
 		$out[] = '<tr><td class="slideshow-name">';
 		
-		$out[] = '<input type="text" class="slideshow-collection-name" name="slideshow-collection-name" value="" placeholder="Enter a name for a new slideshow">';
+		$out[] = '<a class="button add-new" href="">Add new</a>&nbsp;<input type="text" class="slideshow-collection-name" name="slideshow-collection-name" value="" placeholder="Enter a name for a new slideshow">';
 		
 		$out[] = '</td><td class="slideshow-gutter">&nbsp;</td><td class="slideshow-controls">';
 		
@@ -267,7 +267,9 @@ class SlideshowManager {
 					
 		for( $i=0;$i<5;$i++) {
 			$out[] = '<tr id="row'.$i.'" class="slideshow-collection-row draggable droppable" id="dropzone'.$i.'"><td class="thumbbox">&nbsp;</td>';
-			$out[] = '<td class="slideshow-slide-title"><div class="slide-title">&nbsp;</div><div class="slide-link">&nbsp;</div></td></tr>';
+			$out[] = '<td class="slideshow-slide-title">';
+			$out[] = '<div class="slide-title"><span class="placeholder">Caption/Title</span></div>';
+			$out[] = '<div class="slide-link"><span class="placeholder">Link URL</span></div></td></tr>';
 		}
 		
 		$out[] = '</table><!-- .slideshow-droppable-rows -->';
