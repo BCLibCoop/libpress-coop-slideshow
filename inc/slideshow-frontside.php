@@ -50,6 +50,7 @@ class Slideshow {
 		
 		$layout = $this->show->layout;
 		$transition = $this->show->transition;
+		$captions  = $this->show->captions;
 		
 		$out = array('<script type="text/javascript">');
 		$out[] = 'jQuery().ready(function() { ';
@@ -67,6 +68,8 @@ class Slideshow {
 		$out[] = '  window.slideshow_custom_settings.autoPlay = true;';
 		$out[] = '  window.slideshow_custom_settings.easing = null;';
 		
+		$out[] = '  window.slideshow_custom_settings.captions = '.$captions.';';
+
 		$out[] = '  window.slideshow_custom_settings.layout = "'.$layout.'";';
 		$out[] = '  window.slideshow_custom_settings.mode = "'.$transition.'";';
 				
@@ -125,7 +128,6 @@ class Slideshow {
 			$pager_ml[] = '<div class="row '.$pager_class.' '.$this->show->layout.'">';
 		}
 		
-
 		$table_name =  $wpdb->prefix . 'slideshow_slides';
 		$id = $this->show->id;
 		$slides = $wpdb->get_results("SELECT * FROM $table_name WHERE slideshow_id = $id ORDER BY ordering");
@@ -161,7 +163,7 @@ class Slideshow {
 			
 		$url = $meta['folder'] . $meta['large']['file'];
 		
-		$slide_ml[] = '<img src="'.$url.'" >';
+		$slide_ml[] = '<img src="'.$url.'"  alt="'.$slide->text_title.'" >';
 		if( $slide->slide_link != null ) {
 			$slide_ml[] = '</a>';	
 		}
@@ -173,7 +175,7 @@ class Slideshow {
 		
 			$pager_ml[] = '<a href="" data-slide-index="'.$slide->ordering.'">';
 			$pager_ml[] = '<div class="thumb image">';
-			$pager_ml[] = '<img class="pager-thumb" src="'.$url.'" >';
+			$pager_ml[] = '<img class="pager-thumb" src="'.$url.'" alt="'.$slide->text_title.'" >';
 			$pager_ml[] = '</div></a>';
 		}
 	}

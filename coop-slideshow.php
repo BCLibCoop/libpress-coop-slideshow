@@ -10,7 +10,7 @@
  * Description: Slideshow setup configurator. MUST USE.
  * Author: Erik Stainsby, Roaring Sky Software
  * Author URI: http://roaringsky.ca/plugins/coop-slideshow/
- * Version: 0.2.0
+ * Version: 0.3.0
  **/
  
  
@@ -93,7 +93,7 @@ class SlideshowAdmin {
 		
 		add_submenu_page( 'site-manager', 'Slideshow Defaults', 'Slideshow Defaults', 'manage_local_site','slides-manager', array( &$slideshow_defaults,'slideshow_defaults_page'));
 		
-		error_log('plugin_page: '. $plugin_page );
+	//	error_log('plugin_page: '. $plugin_page );
 		
 		add_action( 'admin_footer-'.$plugin_page, array(&$slideshow_manager,'slideshow_footer' ));
 		
@@ -116,10 +116,9 @@ class SlideshowAdmin {
 		$wpdb->query($del);
 	*/
 		$slideshow_db_version = get_option('_slideshow_db_version');
-		if( FALSE !== $slideshow_db_version ) {
-		
+		if( '1.2' === $slideshow_db_version  ) {
 			// return or run an update ...
-	//		error_log( '_slideshow_db_version: ' . $slideshow_db_version );
+			//		error_log( '_slideshow_db_version: ' . $slideshow_db_version );
 			return;
 		}
 		
@@ -133,9 +132,9 @@ class SlideshowAdmin {
 				." layout varchar(20) NOT NULL DEFAULT 'no-thumb', "
 				." transition varchar(20) NOT NULL DEFAULT 'horizontal',"
 				." date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL ,"
-				." is_active tinyint NOT NULL DEFAULT 0 );";
+				." is_active tinyint NOT NULL DEFAULT 0, " 
+				." captions tinyint NOT NULL DEFAULT 0);";
 		$wpdb->query($sql);
-
 		
 		
 		$table_name = $wpdb->prefix . 'slideshow_slides';
@@ -150,8 +149,7 @@ class SlideshowAdmin {
 				." );";
 		$wpdb->query($sql);
 
-		
-		update_option('_slideshow_db_version', '1.0');
+		update_option('_slideshow_db_version', '1.2');
 		
 	}
 	

@@ -1,7 +1,7 @@
 /**
  * @package Slideshow Setup 
  * @copyright BC Libraries Coop 2013
- *
+ *	version: 0.3.0
  **/
 
 ;(function($,window) {
@@ -18,8 +18,7 @@
 	}
 	
 	SlideShowSetup.prototype  =  {
-	
-	
+		
 		init: function( options ) {
 			
 			self = this;
@@ -488,14 +487,19 @@
 				var res = JSON.parse(r.responseText);
 				var slides = res.slides;
 				self.slideshow_id = opt.val();
-				
-			//	console.log( res.is_active + ' === "1" ? ' + (res.is_active==="1") );
-				
+								
 				if( res.is_active === "1" ) {
 					$('#slideshow-is-active-collection').attr('checked','checked');
 				}
 				else {
 					$('#slideshow-is-active-collection').removeAttr('checked');
+				}
+				
+				if( res.captions === "1" ) {
+					$('#slideshow-show-captions').attr('checked','checked');
+				}
+				else {
+					$('#slideshow-show-captions').removeAttr('checked');
 				}
 				
 				var i;
@@ -831,6 +835,7 @@
 				var post_id = '';
 				var slide_id = ''; 
 				var slide_link = '';
+				var use_captions = '0';
 			
 				var img = $(rows[i]).children().first().children('img');
 				var img_id = $(img).data('img-id');
@@ -903,6 +908,10 @@
 				}
 				console.log( 'transition: ' + transition );
 			
+			if( $('#slideshow-show-captions').is(':checked')) {
+				use_captions = '1';
+			}
+			
 			var slideshow_id = $('#slideshow_select').val();
 			
 			var data = {
@@ -912,6 +921,7 @@
 				layout: layout,
 				transition: transition,
 				is_active: is_active,
+				captions: use_captions,
 				slides: slides
 			};
 			

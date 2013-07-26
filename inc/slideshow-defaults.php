@@ -17,10 +17,14 @@ if ( ! class_exists( 'SlideshowDefaults' )) :
 class SlideshowDefaults {
 
 	var $slug = 'slideshow';
+	var $db_init = false;
 
 	public function __construct() {
 		add_action( 'init', array( &$this, '_init' ));
 	//	add_action( 'init', array( &$this, 'create_slide_post_type'));
+	
+		$this->db_init = get_option('_slideshow_db_init');
+	
 	}
 
 	public function _init() {
@@ -120,6 +124,8 @@ class SlideshowDefaults {
 	private function slideshow_defaults_parse_defaults() {
 	
 		$lines = file( dirname(__FILE__).'/default-settings.js');
+		
+		$all_defaults = array();
 		
 		$out = array();
 		$_fmt = '<tr><th>%s</th><td>%s</td><td>%s</td></tr>';
@@ -221,8 +227,18 @@ class SlideshowDefaults {
 
 			}	
 			
+			$all_defaults[$t] = $default;
+
 			$out[] = sprintf($_fmt,$t,implode("&nbsp;&nbsp;",$widget),$default);
 		}
+		
+		if( empty($this->db_init) || $this->db_init == FALSE ) {
+			foreach( $all_defaults as $term => $val ) {
+				update_option('_'.$this->slug.'_'.$term, $val );
+			}
+			update_option('_'.$this->slug.'_db_init', true );
+		}
+		
 		
 		return implode("\n",$out);
 	}

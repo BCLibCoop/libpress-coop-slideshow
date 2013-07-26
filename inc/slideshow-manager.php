@@ -9,7 +9,7 @@
  * Plugin Name: Slideshow Manager
  * Description: Slideshow collection manager. User interaction interface.  NETWORK ACTIVATE.
  * Author: Erik Stainsby, Roaring Sky Software
- * Version: 0.2.0
+ * Version: 0.3.0
  
  **/
  
@@ -373,6 +373,22 @@ class SlideshowManager {
 		
 		
 		$out[] = '<table class="slideshow-layout-controls">';
+		
+		$out[] = '<tr>';
+		$out[] = '<td colspan="3">';
+		$out[] = '<h3>Display Captions</h3>';
+		$out[] = '</td>';
+		$out[] = '</tr>';
+		
+		$out[] = '<tr>';
+		$out[] = '<td>&nbsp;</td>';
+		$out[] = '<td colspan="2" align="left">';
+		$out[] = '<input type="checkbox" id="slideshow-show-captions" value="true">&nbsp;<label for="slideshow-show-captions">Enable caption display for slideshow</label>';
+		$out[] = '</td>';
+		$out[] = '</tr>';
+		
+		
+		
 		$out[] = '<tr>';
 		$out[] = '<td colspan="3">';
 		$out[] = '<h3>Slideshow Layout</h3>';
@@ -648,10 +664,15 @@ class SlideshowManager {
 			$slideshow_id = $_POST['slideshow_id'];
 		}
 		
+		$captions = '0';
+		if( array_key_exists('captions',$_POST) ) {
+			$captions = $_POST['captions'];
+		}
+		
 		$is_active = $_POST['is_active'];
 		
 		if( empty($is_active) || $is_active == 'false' || $is_active == '0' ) {
-			error_log( 'is_active setting to zero' );
+		//	error_log( 'is_active setting to zero' );
 			$is_active = 0;
 		}
 		else {
@@ -686,7 +707,8 @@ class SlideshowManager {
 							'layout' => $layout,
 							'transition' => $transition,
 							'date' => 'now()',
-							'is_active' => $is_active ),
+							'is_active' => $is_active,
+							'captions' => $captions),
 					array( 'id' => $slideshow_id )					
 				);
 		
@@ -814,7 +836,7 @@ class SlideshowManager {
 		
 	//	error_log( implode( "\n", $out ));
 			
-		echo '{"slides":['. implode(',',$out).'], "is_active":"'.$show->is_active.'","layout":"'.$show->layout.'", "transition":"'.$show->transition.'"}';
+		echo '{"slides":['. implode(',',$out).'], "is_active":"'.$show->is_active.'", "captions":"'.$show->captions.'","layout":"'.$show->layout.'", "transition":"'.$show->transition.'"}';
 		die();
 		
 	}
@@ -872,7 +894,7 @@ class SlideshowManager {
 		
 		$meta;
 		if( $post_title == NULL ) {
-		
+			// or use switch_to_blog() ?
 			$sql = "SELECT post_title FROM wp_posts WHERE ID=$post_id AND post_type='attachment'";
 			$post_title = $wpdb->get_var($sql);
 			if( $post_title == NULL ) {
