@@ -29,7 +29,6 @@ class SlideshowManager {
 	}
 
 	public function _init() {
-	//	error_log( __FUNCTION__ );
 	
 		if( is_admin() ) 
 		{
@@ -43,7 +42,6 @@ class SlideshowManager {
 			add_action( 'wp_ajax_slideshow-delete-slide-collection',array(&$this,'slideshow_delete_collection_handler'));
 
 		}
-	
 	}
 
 
@@ -277,31 +275,7 @@ class SlideshowManager {
 		
 		return implode("\n",$out);
 	}
-	
-	
-	/*
-	private function slideshow_droppable_table() {
 		
-		$out = array();
-		
-		$out[] = '<table class="slideshow-drag-drop-layout">';
-		$out[] = '<tr class="master-row">';
-		$out[] = '<td class="slideshow-dropzone">';
-		
-		$out[] = '<table class="slideshow-droppable-rows">';
-		
-		$out[] = '<tr class="head-row"><th></th><th>Caption/Title</th><th>Slide Link</th></tr>';
-		
-		for( $i=0;$i<=5;$i++) {
-			$out[] = '<tr id="row'.$i.'" class="snaprow"><td id="dropzone'.$i.'" class="thumbbox droppable snappable">&nbsp;</td><td class="slideshow-caption-title">&nbsp;</td><td class="slideshow-slide-link">&nbsp;</td></tr>';
-		}
-		
-		$out[] = '</table><!-- .slideshow-droppable-rows -->';
-		
-		return implode("\n",$out);
-	}
-	*/
-	
 	
 	public function target_pages_selector() {
 	
@@ -607,14 +581,10 @@ class SlideshowManager {
 	}
 	
 	public function slideshow_footer() {
-	
-
 		$out = array();
 		$out[] = '<div class="alt-hover">&nbsp;</div>';
 		
 		echo implode( "\n", $out );
-
-	
 	}
 	
 	
@@ -653,8 +623,6 @@ class SlideshowManager {
 	
 		
 	public function slideshow_save_collection_handler() {
-		
-	//	error_log(__FUNCTION__);
 		
 		global $wpdb;
 				

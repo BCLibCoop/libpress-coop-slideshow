@@ -10,7 +10,7 @@
  * Description: Slideshow setup configurator. MUST USE.
  * Author: Erik Stainsby, Roaring Sky Software
  * Author URI: http://roaringsky.ca/plugins/coop-slideshow/
- * Version: 0.3.0
+ * Version: 0.3.2
  **/
  
  
@@ -96,7 +96,6 @@ class SlideshowAdmin {
 	//	error_log('plugin_page: '. $plugin_page );
 		
 		add_action( 'admin_footer-'.$plugin_page, array(&$slideshow_manager,'slideshow_footer' ));
-		
 	}
 	
 
@@ -110,7 +109,6 @@ class SlideshowAdmin {
 	public function slideshow_create_db_table_handler() {
 		global $wpdb;
 		
-
 	/*	MAINTENANCE utility 
 		$del = "DELETE FROM $wpdb->options WHERE option_name='_slideshow_db_version'";
 		$wpdb->query($del);

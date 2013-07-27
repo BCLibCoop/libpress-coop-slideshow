@@ -23,17 +23,14 @@ class SlideshowDefaults {
 	
 		add_action( 'init', array( &$this, '_init' ));
 		$this->db_init = get_option('_slideshow_db_init');
-	
 	}
 
 	public function _init() {
-	//	error_log( __FUNCTION__ );
 	
 		if( is_admin() ) 
 		{
 			add_action( 'wp_ajax_coop-save-slideshow-change', array( &$this, 'slideshow_defaults_save_changes'));
 		}
-	
 	}
 	
 	/**
@@ -41,8 +38,6 @@ class SlideshowDefaults {
 	*
 	**/
 	public function slideshow_defaults_page() {
-				
-	//	error_log(__FUNCTION__);
 				
 		$out = array();
 		$out[] = '<div class="wrap">';
@@ -69,9 +64,7 @@ class SlideshowDefaults {
 	}
 	
 	public function slideshow_defaults_save_changes() {
-		
-	//	error_log(__FUNCTION__);
-		
+
 		// reconstitute the keys we need to get into the $_POST object
 		$keys = stripslashes($_POST['keys']);
 		$keys = str_replace(array('[',']','"'), array('','',''), $keys );
@@ -80,7 +73,6 @@ class SlideshowDefaults {
 		foreach( $keys as $k ) {
 			$val = $_POST[$k];
 			update_option('_'.$this->slug.'_'.$k, "$val" );
-		//	error_log( $k . ' => '. $val );
 		}
 		
 		echo '{"feedback": "'.count($keys).' settings updated"}';
@@ -94,9 +86,6 @@ class SlideshowDefaults {
 		$tag = '_'.$this->slug.'_';
 		
 		$sql = "SELECT option_name as name, option_value as val FROM $wpdb->options WHERE option_name LIKE '".$tag."%'";
-		
-	//	error_log($sql);
-		
 		$res = $wpdb->get_results($sql);
 		
 		$out = array('<script id="slideshow-settings" type="text/javascript">');

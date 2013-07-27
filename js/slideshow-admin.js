@@ -1,7 +1,7 @@
 /**
  * @package Slideshow Setup 
  * @copyright BC Libraries Coop 2013
- *	version: 0.3.0
+ *	version: 0.3.2
  **/
 
 ;(function($,window) {
@@ -222,7 +222,7 @@
 			var caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
 			var link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
 			for( i=0;i<rows.length;i++) {	
-			//	console.log( 'clearing row ' + i );
+			
 				$('.thumbbox',rows[i]).empty();
 				$(rows[i]).data('slide-id','');
 				$(rows[i]).children().last().empty().append($(caption).clone()).append($(link).clone());
@@ -370,8 +370,6 @@
 		
 		return_to_source: function( row, ui ) {
 		
-			console.log( 'return to source' );
-		
 			var $t = $(this); // this
 			
 			var dragged = ui.draggable;
@@ -402,7 +400,6 @@
 	
 			
 		over_drop: function( evt, ui ) {
-		//	console.log( 'over drop zone' );
 			
 		},
 		
@@ -460,9 +457,7 @@
 			for(var i=0;i<rows.length;i++) {
 			
 				var txt = $('.slideshow-slide-title',rows[i]).text(); 
-				console.log( 'row '+i + ': ' + txt );
 				if( txt.length == 0 ) {
-					console.log( 'txt.length == 0' );
 					return rows[i];
 				}
 			}
@@ -471,8 +466,6 @@
 		fetch_selected_slideshow: function() {
 		
 			self.clear_drop_table_rows();
-		
-		//	console.log( $(this) );
 			var opt = $('#slideshow_select option').filter(':selected');
 			
 			$('.slideshow-collection-name').val( $(opt).text() );
@@ -542,9 +535,7 @@
 		inline_edit_toggle: function() {
 		
 			var target = $(this);
-			
-		//	console.log( 'target.attr("id"): ' + target.attr('id') );
-			
+						
 			// guard - only one active inline-editor at one time
 			if( self.editing_node !== null && target.attr('id') == undefined ) {
 				// restore the graphic for all targets to neutral 
@@ -565,7 +556,7 @@
 					// guard against empty titles (not permitted: business rule)
 					var newtxt = target.val();
 					if( newtxt.trim() == '' ) {
-					//	console.log( 'new text is empty: alert user' );
+
 						alert( 'Slides must have a title' );
 						target.val( div.text() );
 						target.focus();
@@ -615,9 +606,7 @@
 		},
 		
 		place_slide_img: function( id, post_id, slide_title, link, row ) {
-			
-		//	console.log( 'called place_slide_img ' + id + ': ' + post_id );
-			
+						
 			if( row == null ) {
 				// get the first empty row ...
 				row = self.first_empty_row();
@@ -733,12 +722,6 @@
 			$('.slideshow-runtime-information').empty();
 		
 			var children = $('.thumbbox').children();	
-/*
-			for( i=0; i<children.length; i++ ) {
-				console.log( i +': ' + $(children[i]).parent().parent().attr('id'));
-			}
-			
-*/	
 			var msg;
 			if( undefined === children ){
 				msg = "There must be slides before calculating the runtime.";
@@ -771,50 +754,7 @@
 			$(this).removeClass('reload-active').addClass('reload-disabled');
 			self.alt_hover_out(evt);
 		},
-			
-	/*
-		save_collection_name: function() {
-		
-			var is_active = $('#slideshow-is-active-collection').is(':checked');
-			//	console.log( 'is_active: ' + is_active );
-				if( undefined === is_active ) {
-					is_active = String() + '0';
-				}
-		
-			var layout = $('input[name="slideshow-layout"]').filter(':checked').val();
-				if( undefined === layout ) {
-					layout = 'no-thumb';
-				}
-				
-			var transition = $('input[name="slideshow-transition"]').filter(':checked').val();
-				if( undefined === transition ) {
-					transition = window.coop_slideshow_settings.current.mode;
-				}
-		
-			var data = {
-				action: 'slideshow-save-slide-collection',
-				title:	$('.slideshow-collection-name').val(),
-				slideshow_id: $('#slideshow_select').val(),
-				layout: layout,
-				transition: transition,
-				is_active: is_active
-			};
-			
-			$.post(ajaxurl,data).complete(function(r){
-				var res = JSON.parse(r.responseText);
-				
-				/// do something in response to the save attempt feedback ...
-				if( res.result === 'success' ) {
-					alert( 'Slide collection metadata saved' );	
-					self.fetch_selected_slideshow();			
-				}
-				else {
-					alert( res.feedback );
-				}		
-			});			
-					
-		},	
-	*/
+	
 	
 		save_collection: function() {
 		
@@ -847,8 +787,6 @@
 				slide_link = $(rows[i]).children().last().children('div.slide-link').children('a').attr('href');  // slide link box
 				
 				if( img_id == undefined ) {
-
-					console.log( 'no img_id - text slide ? - "' + text_title +'"');		
 							
 					// read the content of the content div
 					text_content = $(rows[i]).children().last().children('div').last().text();
@@ -863,16 +801,12 @@
 				
 				
 				if( type == 'text' && text_title == '' ) {
-					console.log( 'not a text slide (empty title) - ' );
 					
 				}
 
 				// if this slide has already been saved it has a slide_id index
 				slide_id = $(rows[i]).data('slide-id');
 														
-				
-			//	console.log( type + ': ' + text_title + ': ' + text_content + ': ' + post_id + ': ' + slide_id + ': ' + slide_link );
-					
 				if( (type === 'image' && post_id > 0) || (type == 'text' && text_title.length > 0)) 
 				{ 
 					var slide = {
@@ -885,12 +819,9 @@
 						ordering: i
 					}
 					slides.push( slide );
-				}
-				
-				//	console.log( 'slides.length: ' + slides.length );			
+				}				
 			}
 				
-			
 			var is_active = $('#slideshow-is-active-collection').filter(':checked').val();
 				if( undefined === is_active ) {
 					is_active = String() + '0';
@@ -900,13 +831,11 @@
 				if( undefined === layout ) {
 					layout = 'no-thumb';
 				}
-				console.log( 'layout: ' + layout );
 				
 			var transition = $('input[name="slideshow-transition"]').filter(':checked').val();
 				if( undefined === transition ) {
 					transition = window.coop_slideshow_settings.current.mode;
 				}
-				console.log( 'transition: ' + transition );
 			
 			if( $('#slideshow-show-captions').is(':checked')) {
 				use_captions = '1';
@@ -956,7 +885,6 @@
 		},	
 		
 		slide_remove_local: function( dragged ) {	
-		//	console.log( 'slide_remove_local()' );
 			var img_id = $('img',dragged).data('img-id');
 			$('#thumb'+img_id).removeClass('ghosted').parent().draggable('option','disabled',false);
 			self.clear_and_reinsert_row(dragged);
@@ -1021,9 +949,7 @@
 	SlideShowSettings.prototype  =  {
 	
 		init: function( options ) {
-			
-			
-			
+					
 			// load the definitional default set by bxSlider
 			self._defaults = $.extend( {}, self._defaults, window.coop_bx_defaults );
 			// split out default from tuples (first in list)
@@ -1044,7 +970,6 @@
 			var p;
 			for( p in self.current ) {
 				if( typeof p !== 'function' ) {
-				//	console.log( p + ': ' + this.current[p] );
 					$( 'input[name="'+p+'"]' ).on('change', self.set_current_value );	
 				}
 			}
