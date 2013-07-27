@@ -20,9 +20,8 @@ class SlideshowDefaults {
 	var $db_init = false;
 
 	public function __construct() {
-		add_action( 'init', array( &$this, '_init' ));
-	//	add_action( 'init', array( &$this, 'create_slide_post_type'));
 	
+		add_action( 'init', array( &$this, '_init' ));
 		$this->db_init = get_option('_slideshow_db_init');
 	
 	}
@@ -104,13 +103,21 @@ class SlideshowDefaults {
 		$out[] = 'window.slideshow_custom_settings = {';
 		
 		foreach( $res as $r ) {
+		
+			//	get the variable name by stripping the slug off the stored option_name
 			$k = str_replace($tag,'',$r->name);
 			
 			if( is_numeric($r->val) || $r->val == 'true' || $r->val == 'false' || $r->val == 'undefined' ) {
-				$v = $r->val;	
+				$v = $r->val;
 			} 
 			else {
-				$v = sprintf("'%s'",$r->val);
+				// pass function defs thru unquoted
+				if( FALSE !== stripos($k,'onSlide',0)) {
+					$v = stripslashes($r->val);
+				}
+				else {
+					$v = sprintf("'%s'",$r->val);
+				}
 			}
 			$out[] = sprintf("%s: %s,",$k,$v);
 		}
