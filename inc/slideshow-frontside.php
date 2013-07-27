@@ -9,7 +9,7 @@
  * Plugin Name: Slideshow
  * Description: Slideshow frontside theme support script.
  * Author: Erik Stainsby, Roaring Sky Software
- * Version: 0.2.0
+ * Version: 0.3.2
  **/
  
 if ( ! class_exists( 'Slideshow' )) :
@@ -22,7 +22,6 @@ class Slideshow {
 
 	public function __construct() {
 		add_action( 'init', array( &$this, '_init' ));
-	//	add_action( 'init', array( &$this, 'create_slide_post_type'));
 	}
 
 	public function _init() {
@@ -39,7 +38,7 @@ class Slideshow {
 		
 		global $wpdb;		
 
-		$table_name =  $wpdb->prefix . 'slideshows';
+		$table_name = $wpdb->prefix . 'slideshows';
 		$this->show = $wpdb->get_row("SELECT * FROM $table_name WHERE is_active=1");
 		if( $this->show == NULL ) {
 			$this->show = $wpdb->get_row("SELECT * FROM $table_name ORDER BY date DESC LIMIT 1");	
@@ -55,8 +54,7 @@ class Slideshow {
 		$out = array('<script type="text/javascript">');
 		$out[] = 'jQuery().ready(function() { ';
 		
-		if( $layout == 'no-thumb' ) {
-		
+		if( $layout == 'no-thumb' ) {	
 			$out[] = '  window.slideshow_custom_settings.pager = false;';
 			$out[] = '  window.slideshow_custom_settings.controls = true;';
 		}
@@ -66,7 +64,7 @@ class Slideshow {
 		}
 		
 		$out[] = '  window.slideshow_custom_settings.autoPlay = true;';
-		$out[] = '  window.slideshow_custom_settings.easing = null;';
+	//	$out[] = '  window.slideshow_custom_settings.easing = null;';
 		
 		$out[] = '  window.slideshow_custom_settings.captions = '.$captions.';';
 
