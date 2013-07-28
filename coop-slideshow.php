@@ -91,10 +91,11 @@ class SlideshowAdmin {
 	
 		$plugin_page = add_submenu_page( 'site-manager', 'Slideshow Manager', 'Slideshow Manager', 'manage_local_site', 'top-slides', array(&$slideshow_manager,'slideshow_manager_page'));
 		
-		add_submenu_page( 'site-manager', 'Slideshow Defaults', 'Slideshow Defaults', 'manage_local_site','slides-manager', array( &$slideshow_defaults,'slideshow_defaults_page'));
-		
-	//	error_log('plugin_page: '. $plugin_page );
-		
+		// this is only for the Super Admins
+		if( current_user_can('manage_network') ) {
+			add_submenu_page( 'site-manager', 'Slideshow Defaults', 'Slideshow Defaults', 'manage_local_site','slides-manager', array( &$slideshow_defaults,'slideshow_defaults_page'));
+		}
+	
 		add_action( 'admin_footer-'.$plugin_page, array(&$slideshow_manager,'slideshow_footer' ));
 	}
 	
