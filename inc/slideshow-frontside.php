@@ -169,7 +169,7 @@ class Slideshow {
 		
 		if( $show->layout !== 'no-thumb' ) {
 		
-			$url = $hostdomain . $meta['folder'] . $meta['thumb']['file'];
+			$url = $meta['folder'] . $meta['thumb']['file'];
 		
 			$pager_ml[] = '<a href="" data-slide-index="'.$slide->ordering.'">';
 			$pager_ml[] = '<div class="thumb image">';
