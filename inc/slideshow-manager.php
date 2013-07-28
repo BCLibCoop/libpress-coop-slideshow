@@ -135,7 +135,9 @@ class SlideshowManager {
 			
 			$dragslide = $meta['sizes']['drag-slide'];
 			$thumbnail = $meta['sizes']['thumbnail'];
-			$medium = $meta['sizes']['medium'];
+			if( array_key_exists('medium',$meta['sizes'])) {
+				$medium = $meta['sizes']['medium'];
+			}
 			$large = $meta['file'];
 			
 						
@@ -785,6 +787,11 @@ class SlideshowManager {
 		global $wpdb;
 		
 		$slideshow_id = $_POST['slideshow_id'];
+		
+		if( empty($slideshow_id ) {
+			echo '{"result":"none"}';
+			die();
+		}
 		
 		$table_name = $wpdb->prefix.'slideshows';
 		$show = $wpdb->get_row("SELECT * FROM $table_name WHERE id=$slideshow_id");
