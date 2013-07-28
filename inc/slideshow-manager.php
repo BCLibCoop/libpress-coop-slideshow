@@ -788,7 +788,7 @@ class SlideshowManager {
 		
 		$slideshow_id = $_POST['slideshow_id'];
 		
-		if( empty($slideshow_id ) {
+		if( empty($slideshow_id )) {
 			echo '{"result":"none"}';
 			die();
 		}
