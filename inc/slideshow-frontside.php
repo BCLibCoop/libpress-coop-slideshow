@@ -118,7 +118,7 @@ class Slideshow {
 		$pager_ml = array();
 				
 		$out[] = '<div class="hero row" role="banner">';
-		$out[] = '<div id="slider" class="row slider">';
+		$out[] = '<div id="slider" class="slider">';
 									
 		if( $this->show->layout !== 'no-thumb' ) {
 			$pager_class = get_option('_slideshow_pagerCustom');
