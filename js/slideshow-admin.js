@@ -188,8 +188,18 @@
 				return false;
 			}
 			
-			var page_id = $('#slideshow_page_selector option').filter(':selected').val();
-			var slide_link = '/?page=' + page_id;
+			var sel_opt = $('#slideshow_page_selector option').filter(':selected')
+			var page_id = sel_opt.val();
+			var opt_class = $(sel_opt).hasClass('page')?'page':'post';
+			var guid = $(sel_opt).data('guid');
+			var slide_link;
+			
+			if( opt_class === 'page' ) {
+				slide_link = '/?page=' + page_id;
+			}
+			else {
+				slide_link = guid;
+			}
 			
 			var data = {
 				action: 'slideshow_add_text_slide',

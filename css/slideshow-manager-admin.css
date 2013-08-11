@@ -364,4 +364,12 @@ td.radio-box {
 	text-align: right;
 }
 
+li.post,
+option.post {
+	color: blue;
+}
+li.page,
+option.page {
+	color: green;
+}
 

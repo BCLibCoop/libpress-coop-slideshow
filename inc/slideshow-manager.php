@@ -282,13 +282,13 @@ class SlideshowManager {
 	
 		global $wpdb;
 		
-		$sql = "SELECT ID, post_title FROM $wpdb->posts WHERE post_status = 'publish' AND post_type='page' ORDER BY post_title";
+		$sql = "SELECT ID, post_title, post_type, guid FROM $wpdb->posts WHERE post_status = 'publish' AND (post_type='page' OR post_type='post') ORDER BY post_title";
 		$res = $wpdb->get_results( $sql );
 		
-		$out = array('<select data-placeholder="Link to a page..." id="slideshow_page_selector" name="slideshow_page_selector" class="slideshow-page-selector chzn-select">');
+		$out = array('<select data-placeholder="Link to a post or page..." id="slideshow_page_selector" name="slideshow_page_selector" class="slideshow-page-selector chzn-select">');
 		$out[] = '<option value=""></option>';
 		foreach( $res as $r ) {
-			$out[] = '<option value="'.$r->ID.'">'.$r->post_title.'</option>';
+			$out[] = '<option value="'.$r->ID.'" class="'.$r->post_type.'" data-guid="'.$r->guid.'">'.$r->post_title.'</option>';
 		}
 		$out[] = '</select>';
 		
@@ -322,6 +322,7 @@ class SlideshowManager {
 		
 		$out[] = '<tr>';
 		$out[] = '<td class="slideshow-text-slide-save-box">';
+		$out[] = 'Items listed in blue are blog posts. Items in green are pages.';
 		$out[] = '<a href="javascript:void(0);" class="button slideshow-text-slide-cancel-btn">Cancel</a>';
 		$out[] = '<a href="javascript:void(0);" class="button slideshow-text-slide-save-btn">Add the slide</a>';
 		$out[] = '</td>';
