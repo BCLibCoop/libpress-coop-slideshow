@@ -7,10 +7,10 @@
  **/
 /**
  * Plugin Name: Slideshow Admin 
- * Description: Slideshow setup configurator. MUST USE.
+ * Description: Slideshow setup configurator. Install as MUST USE.
  * Author: Erik Stainsby, Roaring Sky Software
  * Author URI: http://roaringsky.ca/plugins/coop-slideshow/
- * Version: 0.3.2
+ * Version: 0.3.4
  **/
  
  
@@ -29,9 +29,7 @@ class SlideshowAdmin {
 		if( is_admin() ) {
 		
 			add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_styles_scripts' ));
-			
 			add_action( 'admin_menu', array( &$this,'add_slideshow_menu' ));
-			
 			// conditionally ensures that the slideshow table is present
 			add_action( 'wp_loaded', array( &$this, 'slideshow_create_db_table_handler'));
 		}
@@ -43,7 +41,6 @@ class SlideshowAdmin {
 	public function frontside_enqueue_styles_scripts() {
 	
 		global $slideshow_defaults;
-	
 		// echos the current slideshow settings file into JS, frontside
 		$slideshow_defaults::slideshow_defaults_publish_config();
 	}
@@ -83,8 +80,6 @@ class SlideshowAdmin {
 		return;
 	}
 	
-	
-	
 	public function add_slideshow_menu() {
 	
 		global $slideshow_manager, $slideshow_defaults;
@@ -100,7 +95,6 @@ class SlideshowAdmin {
 	}
 	
 
-	
 	/**
 	*	Create slideshow-related tables any time a blog
 	*	loads this plugin and that blog does _not_already_

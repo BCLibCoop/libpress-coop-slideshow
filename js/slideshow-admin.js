@@ -521,82 +521,20 @@
 			});
 		},
 		
-		
-		insert_inline_edit: function() {
-		
+		insert_inline_edit_toggle: function( opt ) {
+			
 			var imgsrc = $('.slideshow-signals-preload img').attr('src');
-			var div = $('<div class="slideshow-inline-edit-toggle"/>')
-							.css('background-image','url('+imgsrc+')')
-							.css('background-position', '-266px -6px'); 				
+			var div = $('<div class="slideshow-inline-edit-toggle" />')
+							.css('background-image','url('+imgsrc+')');
+			if ( opt ) {				
+				div.css('background-position', '-266px -70px');
+			}
+			else {
+				div.css('background-position', '-266px -6px');
+			}
 			return div;
 		},
-		
-		
-		inline_edit_toggle: function() {
-		
-			var target = $(this);
-						
-			// guard - only one active inline-editor at one time
-			if( self.editing_node !== null && target.attr('id') == undefined ) {
-				// restore the graphic for all targets to neutral 
-				$('.slideshow-inline-edit-toggle').css('background-position','-266px -6px');	
-				return;
-			}
-			
-			var txt = target.text();
-			var top = target.css('top');
-			var left = target.css('left');
-			var width = target.width();
-			var height = target.outerHeight();
-
-			if( target.attr('id') == 'inline-edit' ){
-				// RESTORE non-edit view
-				var div = self.editing_node;
-				if( div.hasClass('slide-title')) {
-					// guard against empty titles (not permitted: business rule)
-					var newtxt = target.val();
-					if( newtxt.trim() == '' ) {
-
-						alert( 'Slides must have a title' );
-						target.val( div.text() );
-						target.focus();
-						return;
-					}
-					// naked content
-					div.text( newtxt );
-				}
-				else {
-					// content wrapped in anchor tag
-					var a = $('<a/>').attr('href',target.val()).attr('target','_blank').text(target.val());
-					div.empty().append( a );
-				}
-				// restore click-to-edit functionality
-				div.append( self.insert_inline_edit() );
-				div.hover(self.inline_edit_hover_in, self.inline_edit_hover_out );
-				div.click(self.inline_edit_toggle);
 				
-				target.replaceWith( div );
-				// clear buffer for reuse (also, null buffer is part of active-inline-editor detection)
-				self.editing_node = null;
-			}
-			else {		
-				// CONVERT to edit view
-				var input = $('<input type="text" id="inline-edit" value="'+txt+'"/>');
-				
-					if( target.hasClass('slide-title')) {
-						input.attr('placeholder','Caption/Title (required)');
-					}
-					else {
-						input.attr('placeholder','/?page_id=123');
-					}
-					input.css('top',top).css('width',width).css('left',left);
-					self.editing_node = target.replaceWith( input );
-					input.bind('focusout', self.inline_edit_toggle ).focus();	
-			}
-		},
-		
-		
-		
 		inline_edit_hover_in: function(evt) {
 			$('.slideshow-inline-edit-toggle',evt.target).css('background-position','-266px -70px');
 		},
@@ -605,6 +543,106 @@
 			$('.slideshow-inline-edit-toggle',evt.target).css('background-position','-266px -6px');
 		},
 		
+		inline_form_toggle: function() {
+		
+			// this is only the title 
+			// top level element === TD.slideshow-slide-title 
+			var target;
+			var content_edit;
+			
+			if( this.id === 'inline-editor') {
+				target = $(this);
+			}
+			else if( $(this).parent().hasClass('slide-title-box')) {
+				target = $(this).parent().parent();
+			}
+			else {
+				target = $(this).parent();
+			}
+			
+			console.log( target );
+									
+			// guard - only one active inline-editor at one time
+			if( self.editing_node !== null && target.attr('id') == undefined ) {
+				// restore the graphic for all targets to neutral
+				$('.slideshow-inline-edit-toggle').css('background-position','-266px -6px');
+				return;
+			}
+			
+			var top = target.css('top');
+			var left = target.css('left');
+			var width = target.width();
+			var height = target.outerHeight();
+			
+			if( target.attr('id') == 'inline-editor' ){		// state marker == active editor
+			
+				// restore NON-EDIT view
+				var td = self.editing_node;
+				
+				var title_edit = $('#slide-title-edit');
+				var link_edit 	= $('#slide-link-edit');
+					content_edit = $('#slide-content-edit');
+				
+				if( title_edit.val().trim() === '' ) {
+					alert( 'Slide title cannot be empty' );
+					title_edit.focus();
+					return;
+				}
+				
+				var title_div = $('<div class="slide-title" />').append(title_edit.val());
+				
+				var a = $('<a/>').attr('href',link_edit.val()).attr('target','_blank').text(link_edit.val());
+				var link_div = $('<div class="slide-link" />').append(a);
+				
+				td.empty().append(title_div).append(link_div);
+				
+				if( content_edit !== undefined ) {
+					var txt = content_edit.text().trim();
+					if( txt !== null && txt !== undefined && txt !== '' ) {
+						var content_div = $('<div class="slide-content" />').append(content_edit.val().trim());
+						td.append(content_div);
+					}
+				}
+				
+				// restore click-to-edit functionality
+				title_div.hover( self.inline_edit_hover_in, self.inline_edit_hover_out );
+				title_div.append(self.insert_inline_edit_toggle());
+				title_div.click( self.inline_form_toggle );
+				
+				target.replaceWith( td );
+				// clear buffer for reuse (also, a null buffer is part of active-inline-editor detection)
+				self.editing_node = null;
+			}
+			else {
+				// convert to INLINE-EDITOR
+			
+				var inline_editor = $('<td class="inline-editor" id="inline-editor" />');
+				var title_edit = $('<input class="slide-title-edit" type="text" id="slide-title-edit" value="'+$('.slide-title',target).text()+'" placeholder="Caption/Title (required)" />');
+				var link_edit = $('<input class="slide-link-edit" type="text" id="slide-link-edit" value="'+$('.slide-link',target).text()+'" placeholder="/?page_id=123" />');
+				var div_title = $('<div class="slide-title-box"/>').append(title_edit).append(self.insert_inline_edit_toggle(1));
+			
+				inline_editor.append(div_title).append(link_edit);
+				title_edit.css('width','94%');
+				link_edit.css('width','100%');
+											
+				var text  = $(target).children('.slide-content').first().text();
+				if( text !== null && text !== undefined && text.trim() !== '' ) {
+					content_edit = $('<textarea class="slide-content-edit" id="slide-content-edit" placeholder="text message">'+text+'</textarea>');
+					inline_editor.append(content_edit);
+					content_edit.css('width','100%');
+				}
+				else {
+					console.log( 'No content for this slide content-text' );
+				}
+				inline_editor.css('top',top).css('width',width).css('left',left);
+				self.editing_node = target.replaceWith( inline_editor );
+				$('.slideshow-inline-edit-toggle').click( self.inline_form_toggle );
+				title_edit.focus();
+				
+			}
+		},
+		
+				
 		place_slide_img: function( id, post_id, slide_title, link, row ) {
 						
 			if( row == null ) {
@@ -636,16 +674,14 @@
 				var img = $('<img data-img-id="' + post_id + '" src="'+src+'" width="' + w + '" height="' + h + '">');
 				$(row).children().first().empty().append( img );
 				
-				var title = $('<div class="slide-title" />').append(this_title).append( self.insert_inline_edit() );
+				var title = $('<div class="slide-title" />').append(this_title).append( self.insert_inline_edit_toggle() );
 					title.hover(self.inline_edit_hover_in, self.inline_edit_hover_out );
-					title.click(self.inline_edit_toggle);
+					title.click(self.inline_form_toggle);
 					$(row).children().eq(1).empty().append( title );
 				
 				if( undefined !== link ) {	
 					var anchor = $('<a class="slide-anchor" target="_blank"/>').text( link ).attr('href',link);
-					var div = $('<div class="slide-link" />').append( anchor ).append( self.insert_inline_edit());
-						div.hover(self.inline_edit_hover_in, self.inline_edit_hover_out );
-						div.click(self.inline_edit_toggle);
+					var div = $('<div class="slide-link" />').append( anchor );
 					$(row).children().eq(1).append( div );
 				}
 				
@@ -663,19 +699,17 @@
 			$(row).data('slide-id',id);
 			$(row).children().first().empty().append($('<span class="slideshow-big-t">T</span>'));
 			
-			var titlediv = $('<div class="slide-title" />').append(title).append( self.insert_inline_edit());
+			var titlediv = $('<div class="slide-title" />').append(title).append( self.insert_inline_edit_toggle());
 				titlediv.hover(self.inline_edit_hover_in, self.inline_edit_hover_out );
-				titlediv.click(self.inline_edit_toggle);
+				titlediv.click(self.inline_form_toggle);
 			$(row).children().eq(1).empty().append(titlediv); 
 			
 			if( undefined !== link ) {
 				var anchor = $('<a class="slide-anchor" target="_blank"/>').text( link ).attr('href',link);
-				var div = $('<div class="slide-link" />').append( anchor ).append( self.insert_inline_edit());
-					div.hover(self.inline_edit_hover_in, self.inline_edit_hover_out );
-					div.click(self.inline_edit_toggle);
+				var div = $('<div class="slide-link" />').append( anchor );
 				$(row).children().eq(1).append( div );
 			}
-			$(row).children().eq(1).append( $('<div class="slideshow-content-popover" />').append( content ));
+			$(row).children().eq(1).append( $('<div class="slide-content" />').append( content ));
 
 			self.runtime_calculate();
 		},

@@ -9,7 +9,7 @@
  * Plugin Name: Slideshow Manager
  * Description: Slideshow collection manager. User interaction interface.  NETWORK ACTIVATE.
  * Author: Erik Stainsby, Roaring Sky Software
- * Version: 0.3.0
+ * Version: 0.3.4
  
  **/
  
@@ -18,7 +18,6 @@
 if ( ! class_exists( 'SlideshowManager' )) :
 
 class SlideshowManager {
-
 
 	var $slug = 'slideshow';
 	var $sprite = '';
