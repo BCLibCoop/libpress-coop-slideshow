@@ -184,7 +184,7 @@ class Slideshow {
 		if( $slide->slide_link != null ) {
 			$slide_ml[] = '<a href="'.$slide->slide_link.'">';	
 		}
-		$slide_ml[] = '<h2>'.$slide->text_title.'</h2><p>'.$slide->text_content.'</p>';
+		$slide_ml[] = '<h2>'.stripslashes($slide->text_title).'</h2><p>'.stripslashes($slide->text_content).'</p>';
 		if( $slide->slide_link != null ) {
 			$slide_ml[] = '</a>';	
 		}

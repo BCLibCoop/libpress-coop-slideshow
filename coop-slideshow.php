@@ -10,7 +10,7 @@
  * Description: Slideshow setup configurator. Install as MUST USE.
  * Author: Erik Stainsby, Roaring Sky Software
  * Author URI: http://roaringsky.ca/plugins/coop-slideshow/
- * Version: 0.3.4
+ * Version: 0.3.5
  **/
  
  
