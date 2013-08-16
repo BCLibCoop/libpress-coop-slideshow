@@ -527,7 +527,6 @@
 				$('input[value="'+layout+'"][name="slideshow-layout"]').attr('checked','checked');
 				$('input[value="'+transition+'"][name="slideshow-transition"]').attr('checked','checked');
 				
-				
 			});
 		},
 		
@@ -537,10 +536,10 @@
 			var div = $('<div class="slideshow-inline-edit-toggle" />')
 							.css('background-image','url('+imgsrc+')');
 			if ( opt ) {				
-				div.css('background-position', '-266px -70px');
+				div.css('background-position', '-266px -70px').addClass('the-active-edit-toggle');
 			}
 			else {
-				div.css('background-position', '-266px -6px');
+				div.css('background-position', '-266px -6px').removeClass('the-active-edit-toggle');
 			}
 			return div;
 		},
@@ -570,7 +569,7 @@
 				target = $(this).parent();
 			}
 			
-			console.log( target );
+		//	console.log( target );
 									
 			// guard - only one active inline-editor at one time
 			if( self.editing_node !== null && target.attr('id') == undefined ) {
@@ -648,7 +647,6 @@
 				self.editing_node = target.replaceWith( inline_editor );
 				$('.slideshow-inline-edit-toggle').click( self.inline_form_toggle );
 				title_edit.focus();
-				
 			}
 		},
 		
@@ -802,10 +800,17 @@
 	
 		save_collection: function() {
 		
+			// before we proceed, ensure inline-editor is closed/converted back into display mode
+			if( self.editing_node !== null ) {
+				var the_active_toggle = $('.the-active-edit-toggle');
+				if( the_active_toggle !== undefined ) {
+					the_active_toggle.click();
+				}
+			}
+		
 			var slides = [];
 			var rows = $('.slideshow-collection-row');
-			
-		
+					
 			for( i=0;i<rows.length;i++) {
 			
 				// remove the placeholder spans which are purely eyecandy
