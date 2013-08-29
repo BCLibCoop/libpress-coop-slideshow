@@ -57,6 +57,9 @@ class Slideshow {
 		if( $layout == 'no-thumb' ) {	
 			$out[] = '  window.slideshow_custom_settings.pager = false;';
 			$out[] = '  window.slideshow_custom_settings.controls = true;';
+			$out[] = '  window.slideshow_custom_settings.nextSelector = null;';
+			$out[] = '  window.slideshow_custom_settings.prevSelector = null;';
+			
 		}
 		else {
 			$out[] = '  window.slideshow_custom_settings.pager = true;';
@@ -144,16 +147,7 @@ class Slideshow {
 		if( $this->show->layout !== 'no-thumb' ) {
 			$pager_ml[] = '</div><!-- end of pager -->';
 		}
-		else {
-			// inject controls for prev/next
-			$pager_ml[] = '<div class="pn-controls">';
-			$pager_ml[] = '<div class="pn-controls-direction">';
-			$pager_ml[] = '<a href class="pn-prev">Prev</a>';
-			$pager_ml[] = '<a href class="pn-next">Next</a>';
-			$pager_ml[] = '</div><!-- .pn-controls-direction -->';
-			$pager_ml[] = '</div><!-- .pn-controls -->';
-		}
-		
+				
 		$slide_ml[] = '</div><!-- #slider.row.slider -->';
 		
 		$out = array_merge( $out, $slide_ml,  $pager_ml );
@@ -161,6 +155,8 @@ class Slideshow {
 		
 		return implode( "\n", $out );
 	}
+	
+	
 	
 	private function build_image_slide( $show, $slide, $meta, $slide_ml, $pager_ml ) {
 		
@@ -187,6 +183,8 @@ class Slideshow {
 			$pager_ml[] = '</div></a>';
 		}
 	}
+	
+	
 	
 	private function build_text_slide( $show, $slide, $slide_ml, $pager_ml ) {
 		
