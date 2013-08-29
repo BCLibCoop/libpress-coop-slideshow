@@ -161,9 +161,9 @@ class Slideshow {
 			
 		$url = $meta['folder'] . $meta['large']['file'];
 		
-		$slide_ml[] = '<img src="'.$url.'"  alt="'.$slide->text_title.'" >';
+		$slide_ml[] = '<img src="'.$url.'"  alt="'.$slide->text_title.'" title="'.$slide->text_title.'" >';
 		if( $slide->slide_link != null ) {
-			$slide_ml[] = '</a>';	
+			$slide_ml[] = '</a>';
 		}
 		$slide_ml[] = '</div><!-- .slide.image -->';
 		
