@@ -126,6 +126,7 @@ class Slideshow {
 			$pager_ml[] = '<div class="row '.$pager_class.' '.$this->show->layout.'">';
 		}
 		
+		
 		$table_name =  $wpdb->prefix . 'slideshow_slides';
 		$id = $this->show->id;
 		$slides = $wpdb->get_results("SELECT * FROM $table_name WHERE slideshow_id = $id ORDER BY ordering");
@@ -142,6 +143,15 @@ class Slideshow {
 		
 		if( $this->show->layout !== 'no-thumb' ) {
 			$pager_ml[] = '</div><!-- end of pager -->';
+		}
+		else {
+			// inject controls for prev/next
+			$pager_ml[] = '<div class="pn-controls">';
+			$pager_ml[] = '<div class="pn-controls-direction">';
+			$pager_ml[] = '<a href class="pn-prev">Prev</a>';
+			$pager_ml[] = '<a href class="pn-next">Next</a>';
+			$pager_ml[] = '</div><!-- .pn-controls-direction -->';
+			$pager_ml[] = '</div><!-- .pn-controls -->';
 		}
 		
 		$slide_ml[] = '</div><!-- #slider.row.slider -->';
