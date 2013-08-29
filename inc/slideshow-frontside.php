@@ -177,10 +177,11 @@ class Slideshow {
 		
 			$url = $meta['folder'] . $meta['thumb']['file'];
 		
+			$pager_ml[] = '<div class="pager-box slide-index-'.$slide->ordering.'">';
 			$pager_ml[] = '<a href="" data-slide-index="'.$slide->ordering.'">';
 			$pager_ml[] = '<div class="thumb image">';
 			$pager_ml[] = '<img class="pager-thumb" src="'.$url.'" alt="'.$slide->text_title.'" >';
-			$pager_ml[] = '</div></a>';
+			$pager_ml[] = '</div></a></div><!-- .pager-box -->';
 		}
 	}
 	
@@ -200,11 +201,11 @@ class Slideshow {
 		
 		
 		if( $show->layout !== 'no-thumb' ) {
-		
+			$pager_ml[] = '<div class="pager-box slide-index-'.$slide->ordering.'">';
 			$pager_ml[] = '<a href="" data-slide-index="'.$slide->ordering.'">';
 			$pager_ml[] = '<div class="thumb text">';
 			$pager_ml[] = '<div class="pager-thumb text-thumb">T</div>';
-			$pager_ml[] = '</div></a>';
+			$pager_ml[] = '</div></a></div><!-- .pager-box -->';
 			
 		}	
 	}	
