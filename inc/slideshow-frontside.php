@@ -59,7 +59,6 @@ class Slideshow {
 			$out[] = '  window.slideshow_custom_settings.controls = true;';
 			$out[] = '  window.slideshow_custom_settings.nextSelector = null;';
 			$out[] = '  window.slideshow_custom_settings.prevSelector = null;';
-			
 		}
 		else {
 			$out[] = '  window.slideshow_custom_settings.pager = true;';
@@ -120,7 +119,7 @@ class Slideshow {
 		$slide_ml = array();
 		$pager_ml = array();
 				
-		$out[] = '<div class="hero row" role="banner">';
+		$out[] = '<div class="hero row '.$this->show->layout.'" role="banner">';
 		$out[] = '<div id="slider" class="slider">';
 									
 		if( $this->show->layout !== 'no-thumb' ) {
