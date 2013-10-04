@@ -570,7 +570,7 @@
 				target = $(this).parent();
 			}
 			
-			console.log( target );
+		//	console.log( target );
 									
 			// guard - only one active inline-editor at one time
 			if( self.editing_node !== null && target.attr('id') == undefined ) {
@@ -584,9 +584,9 @@
 			var width = target.width();
 			var height = target.outerHeight();
 			
-			if( target.attr('id') == 'inline-editor' ){		// state marker == active editor
-			
+			if( target.attr('id') === 'inline-editor' ){		// state marker == active editor
 				// restore NON-EDIT view
+				
 				var td = self.editing_node;
 				
 				var title_edit = $('#slide-title-edit');
@@ -641,9 +641,9 @@
 					inline_editor.append(content_edit);
 					content_edit.css('width','100%');
 				}
-				else {
-					console.log( 'No content for this slide content-text' );
-				}
+			//	else {
+				//	console.log( 'No content for this slide content-text' );
+			//	}
 				inline_editor.css('top',top).css('width',width).css('left',left);
 				self.editing_node = target.replaceWith( inline_editor );
 				$('.slideshow-inline-edit-toggle').click( self.inline_form_toggle );
@@ -802,9 +802,16 @@
 	
 		save_collection: function() {
 		
+			/* add check for an open inline-editor
+				if open, toggle it closed before proceeding here
+			*/
+			
+			if( self.editing_node !== null && self.editing_node !== undefined ) {
+				alert($(self.editing_node).attr('id'));
+			}
+		
 			var slides = [];
 			var rows = $('.slideshow-collection-row');
-			
 		
 			for( i=0;i<rows.length;i++) {
 			
