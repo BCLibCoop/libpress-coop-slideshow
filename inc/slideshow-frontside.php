@@ -57,6 +57,8 @@ class Slideshow {
 		if( $layout == 'no-thumb' ) {	
 			$out[] = '  window.slideshow_custom_settings.pager = false;';
 			$out[] = '  window.slideshow_custom_settings.controls = true;';
+			$out[] = '  window.slideshow_custom_settings.nextSelector = null;';
+			$out[] = '  window.slideshow_custom_settings.prevSelector = null;';
 		}
 		else {
 			$out[] = '  window.slideshow_custom_settings.pager = true;';
@@ -117,7 +119,7 @@ class Slideshow {
 		$slide_ml = array();
 		$pager_ml = array();
 				
-		$out[] = '<div class="hero row" role="banner">';
+		$out[] = '<div class="hero row '.$this->show->layout.'" role="banner">';
 		$out[] = '<div id="slider" class="slider">';
 									
 		if( $this->show->layout !== 'no-thumb' ) {
@@ -125,6 +127,7 @@ class Slideshow {
 			$pager_class = str_replace('.','',$pager_class);
 			$pager_ml[] = '<div class="row '.$pager_class.' '.$this->show->layout.'">';
 		}
+		
 		
 		$table_name =  $wpdb->prefix . 'slideshow_slides';
 		$id = $this->show->id;
@@ -143,7 +146,7 @@ class Slideshow {
 		if( $this->show->layout !== 'no-thumb' ) {
 			$pager_ml[] = '</div><!-- end of pager -->';
 		}
-		
+				
 		$slide_ml[] = '</div><!-- #slider.row.slider -->';
 		
 		$out = array_merge( $out, $slide_ml,  $pager_ml );
@@ -151,6 +154,8 @@ class Slideshow {
 		
 		return implode( "\n", $out );
 	}
+	
+	
 	
 	private function build_image_slide( $show, $slide, $meta, $slide_ml, $pager_ml ) {
 		
@@ -161,9 +166,9 @@ class Slideshow {
 			
 		$url = $meta['folder'] . $meta['large']['file'];
 		
-		$slide_ml[] = '<img src="'.$url.'"  alt="'.$slide->text_title.'" >';
+		$slide_ml[] = '<img src="'.$url.'"  alt="'.$slide->text_title.'" title="'.$slide->text_title.'" >';
 		if( $slide->slide_link != null ) {
-			$slide_ml[] = '</a>';	
+			$slide_ml[] = '</a>';
 		}
 		$slide_ml[] = '</div><!-- .slide.image -->';
 		
@@ -171,12 +176,15 @@ class Slideshow {
 		
 			$url = $meta['folder'] . $meta['thumb']['file'];
 		
+			$pager_ml[] = '<div class="pager-box slide-index-'.$slide->ordering.'">';
 			$pager_ml[] = '<a href="" data-slide-index="'.$slide->ordering.'">';
 			$pager_ml[] = '<div class="thumb image">';
 			$pager_ml[] = '<img class="pager-thumb" src="'.$url.'" alt="'.$slide->text_title.'" >';
-			$pager_ml[] = '</div></a>';
+			$pager_ml[] = '</div></a></div><!-- .pager-box -->';
 		}
 	}
+	
+	
 	
 	private function build_text_slide( $show, $slide, $slide_ml, $pager_ml ) {
 		
@@ -192,11 +200,11 @@ class Slideshow {
 		
 		
 		if( $show->layout !== 'no-thumb' ) {
-		
+			$pager_ml[] = '<div class="pager-box slide-index-'.$slide->ordering.'">';
 			$pager_ml[] = '<a href="" data-slide-index="'.$slide->ordering.'">';
 			$pager_ml[] = '<div class="thumb text">';
 			$pager_ml[] = '<div class="pager-thumb text-thumb">T</div>';
-			$pager_ml[] = '</div></a>';
+			$pager_ml[] = '</div></a></div><!-- .pager-box -->';
 			
 		}	
 	}	
