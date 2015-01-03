@@ -136,10 +136,10 @@ class Slideshow {
 			
 			if( $slide->post_id != null ) {
 				$meta = $slideshow_manager->slideshow_fetch_img_meta($slide->post_id);
-				self::build_image_slide( $this->show, $slide, $meta, &$slide_ml, &$pager_ml );
+				self::build_image_slide( $this->show, $slide, $meta, $slide_ml, $pager_ml );
 			}
 			else {
-				self::build_text_slide( $this->show, $slide, &$slide_ml, &$pager_ml );
+				self::build_text_slide( $this->show, $slide, $slide_ml, $pager_ml );
 			}
 		}
 		
@@ -157,7 +157,7 @@ class Slideshow {
 	
 	
 	
-	private function build_image_slide( $show, $slide, $meta, $slide_ml, $pager_ml ) {
+	private function build_image_slide( $show, $slide, $meta, &$slide_ml, &$pager_ml ) {
 		
 		$slide_ml[] = '<div class="slide image">';
 		if( $slide->slide_link != null ) {
@@ -186,7 +186,7 @@ class Slideshow {
 	
 	
 	
-	private function build_text_slide( $show, $slide, $slide_ml, $pager_ml ) {
+	private function build_text_slide( $show, $slide, &$slide_ml, &$pager_ml ) {
 		
 		$slide_ml[] = '<div class="slide text">';
 		if( $slide->slide_link != null ) {
