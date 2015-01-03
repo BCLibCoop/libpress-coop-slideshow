@@ -116,7 +116,7 @@ class SlideshowManager {
 		$out[] = '<tr><th class="alignleft">Your Slide Images</th></tr>';
 		$out[] = '<tr><td id="slide-remove-local" class="slideshow-draggable-items returnable local">';
 		
-		$sql = "SELECT * FROM $wpdb->posts WHERE post_type='attachment' AND ID IN (SELECT object_id FROM $wpdb->term_relationships tr JOIN $wpdb->term_taxonomy tt ON tr.term_taxonomy_id=tt.term_taxonomy_id WHERE tt.taxonomy = 'media_tag') ORDER BY post_title";
+		$sql = "SELECT * FROM $wpdb->posts WHERE post_type='attachment' AND ID IN (SELECT object_id FROM $wpdb->term_relationships tr JOIN $wpdb->term_taxonomy tt ON tr.term_taxonomy_id=tt.term_taxonomy_id JOIN $wpdb->terms tm ON tt.term_id =tm.term_id WHERE tt.taxonomy = 'media_tag' AND tm.name='slide') ORDER BY post_title";
 		
 		$res = $wpdb->get_results($sql);
 		
