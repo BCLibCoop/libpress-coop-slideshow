@@ -802,10 +802,10 @@ class SlideshowManager {
 		$out = array();
 		foreach( $slides as $s ) {
 			if( $s->post_id ) {
-				$out[] = '{"id":"'.$s->id.'","post_id":"'.$s->post_id.'","text_title":"'.($s->text_title).'","slide_link":"'.$s->slide_link.'","ordering":"'.$s->ordering.'"}'; 
+				$out[] = '{"id":"'.$s->id.'","post_id":"'.$s->post_id.'","text_title":'.json_encode(stripslashes($s->text_title)).',"slide_link":"'.$s->slide_link.'","ordering":"'.$s->ordering.'"}';
 			}
 			else {
-				$out[] = '{"id":"'.$s->id.'","slide_link":"'.$s->slide_link.'","text_title":"'.($s->text_title).'","text_content":"'.($s->text_content).'","ordering":"'.$s->ordering.'"}'; 
+				$out[] = '{"id":"'.$s->id.'","slide_link":"'.$s->slide_link.'","text_title":'.json_encode(stripslashes($s->text_title)).',"text_content":'.json_encode(stripslashes($s->text_content)).',"ordering":"'.$s->ordering.'"}'; 
 			}
 		}
 		
