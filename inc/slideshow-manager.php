@@ -808,8 +808,7 @@ class SlideshowManager {
 				$out[] = '{"id":"'.$s->id.'","slide_link":"'.$s->slide_link.'","text_title":'.json_encode(stripslashes($s->text_title)).',"text_content":'.json_encode(stripslashes($s->text_content)).',"ordering":"'.$s->ordering.'"}'; 
 			}
 		}
-		
-	//	error_log( implode( "\n", $out ));
+		//error_log( implode( "\n", $out ));
 			
 		echo '{"slides":['. implode(',',$out).'], "is_active":"'.$show->is_active.'", "captions":"'.$show->captions.'","layout":"'.$show->layout.'", "transition":"'.$show->transition.'"}';
 		die();

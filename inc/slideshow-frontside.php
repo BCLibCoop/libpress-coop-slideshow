@@ -166,7 +166,7 @@ class Slideshow {
 			
 		$url = $meta['folder'] . $meta['large']['file'];
 		
-		$slide_ml[] = '<img src="'.$url.'"  alt="'.$slide->text_title.'" title="'.$slide->text_title.'" >';
+		$slide_ml[] = '<img src="'.$url.'"  alt="'.htmlspecialchars(stripslashes($slide->text_title)).'" title="'.htmlspecialchars(stripslashes($slide->text_title)).'" >';
 		if( $slide->slide_link != null ) {
 			$slide_ml[] = '</a>';
 		}
@@ -179,7 +179,7 @@ class Slideshow {
 			$pager_ml[] = '<div class="pager-box slide-index-'.$slide->ordering.'">';
 			$pager_ml[] = '<a href="" data-slide-index="'.$slide->ordering.'">';
 			$pager_ml[] = '<div class="thumb image">';
-			$pager_ml[] = '<img class="pager-thumb" src="'.$url.'" alt="'.$slide->text_title.'" >';
+			$pager_ml[] = '<img class="pager-thumb" src="'.$url.'" alt="'.stripslashes($slide->text_title).'" >';
 			$pager_ml[] = '</div></a></div><!-- .pager-box -->';
 		}
 	}
