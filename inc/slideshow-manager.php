@@ -10,7 +10,6 @@
  * Description: Slideshow collection manager. User interaction interface.  NETWORK ACTIVATE.
  * Author: Erik Stainsby, Roaring Sky Software
  * Version: 0.3.4
- 
  **/
  
 //require_once( 'inc/slide-custom-post-type.php' );
@@ -172,7 +171,7 @@ class SlideshowManager {
 			$select = "SELECT meta_value FROM wp_postmeta WHERE post_id = $r->ID AND meta_key = '_wp_attached_file'";
 			$file = $wpdb->get_var($select);
 			
-			// get teh url of the shared media repos site
+			// get the url of the shared media repos site
 			switch_to_blog(1);
 			$site = site_url();
 			restore_current_blog();
@@ -873,8 +872,7 @@ class SlideshowManager {
 			$post_title = $wpdb->get_var($sql);
 			if( $post_title == NULL ) {
 				error_log( 'select post_title failed where ID = '.$post_id );
-				echo '{"result":"failed"}';
-				die();
+				$post_id = 1790; // Set as placeholder slide from Shared Media if the original media was deleted.
 			}
 			$source = 'network';
 			$sql = "SELECT meta_value FROM wp_postmeta WHERE meta_key='_wp_attachment_metadata' AND post_id=$post_id";
