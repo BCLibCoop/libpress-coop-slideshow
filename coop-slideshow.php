@@ -42,7 +42,7 @@ class SlideshowAdmin {
 	
 		global $slideshow_defaults;
 		// echos the current slideshow settings file into JS, frontside
-		$slideshow_defaults::slideshow_defaults_publish_config();
+		$slideshow_defaults->slideshow_defaults_publish_config();
 	}
 	
 	public function admin_enqueue_styles_scripts($hook) {
