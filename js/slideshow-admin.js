@@ -807,7 +807,9 @@
 			*/
 			
 			if( self.editing_node !== null && self.editing_node !== undefined ) {
-				alert($(self.editing_node).attr('id'));
+				// alert($(self.editing_node).attr('id'));
+					var title = $('#inline-editor .slideshow-inline-edit-toggle');
+					title.click();
 			}
 		
 			var slides = [];
