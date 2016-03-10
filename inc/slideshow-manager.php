@@ -57,7 +57,12 @@ class SlideshowManager {
 		
 		$thumb_w = get_option('thumbnail_size_w',true);
 		$thumb_h = get_option('thumbnail_size_h',true);
-		
+
+		$med_w = get_option('medium_size_w',true);
+		$med_h = get_option('medium_size_h',true);
+
+		$large_w = get_option('large_size_w',true);
+		$large_h = get_option('large_size_h',true);
 		
 		$out = array();
 		$out[] = '<div class="wrap">';
@@ -139,7 +144,8 @@ class SlideshowManager {
 			$large = $meta['file'];
 			
 						
-			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$thumbnail['file'], $thumbnail['width'],$thumbnail['height']);
+/*			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$thumbnail['file'], $thumbnail['width'],$thumbnail['height']);*/
+$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" class="thumb">',$r->ID,$title,$r->ID,$folder,$medium['file']);
 			
 			$out[] = sprintf('<img id="slotview%d" src="%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
 		}
@@ -194,7 +200,8 @@ class SlideshowManager {
 			$medium = $meta['sizes']['medium'];
 			$large = $meta['file'];
 			
-			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$thumbnail['file'], $thumb_w, $thumb_h);
+			//$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$medium['file'], $med_w, $med_h);
+			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" class="thumb"><p class="caption">%s</p>',$r->ID,$title,$r->ID,$folder,$medium['file'],$title);
 			
 			$out[] = sprintf('<img id="slotview%d" src="%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
 	
