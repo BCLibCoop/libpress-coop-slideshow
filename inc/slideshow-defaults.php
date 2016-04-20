@@ -29,7 +29,9 @@ class SlideshowDefaults {
 	
 		if( is_admin() ) 
 		{
-			add_action( 'wp_ajax_coop-save-slideshow-change', array( &$this, 'slideshow_defaults_save_changes'));
+			add_action( 'wp_ajax_coop-save-slideshow-change', array( &$this, 'slideshow_defaults_save_changes' ));
+			add_filter( 'attachment_fields_to_edit', array( &$this, 'slideshow_field_region_add' ), 10, 2);
+			add_filter( 'attachment_fields_to_save', array( &$this, 'slideshow_field_region_save' ), 10, 2);
 		}
 	}
 	
@@ -238,8 +240,35 @@ class SlideshowDefaults {
 		
 		return implode("\n",$out);
 	}
-}
 
+
+// get_post_meta
+	public function slideshow_field_region_add( $form_fields, $post ) {
+		$form_fields['slide_region'] = array(
+			'label' => 'Slide Region',
+			'input' => 'html',
+			'html' => "<select name='attachments[{$post->ID}][slide_region]' id='attachments[{$post->ID}][slide_region]'>",
+			'helps' => 'Which province is this slide from?',
+		);
+
+		$selected = get_post_meta( $post->ID, 'slide_region', true );
+
+		$form_fields['slide_region']['html'] .= "<option value='' ". selected( $selected, '', false) ."></option>";
+		$form_fields['slide_region']['html'] .= "<option value='BC' ". selected( $selected, 'BC', false) .">British Columbia</option>";
+		$form_fields['slide_region']['html'] .= "<option value='MB' ". selected( $selected, 'MB', false) .">Manitoba</option>";
+
+		return $form_fields;
+	}
+
+	public function slideshow_field_region_save( $post, $attachment ) {
+		//error_log(d($attachment));
+		//error_log(d($post));
+		if( isset( $attachment['slide_region'] ) ) update_post_meta( $post['ID'], 'slide_region', $attachment['slide_region'] );
+		//else update_post_meta( $post['ID'], 'slide_region', '');
+		return $post;
+	}
+
+} /** end class **/
 
 	
 if ( ! isset( $slideshow_defaults ) ) {
