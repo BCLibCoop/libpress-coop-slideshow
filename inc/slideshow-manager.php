@@ -149,18 +149,10 @@ class SlideshowManager {
 		}
 		
 		$out[] = '</td></tr>';
-		$out[] = '<th class="alignleft">Shared Slide Images</th>';
-		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
 
-		/*	fetch NSM images with Media Tag: 'slide' 	*/
-		/**
-		*	THIS IS HARDCODED TO FETCH FROM blog 1, 
-		*	which is the designated Network Shared Media instance. 
-		*
-		*	The other significant difference is that the 
-		*	image repos URL is distinct from the networked sites:
-		*	/wp-uploads/ yadda yadda is the repository address:  sites use /files/ yadda yadda.
-		**/
+		//Network Shared Media (NSM) section
+		$out[] = '<th class="alignleft shared-slides">Shared Slide Images</th>';
+		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
 
 		// get the url of the shared media repos site
 		switch_to_blog(1);
@@ -170,7 +162,7 @@ class SlideshowManager {
 		$out = array_merge($out, $fetched);
 
 		//BC Slides
-		$out[] = '<tr><th class="aligncentre">British Columbia</th>';
+		$out[] = '<tr><th class="alignleft bc-slides">British Columbia</th>';
 		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
 
 		$fetched = self::fetch_network_shared_media_slides( 'BC' );
@@ -179,7 +171,7 @@ class SlideshowManager {
 		$out[] = '</td></tr>';
 
 		//MB Slides
-		$out[] = '<tr><th class="aligncentre">Manitoba</th>';
+		$out[] = '<tr><th class="alignleft mb-slides">Manitoba</th>';
 		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
 
 		$fetched = self::fetch_network_shared_media_slides( 'MB' );
@@ -210,8 +202,8 @@ class SlideshowManager {
 
 	public function fetch_network_shared_media_slides( $region = "" ) {
 
-		/*	fetch NSM images with Media Tag: 'slide' 	*/
-		/**
+		/**	fetch NSM images with Media Tag: 'slide'
+		*
 		*	THIS IS HARDCODED TO FETCH FROM blog 1, 
 		*	which is the designated Network Shared Media instance. 
 		*
@@ -220,10 +212,11 @@ class SlideshowManager {
 		*	/wp-uploads/ yadda yadda is the repository address:  sites use /files/ yadda yadda.
 		* 
 		* 
-		* $region
-		* = slide_region postmeta
-		* [ '', BC, MB ]
+		* @param string $region value of slide_region post meta [default empty, BC, MB]
+		* @return array Returns array of markup-wrapped slide items to be appended to output
+		*
 		**/
+
 		global $wpdb;
 
 		$args = array(
@@ -236,22 +229,14 @@ class SlideshowManager {
 													)),
 			'meta_key' => 'slide_region',
 			'meta_value' => $region,
-			//'meta_compare' => 'NOT EXISTS',
 			'orderby' => 'title',
 			'posts_per_page' => -1,
 		);
-		d($region);
 		if ( empty($region) ) $args['meta_compare'] = 'NOT EXISTS';
 
 		$get_slides = get_posts( $args );
-		d($get_slides);
 
-		wp_reset_postdata();
-
-		foreach ($get_slides as $slide) {
-			d($slide->post_title);
-			d(get_post_meta($slide->ID, 'slide_region') );
-		}
+		wp_reset_postdata(); //just in case
 		
 		foreach( $get_slides as $r ) {
 		
@@ -269,16 +254,17 @@ class SlideshowManager {
 			$sql = "SELECT meta_value FROM wp_postmeta WHERE post_id=$r->ID AND meta_key = '_wp_attachment_metadata'";
 			
 			$meta = $wpdb->get_var($sql);
-			$meta = maybe_unserialize($meta);	
-/*
-			echo '<pre>';
-			var_dump($meta);
-			echo '</pre>';
-*/
+			$meta = maybe_unserialize($meta);
+			//d($meta);
+
 			$dragslide = $meta['sizes']['drag-slide'];
 			$thumbnail = $meta['sizes']['thumbnail'];
 			$medium = $meta['sizes']['medium'];
-			$large = $meta['file'];
+			$full = $meta['file'];
+
+			//In case we need the full size, get only filename (drop $folder in return array as well)
+			preg_match("/[0-9]+\/[0-9]+\/([\-a-z0-9\_\.]+)/", $full, $matched);
+			$large = $matched[1];
 			
 			$slides[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="medium%d" src="%s%s" class="medium"><p class="caption">%s</p>',$r->ID,$title,$r->ID,$folder,$medium['file'],$title);
 			
@@ -956,7 +942,7 @@ class SlideshowManager {
 			// 'local' again/still
 			$sql = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key='_wp_attachment_metadata' AND post_id=$post_id";
 			$meta = $wpdb->get_var($sql);
-		//	error_log( 'local meta: ' .$meta );	
+		//	error_log( 'local meta: ' .$meta );
 		}
 		$meta = maybe_unserialize($meta);
 		
