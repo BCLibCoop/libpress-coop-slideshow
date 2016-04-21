@@ -38,10 +38,8 @@ class SlideshowManager {
 			add_action( 'wp_ajax_slideshow-fetch-collection',array(&$this,'slideshow_fetch_collection'));
 			add_action( 'wp_ajax_slideshow-save-slide-collection',array(&$this,'slideshow_save_collection_handler'));
 			add_action( 'wp_ajax_slideshow-delete-slide-collection',array(&$this,'slideshow_delete_collection_handler'));
-
 		}
 	}
-
 
 	public function slideshow_manager_page() {
 	
@@ -145,16 +143,15 @@ class SlideshowManager {
 			
 						
 /*			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$thumbnail['file'], $thumbnail['width'],$thumbnail['height']);*/
-$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" class="thumb">',$r->ID,$title,$r->ID,$folder,$medium['file']);
+			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" class="thumb">',$r->ID,$title,$r->ID,$folder,$medium['file']);
 			
 			$out[] = sprintf('<img id="slotview%d" src="%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
 		}
 		
 		$out[] = '</td></tr>';
-		
-		$out[] = '<tr><th class="alignleft">Shared Slide Images</th></tr>';
+		$out[] = '<th class="alignleft">Shared Slide Images</th>';
 		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
-		
+
 		/*	fetch NSM images with Media Tag: 'slide' 	*/
 		/**
 		*	THIS IS HARDCODED TO FETCH FROM blog 1, 
@@ -164,48 +161,31 @@ $out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s">
 		*	image repos URL is distinct from the networked sites:
 		*	/wp-uploads/ yadda yadda is the repository address:  sites use /files/ yadda yadda.
 		**/
-		
-		$sql = "SELECT * FROM wp_posts WHERE post_type='attachment'
-				AND ID IN (SELECT object_id FROM wp_term_relationships tr JOIN wp_term_taxonomy tt ON tr.term_taxonomy_id=tt.term_taxonomy_id WHERE tt.taxonomy = 'media_tag') ORDER BY post_title";
-		
-		$res = $wpdb->get_results($sql);
-		
-		foreach( $res as $r ) {
-		
-			$title = $r->post_title;
-		
-			$select = "SELECT meta_value FROM wp_postmeta WHERE post_id = $r->ID AND meta_key = '_wp_attached_file'";
-			$file = $wpdb->get_var($select);
-			
-			// get the url of the shared media repos site
-			switch_to_blog(1);
-			$site = site_url();
-			restore_current_blog();
-			
-			$d = date_parse($r->post_date);
-			$folder = sprintf('%s/wp-uploads/%4d/%02d/',$site,$d['year'],$d['month']);
-			
-			$sql = "SELECT meta_value FROM wp_postmeta WHERE post_id=$r->ID AND meta_key = '_wp_attachment_metadata'";
-			
-			$meta = $wpdb->get_var($sql);
-			$meta = maybe_unserialize($meta);
-			
-/*
-			echo '<pre>';
-			var_dump($meta);
-			echo '</pre>';
-*/
-			$dragslide = $meta['sizes']['drag-slide'];
-			$thumbnail = $meta['sizes']['thumbnail'];
-			$medium = $meta['sizes']['medium'];
-			$large = $meta['file'];
-			
-			//$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$medium['file'], $med_w, $med_h);
-			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" class="thumb"><p class="caption">%s</p>',$r->ID,$title,$r->ID,$folder,$medium['file'],$title);
-			
-			$out[] = sprintf('<img id="slotview%d" src="%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
-	
-		}
+
+		// get the url of the shared media repos site
+		switch_to_blog(1);
+		$site = site_url();
+
+		$fetched = self::fetch_network_shared_media_slides();
+		$out = array_merge($out, $fetched);
+
+		//BC Slides
+		$out[] = '<tr><th class="aligncentre">British Columbia</th>';
+		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
+
+		$fetched = self::fetch_network_shared_media_slides( 'BC' );
+		$out = array_merge($out, $fetched);
+
+		$out[] = '</td></tr>';
+
+		//MB Slides
+		$out[] = '<tr><th class="aligncentre">Manitoba</th>';
+		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
+
+		$fetched = self::fetch_network_shared_media_slides( 'MB' );
+		$out = array_merge($out, $fetched);
+
+		$out[] = '</td></tr>';
 		
 		$out[] = '</table>';
 		$out[] = '</form><!-- .slideshow-definition-form -->';
@@ -221,8 +201,94 @@ $out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s">
 		$out[] = '</div>';
 		
 		echo implode("\n",$out);
+		// d($out);
+
+		//Restore later
+		restore_current_blog();
 		
 	}
+
+	public function fetch_network_shared_media_slides( $region = "" ) {
+
+		/*	fetch NSM images with Media Tag: 'slide' 	*/
+		/**
+		*	THIS IS HARDCODED TO FETCH FROM blog 1, 
+		*	which is the designated Network Shared Media instance. 
+		*
+		*	The other significant difference is that the 
+		*	image repos URL is distinct from the networked sites:
+		*	/wp-uploads/ yadda yadda is the repository address:  sites use /files/ yadda yadda.
+		* 
+		* 
+		* $region
+		* = slide_region postmeta
+		* [ '', BC, MB ]
+		**/
+		global $wpdb;
+
+		$args = array(
+			'post_type' => 'attachment',
+			'tax_query' => array(
+												array(
+														'taxonomy' => 'media_tag',
+														'field' => 	'term_taxonomy_id',
+														'operator' => 'EXISTS',
+													)),
+			'meta_key' => 'slide_region',
+			'meta_value' => $region,
+			//'meta_compare' => 'NOT EXISTS',
+			'orderby' => 'title',
+			'posts_per_page' => -1,
+		);
+		d($region);
+		if ( empty($region) ) $args['meta_compare'] = 'NOT EXISTS';
+
+		$get_slides = get_posts( $args );
+		d($get_slides);
+
+		wp_reset_postdata();
+
+		foreach ($get_slides as $slide) {
+			d($slide->post_title);
+			d(get_post_meta($slide->ID, 'slide_region') );
+		}
+		
+		foreach( $get_slides as $r ) {
+		
+			$title = $r->post_title;
+			$id = $r->ID;
+		
+			$select = "SELECT meta_value FROM wp_postmeta WHERE post_id = $r->ID AND meta_key = '_wp_attached_file'";
+			$file = $wpdb->get_var($select);
+			
+			$site = site_url();
+			
+			$d = date_parse($r->post_date);
+			$folder = sprintf('%s/wp-uploads/%4d/%02d/',$site,$d['year'],$d['month']);
+			
+			$sql = "SELECT meta_value FROM wp_postmeta WHERE post_id=$r->ID AND meta_key = '_wp_attachment_metadata'";
+			
+			$meta = $wpdb->get_var($sql);
+			$meta = maybe_unserialize($meta);	
+/*
+			echo '<pre>';
+			var_dump($meta);
+			echo '</pre>';
+*/
+			$dragslide = $meta['sizes']['drag-slide'];
+			$thumbnail = $meta['sizes']['thumbnail'];
+			$medium = $meta['sizes']['medium'];
+			$large = $meta['file'];
+			
+			$slides[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="medium%d" src="%s%s" class="medium"><p class="caption">%s</p>',$r->ID,$title,$r->ID,$folder,$medium['file'],$title);
+			
+			$slides[] = sprintf('<img id="slotview%d" src="%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
+
+		}
+
+		return $slides;
+	
+}
 	
 	private function slideshow_collection_selector() {
 		
