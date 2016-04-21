@@ -240,9 +240,8 @@ class SlideshowDefaults {
 		
 		return implode("\n",$out);
 	}
+/** Set & saver defaults for custom attachment field slide_region **/
 
-
-// get_post_meta
 	public function slideshow_field_region_add( $form_fields, $post ) {
 		$form_fields['slide_region'] = array(
 			'label' => 'Slide Region',
@@ -261,10 +260,7 @@ class SlideshowDefaults {
 	}
 
 	public function slideshow_field_region_save( $post, $attachment ) {
-		//error_log(d($attachment));
-		//error_log(d($post));
 		if( isset( $attachment['slide_region'] ) ) update_post_meta( $post['ID'], 'slide_region', $attachment['slide_region'] );
-		//else update_post_meta( $post['ID'], 'slide_region', '');
 		return $post;
 	}
 
