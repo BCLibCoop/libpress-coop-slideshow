@@ -116,7 +116,7 @@ class SlideshowManager {
 		
 		foreach( $res as $r ) {
 		
-			$title = $r->post_title;			
+			$title = $r->post_title;
 			$file = get_post_meta($r->ID,'_wp_attached_file', true);
 			
 			$d = date_parse($r->post_date);
@@ -135,7 +135,7 @@ class SlideshowManager {
 			
 						
 /*			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$thumbnail['file'], $thumbnail['width'],$thumbnail['height']);*/
-			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" height="%d" width="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$medium['file'], $medium['height'], $medium['width']);
+			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" height="%d" width="%d" class="thumb"><p class="caption">%s</p>',$r->ID,$title,$r->ID,$folder,$medium['file'], $medium['height'], $medium['width'],$title);
 			
 			$out[] = sprintf('<img id="slotview%d" src="%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
 		}
