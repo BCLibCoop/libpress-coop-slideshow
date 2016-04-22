@@ -240,26 +240,35 @@ class SlideshowDefaults {
 		
 		return implode("\n",$out);
 	}
-/** Set & saver defaults for custom attachment field slide_region **/
+	
+/** Set & saver defaults for custom attachment field slide_region 
+*		for Shared Media site (network root) only 
+**/
 
 	public function slideshow_field_region_add( $form_fields, $post ) {
-		$form_fields['slide_region'] = array(
-			'label' => 'Slide Region',
-			'input' => 'html',
-			'html' => "<select name='attachments[{$post->ID}][slide_region]' id='attachments[{$post->ID}][slide_region]'>",
-			'helps' => 'Which province is this slide from?',
-		);
 
-		$selected = get_post_meta( $post->ID, 'slide_region', true );
+		if (get_current_blog_id() == 1) {
+			$form_fields['slide_region'] = array(
+				'label' => 'Slide Region',
+				'input' => 'html',
+				'html' => "<select name='attachments[{$post->ID}][slide_region]' id='attachments[{$post->ID}][slide_region]'>",
+				'helps' => 'Which province is this slide from?',
+			);
 
-		$form_fields['slide_region']['html'] .= "<option value='' ". selected( $selected, '', false) ."></option>";
-		$form_fields['slide_region']['html'] .= "<option value='BC' ". selected( $selected, 'BC', false) .">British Columbia</option>";
-		$form_fields['slide_region']['html'] .= "<option value='MB' ". selected( $selected, 'MB', false) .">Manitoba</option>";
+			$selected = get_post_meta( $post->ID, 'slide_region', true );
 
-		return $form_fields;
+			$form_fields['slide_region']['html'] .= "<option value='' ". selected( $selected, '', false) ."></option>";
+			$form_fields['slide_region']['html'] .= "<option value='BC' ". selected( $selected, 'BC', false) .">British Columbia</option>";
+			$form_fields['slide_region']['html'] .= "<option value='MB' ". selected( $selected, 'MB', false) .">Manitoba</option>";
+
+			return $form_fields;
+		} else {
+			return $form_fields;
+		}
 	}
 
 	public function slideshow_field_region_save( $post, $attachment ) {
+
 		if( isset( $attachment['slide_region'] ) ) update_post_meta( $post['ID'], 'slide_region', $attachment['slide_region'] );
 		return $post;
 	}
