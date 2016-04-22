@@ -72,6 +72,12 @@
 				self.add_text_only_slide();
 				return false;
 			});
+
+			$('.ui-draggable-handle').mouseover( function() {
+				self.mouseover_slide_preview();
+				console.log("Added mouseover event listener");
+				return false;
+			});
 			
 										
 /*
@@ -325,7 +331,7 @@
 				self.drop_insert_row( this, ui );
 			}
 			else {
-				self.drop_insert_thumbnail( row, dragged, this );		
+				self.drop_insert_thumbnail( row, dragged, this );
 			}
 		},
 		
@@ -375,6 +381,12 @@
 
 			self.runtime_calculate();
 
+		},
+
+		mouseover_slide_preview: function() {
+			var id = $(this).data('img-id');
+			var fetched = self.fetch_img_meta( id );
+			console.log(fetched);
 		},
 		
 		
@@ -569,8 +581,6 @@
 			else {
 				target = $(this).parent();
 			}
-			
-		//	console.log( target );
 									
 			// guard - only one active inline-editor at one time
 			if( self.editing_node !== null && target.attr('id') == undefined ) {
@@ -664,15 +674,16 @@
 				action: 'slideshow-fetch-img-meta',
 				post_id: post_id
 			}
+
 			
 			$.post( ajaxurl, data ).complete(function(r){
 				var res = JSON.parse(r.responseText);
 				
 				var meta = res.meta;
 										
-				var src = meta['folder'] + meta['thumb']['file'];
-				var w = meta['thumb']['width'];
-				var h = meta['thumb']['height'];
+				var src = meta['folder'] + meta['medium']['file'];
+				var w = meta['medium']['width'];
+				var h = meta['medium']['height'];
 				
 				$(row).data('slide-id', id );
 				

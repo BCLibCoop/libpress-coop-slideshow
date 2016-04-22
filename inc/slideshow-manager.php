@@ -45,14 +45,6 @@ class SlideshowManager {
 	
 		global $wpdb;
 		
-		$blog_details = get_blog_details();
-		$siteurl = get_site_url($blog_details->site_id); 	// base site == the shared media host 
-		/*
-		foreach( $blog_details as $k => $v ) {
-			error_log( "$k => $v" );
-		}
-		*/		
-		
 		$thumb_w = get_option('thumbnail_size_w',true);
 		$thumb_h = get_option('thumbnail_size_h',true);
 
@@ -143,7 +135,7 @@ class SlideshowManager {
 			
 						
 /*			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" width="%d" height="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$thumbnail['file'], $thumbnail['width'],$thumbnail['height']);*/
-			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" class="thumb">',$r->ID,$title,$r->ID,$folder,$medium['file']);
+			$out[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" height="%d" width="%d" class="thumb">',$r->ID,$title,$r->ID,$folder,$medium['file'], $medium['height'], $medium['width']);
 			
 			$out[] = sprintf('<img id="slotview%d" src="%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
 		}
@@ -154,9 +146,8 @@ class SlideshowManager {
 		$out[] = '<th class="alignleft shared-slides">Shared Slide Images</th>';
 		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
 
-		// get the url of the shared media repos site
+		// Return to shared media site context
 		switch_to_blog(1);
-		$site = site_url();
 
 		$fetched = self::fetch_network_shared_media_slides();
 		$out = array_merge($out, $fetched);
@@ -193,7 +184,6 @@ class SlideshowManager {
 		$out[] = '</div>';
 		
 		echo implode("\n",$out);
-		// d($out);
 
 		//Restore later
 		restore_current_blog();
@@ -255,7 +245,6 @@ class SlideshowManager {
 			
 			$meta = $wpdb->get_var($sql);
 			$meta = maybe_unserialize($meta);
-			//d($meta);
 
 			$dragslide = $meta['sizes']['drag-slide'];
 			$thumbnail = $meta['sizes']['thumbnail'];
@@ -266,7 +255,7 @@ class SlideshowManager {
 			preg_match("/[0-9]+\/[0-9]+\/([\-a-z0-9\_\.]+)/", $full, $matched);
 			$large = $matched[1];
 			
-			$slides[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="medium%d" src="%s%s" class="medium"><p class="caption">%s</p>',$r->ID,$title,$r->ID,$folder,$medium['file'],$title);
+			$slides[] = sprintf('<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s%s" height="%d" width="%d" class="thumb"><p class="caption">%s</p>',$r->ID,$title,$r->ID,$folder,$medium['file'],$medium['height'],$medium['width'],$title);
 			
 			$slides[] = sprintf('<img id="slotview%d" src="%s%s" width="%d" height="%d" class="slotview"></div>',$r->ID,$folder,$dragslide['file'],$dragslide['width'],$dragslide['height']);
 
