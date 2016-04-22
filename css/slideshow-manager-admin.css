@@ -165,6 +165,22 @@ th span.slideshow-slide-link-header {
 	color: #999;	
 }
 
+.slideshow-dragzone .th {
+	font-size: 18px;
+}
+
+.shared-slides {
+	margin-top: 1em;
+}
+
+.bc-slides,
+.mb-slides {
+	font-size: 16px;
+}
+
+.draggable .caption {
+	margin-top: 0;
+}
 
 td.thumbbox {
 	height: 50px;
