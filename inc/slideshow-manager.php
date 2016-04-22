@@ -227,6 +227,7 @@ class SlideshowManager {
 		$get_slides = get_posts( $args );
 
 		wp_reset_postdata(); //just in case
+		if (empty($get_slides)) return array('<div class="slide-no-results"><p>No slides</p></div>');   //we got nothing with the post meta
 		
 		foreach( $get_slides as $r ) {
 		
