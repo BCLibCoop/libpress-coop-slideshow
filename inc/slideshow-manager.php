@@ -107,7 +107,7 @@ class SlideshowManager {
 		
 		
 		$out[] = '<table class="slideshow-drag-table">';
-		$out[] = '<tr><th class="alignleft">Your Slide Images</th></tr>';
+		$out[] = '<tr><th class="alignleft slide-heading">Your Slide Images</th></tr>';
 		$out[] = '<tr><td id="slide-remove-local" class="slideshow-draggable-items returnable local">';
 		
 		$sql = "SELECT * FROM $wpdb->posts WHERE post_type='attachment' AND ID IN (SELECT object_id FROM $wpdb->term_relationships tr JOIN $wpdb->term_taxonomy tt ON tr.term_taxonomy_id=tt.term_taxonomy_id JOIN $wpdb->terms tm ON tt.term_id =tm.term_id WHERE tt.taxonomy = 'media_tag' AND tm.name='slide') ORDER BY post_title";
@@ -143,7 +143,7 @@ class SlideshowManager {
 		$out[] = '</td></tr>';
 
 		//Network Shared Media (NSM) section
-		$out[] = '<th class="alignleft shared-slides">Shared Slide Images</th>';
+		$out[] = '<th class="alignleft slide-heading shared-slides">Shared Slide Images</th>';
 		$out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
 
 		// Return to shared media site context
