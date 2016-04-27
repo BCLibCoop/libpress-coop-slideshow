@@ -170,14 +170,15 @@
 
 				loadedData.done(function(result) {
 					parsed = JSON.parse(result);
-					create_hover_preview(evt, parsed.meta);
+					create_hover_preview(evt, $id, parsed.meta);
 				}).fail(function() {
 					console.log("Fetch failed");
 					});
 				});
 
-			$('.ui-draggable-handle > .thumb').on('mouseleave', function() {
-				$('#slide-preview').detach();
+			$('.ui-draggable-handle > .thumb').on('mouseleave', function(evt) {
+				var $id = $(this).parent().data('img-id');
+				$('#slide-preview-'+$id).detach();
 			});
 		},
 		
@@ -1196,21 +1197,20 @@ jQuery(document).ready(function() {
 		window.slideshow_manager.add_mouseover_listener();
 });
 
-function create_hover_preview(evt, data) {
+function create_hover_preview(evt, id, data) {
 
-					//var thumb = jQuery('#thumb'+id);
-					//console.log(thumb);
-					x_offset = -20;
-					y_offset = 30;
-					jQuery('body').append("<p id='slide-preview'><img src='"+
-						data.folder+data.file
-						+"' height='200' width='660' alt='"+
-						data.title+
-					"'></p>");
+		x_offset = -20;
+		y_offset = 30;
 
-					jQuery("#slide-preview").css({
-						"top": (evt.pageY + x_offset) + "px",
-						"left": (evt.pageX - y_offset) + "px",
-						"display": 'block'
-					}).fadeIn(5000);
+		jQuery('body').append("<p id='slide-preview-"+id+"' class='slide-preview'><img src='"+
+		data.folder+data.file
+			+"' height='200' width='660' alt='"+
+			data.title+
+		"'></p>");
+
+		jQuery("#slide-preview-"+id).css({
+			"top": (evt.pageY - x_offset) + "px",
+			"left": (evt.pageX + y_offset) + "px",
+			"display": 'block'
+		}).fadeIn(5000);
 }

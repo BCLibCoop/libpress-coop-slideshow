@@ -209,7 +209,7 @@ td.slideshow-slide-title {
 	font-weight: bold;
 }
 
-p#slide-preview {
+p.slide-preview {
 	position: absolute;
 	border: 1px solid #ccc;
 	background: #333;
