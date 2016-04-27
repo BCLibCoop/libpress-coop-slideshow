@@ -32,7 +32,6 @@
 			});
 			
 			$('.slideshow-collection-name').change( self.collection_name_monitor_changes );
-			
 			$('#collection-name-signal img').hover( self.alt_hover_in, self.alt_hover_out )
 				.attr('alt','enter a new name');
 			
@@ -72,13 +71,6 @@
 				self.add_text_only_slide();
 				return false;
 			});
-
-			$('.ui-draggable-handle').mouseover( function() {
-				self.mouseover_slide_preview();
-				console.log("Added mouseover event listener");
-				return false;
-			});
-			
 										
 /*
 			$('#coop-slides-setup-submit').click(function(evt){
@@ -96,7 +88,6 @@
 			
 			// retrieve the currently active slideshow by default
 			self.fetch_selected_slideshow();
-			
 		},
 				
 		init_add_new_state: function() {
@@ -119,7 +110,6 @@
 		
 			// bind clicking on graphics to radio buttons
 			$('.slideshow-control-img').click( self.set_layout_control );
-		
 		
 			// fetch and set current/default values - WRONG
 			// we need to reset values this way only on creating a blank collection name form
@@ -167,6 +157,28 @@
 		
 		alt_hover_out: function(evt) {
 			$('.alt-hover').hide();
+		},
+
+		add_mouseover_listener: function() {
+			$item = $('.slideshow-draggable-items');
+			$('.ui-draggable-handle > .thumb').on('mouseenter', function(evt) {
+			//$item.on('mouseover', '.ui-draggable-handle > .thumb', function(evt) {
+
+				var $thumb = $('ui-draggable-handle > .thumb');
+				var $id = $(this).parent().data('img-id');
+				var loadedData = self.fetch_img_meta($id);
+
+				loadedData.done(function(result) {
+					parsed = JSON.parse(result);
+					create_hover_preview(evt, parsed.meta);
+				}).fail(function() {
+					console.log("Fetch failed");
+					});
+				});
+
+			$('.ui-draggable-handle > .thumb').on('mouseleave', function() {
+				$('#slide-preview').detach();
+			});
 		},
 		
 			
@@ -377,18 +389,11 @@
 
 			$(thumb).addClass('ghosted').parent().draggable('option','disabled',true);
 
-			self.fetch_img_meta( id );
+			//self.fetch_img_meta( id );
 
 			self.runtime_calculate();
 
 		},
-
-		mouseover_slide_preview: function() {
-			var id = $(this).data('img-id');
-			var fetched = self.fetch_img_meta( id );
-			console.log(fetched);
-		},
-		
 		
 		return_to_source: function( row, ui ) {
 		
@@ -453,26 +458,36 @@
 			var img = $('<img src="'+src+'" class="slotview" height="49" id="slotcopy'+d+'">');
 			return $('<div class="slideshow-drag-helper draggable"></div>').append(img.show());
 		},
-		
+
 		fetch_img_meta: function( post_id ) {
-			
 			var data = {
 				action: 'slideshow-fetch-img-meta',
 				post_id: post_id
 			}
-			
-			$.post( ajaxurl, data ).complete(function(r){
-				var res = JSON.parse(r.responseText);
-				if( res.result === 'success' ) {
-					return res.meta;
-				}
-				else {
-					alert( "Could not retrieve meta data for image: " + post_id );
-					return false;
-				}
-			});
+			//return a deferred object
+			var poster = $.post(ajaxurl, data);
+			return poster;
 		},
 		
+		// fetch_img_meta: function( post_id ) {
+
+		// 	var data = {
+		// 		action: 'slideshow-fetch-img-meta',
+		// 		post_id: post_id
+		// 	}
+
+		// 	$.post( ajaxurl, data ).complete(function(r){
+		// 		var res = JSON.parse(r.responseText);
+		// 		if( res.result === 'success' ) {
+		// 			return res.meta;
+		// 		}
+		// 		else {
+		// 			alert( "Could not retrieve meta data for image: " + post_id );
+		// 			return false;
+		// 		}
+		// 	});
+		// },
+
 		first_empty_row: function() {
 		
 			var rows = $('.slideshow-collection-row');
@@ -1152,7 +1167,6 @@
 
 }(jQuery,window));
 
-
 jQuery().ready(function(){
 	
 	window.coop_slideshow_settings = jQuery().coop_slideshow_settings();
@@ -1175,7 +1189,28 @@ jQuery().ready(function(){
 									  over: slideshow_manager.over_source,
 									  out:	slideshow_manager.leave_source,
 									  hoverClass: 'return_highlight' 
-								});							
-	
-	
+								});
 });
+
+jQuery(document).ready(function() {
+		window.slideshow_manager.add_mouseover_listener();
+});
+
+function create_hover_preview(evt, data) {
+
+					//var thumb = jQuery('#thumb'+id);
+					//console.log(thumb);
+					x_offset = -20;
+					y_offset = 30;
+					jQuery('body').append("<p id='slide-preview'><img src='"+
+						data.folder+data.file
+						+"' height='200' width='660' alt='"+
+						data.title+
+					"'></p>");
+
+					jQuery("#slide-preview").css({
+						"top": (evt.pageY + x_offset) + "px",
+						"left": (evt.pageX - y_offset) + "px",
+						"display": 'block'
+					}).fadeIn(5000);
+}
