@@ -177,8 +177,14 @@
 				});
 
 			$('.ui-draggable-handle > .thumb').on('mouseleave', function(evt) {
-				var $id = $(this).parent().data('img-id');
-				$('#slide-preview-'+$id).detach();
+				//var $id = $(this).parent().data('img-id');
+				//$('#slide-preview-'+$id).detach();
+				$('.slide-preview').detach();
+			}).on('mousedown', function() {
+				//var $id = $(this).parent().data('img-id');
+				console.log("Heard a mousedown");
+				//console.log($id);
+				$('.slide-preview').detach();
 			});
 		},
 		
@@ -390,7 +396,7 @@
 
 			$(thumb).addClass('ghosted').parent().draggable('option','disabled',true);
 
-			//self.fetch_img_meta( id );
+			self.fetch_img_meta( id );
 
 			self.runtime_calculate();
 
@@ -1212,5 +1218,5 @@ function create_hover_preview(evt, id, data) {
 			"top": (evt.pageY - x_offset) + "px",
 			"left": (evt.pageX + y_offset) + "px",
 			"display": 'block'
-		}).fadeIn(5000);
+		}).fadeIn(400);
 }
