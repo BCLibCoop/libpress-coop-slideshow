@@ -160,34 +160,41 @@
 		},
 
 		add_mouseover_listener: function() {
-			$item = $('.slideshow-draggable-items');
-			$('.ui-draggable-handle > .thumb').on('mouseenter', function(evt) {
-			//$item.on('mouseover', '.ui-draggable-handle > .thumb', function(evt) {
 
-				var $thumb = $('ui-draggable-handle > .thumb');
-				var $id = $(this).parent().data('img-id');
+			var config = {
+					over: mouseInFetch,
+					out: mouseOutClear,
+					timeout: 500,
+			};
+
+			$('.ui-draggable-handle').hoverIntent(config);
+
+			function mouseInFetch(evt) {
+				var $id = $(this).data('img-id');
 				var loadedData = self.fetch_img_meta($id);
 
 				loadedData.done(function(result) {
 					parsed = JSON.parse(result);
 					create_hover_preview(evt, $id, parsed.meta);
 				}).fail(function() {
-					console.log("Fetch failed");
+						console.log("Fetch failed");
 					});
-				});
+			}
+
+			/* Not really sure why the hoverOut callback behaves badly
+			*  but we add separate listeners for clearing the slidepreview below
+			*/
+
+			function mouseOutClear(evt) {
+				return false;
+			}
 
 			$('.ui-draggable-handle > .thumb').on('mouseleave', function(evt) {
-				//var $id = $(this).parent().data('img-id');
-				//$('#slide-preview-'+$id).detach();
 				$('.slide-preview').detach();
 			}).on('mousedown', function() {
-				//var $id = $(this).parent().data('img-id');
-				console.log("Heard a mousedown");
-				//console.log($id);
 				$('.slide-preview').detach();
 			});
 		},
-		
 			
 		add_text_only_slide: function() {
 			
@@ -1218,5 +1225,5 @@ function create_hover_preview(evt, id, data) {
 			"top": (evt.pageY - x_offset) + "px",
 			"left": (evt.pageX + y_offset) + "px",
 			"display": 'block'
-		}).fadeIn(400);
+		}).fadeIn(1000);
 }

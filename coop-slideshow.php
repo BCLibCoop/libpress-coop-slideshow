@@ -72,6 +72,9 @@ class SlideshowAdmin {
 			
 			wp_register_script( 'coop-slideshow-admin-js', plugins_url( '/js/slideshow-admin.js',__FILE__), array('jquery','jquery-ui-core','jquery-ui-draggable','jquery-ui-droppable'));
 			wp_enqueue_script( 'coop-slideshow-admin-js' );
+
+			wp_register_script( 'coop-slideshow-hoverintent-js', plugins_url( '/js/jquery.hoverIntent.minified.js',__FILE__), array('jquery'));
+			wp_enqueue_script(  'coop-slideshow-hoverintent-js', false, array(), false, true );
 			
 			wp_register_style( 'coop-signals', plugins_url( '/css/signals.css', __FILE__ ), false );
 			wp_enqueue_style( 'coop-signals' );
