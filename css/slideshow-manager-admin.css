@@ -180,6 +180,12 @@ th span.slideshow-slide-link-header {
 
 .draggable .caption {
 	margin-top: 0;
+	width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  -ms-text-overflow: ellipsis;
 }
 
 .slide-heading {
@@ -310,6 +316,7 @@ td.slideshow-draggable-items {
 td.slideshow-draggable-items div {
 	float: left;
 	margin: 6px;
+	width: 180px;
 }
 
 div.draggable {
