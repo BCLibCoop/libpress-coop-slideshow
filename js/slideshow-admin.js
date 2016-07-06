@@ -1206,9 +1206,11 @@ jQuery().ready(function(){
 								});
 });
 
+/**
 jQuery(document).ready(function() {
 		window.slideshow_manager.add_mouseover_listener();
 });
+**/
 
 function create_hover_preview(evt, id, data) {
 
