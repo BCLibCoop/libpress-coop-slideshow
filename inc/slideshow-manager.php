@@ -209,24 +209,26 @@ class SlideshowManager {
 
 		global $wpdb;
 
-		$args = array(
-			'post_type' => 'attachment',
-			'tax_query' => array(
-												array(
-														'taxonomy' => 'media_tag',
-														'field' => 	'term_taxonomy_id',
-														'operator' => 'EXISTS',
-													)),
-			'meta_key' => 'slide_region',
-			'meta_value' => $region,
-			'orderby' => 'title',
-			'posts_per_page' => -1,
-		);
-		if ( empty($region) ) $args['meta_compare'] = 'NOT EXISTS';
+		$args = array('post_type' => 'attachment',
+				'posts_per_page' => -1,
+				'meta_key' => 'slide_region',
+				'meta_value' => $region,
+				'order_by' => 'date',
+				'tax_query' => array( array( 'taxonomy' => 'media_tag',
+						'terms' => 'slide',
+						'field' => 'name',
+						),
+					),
+				'meta_query' => array( array( 'key' => 'slide_region',
+						'compare' => '=',
+						'value' => $region,
+						),
+					),
+			     );
 
 		$get_slides = get_posts( $args );
-
 		wp_reset_postdata(); //just in case
+
 		if (empty($get_slides)) return array('<div class="slide-no-results"><p>No slides</p></div>');   //we got nothing with the post meta
 		
 		foreach( $get_slides as $r ) {
