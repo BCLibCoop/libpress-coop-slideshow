@@ -13,197 +13,89 @@
     signalbox,    // for showing signals to the user in a floating div .sort-table-signal
     slideshow_id;
 
-  var SlideShowSetup = function (options) {
-    this.init(options);
+  var SlideShowSetup = function () {
+    this.init();
   }
 
   SlideShowSetup.prototype = {
 
-    init: function (options) {
-
+    init: function () {
       self = this;
       self.editing_node = null;
 
       // init hook-ups listed more-or-less in page order
-      $('A.add-new').click(function (evt) {
+      $('a.add-new').on('click', function (evt) {
         evt.stopImmediatePropagation();
         self.init_add_new_state();
+
         return false;
       });
 
-      $('.slideshow-collection-name').change(self.collection_name_monitor_changes);
-      $('#collection-name-signal img').hover(self.alt_hover_in, self.alt_hover_out)
-        .attr('alt', 'enter a new name');
-
-      $('#slideshow_select').chosen({ disable_search_threshold: 10 }).change(self.fetch_selected_slideshow);
-      // $('#slideshow_select').chosen().change( self.reset_collection_name_signal );
+      $('#slideshow_select').chosen({ disable_search_threshold: 10 }).on('change', self.fetch_selected_slideshow);
+      // $('#slideshow_select').chosen().on('change', self.reset_collection_name_signal);
       $('#slideshow_page_selector').chosen({ disable_search_threshold: 10 });
 
 
-      $('.slideshow-save-collection-btn').click(function (evt) {
+      $('.slideshow-save-collection-btn').on('click', function (evt) {
         evt.stopImmediatePropagation();
         self.save_collection();
         return false;
       });
 
-      $('.slideshow-delete-collection-btn').click(function (evt) {
+      $('.slideshow-delete-collection-btn').on('click', function (evt) {
         evt.stopImmediatePropagation();
         self.delete_this_collection();
         return false;
       });
 
-      /*
-            $('.slideshow-text-slide-link-btn').click( function(evt){
-              evt.stopImmediatePropagation();
-              self.toggle_text_link_input();
-              return false;
-            });
-      */
-
-      $('.slideshow-text-slide-cancel-btn').click(function (evt) {
+      $('.slideshow-text-slide-cancel-btn').on('click', function (evt) {
         evt.stopImmediatePropagation();
         self.clear_text_slide_form();
         return false;
       });
 
-      $('.slideshow-text-slide-save-btn').click(function (evt) {
+      $('.slideshow-text-slide-save-btn').on('click', function (evt) {
         evt.stopImmediatePropagation();
         self.add_text_only_slide();
         return false;
       });
 
-      /*
-            $('#coop-slides-setup-submit').click(function(evt){
-              evt.stopImmediatePropagation();
-              self.save_collection();
-              return false;
-            });
-      */
-
-      $('#runtime-signal img.signals-sprite').addClass('reload-disabled').hover(self.runtime_hover_in, self.runtime_hover_out).click(self.runtime_calculate);
+      $('#runtime-signal img.signals-sprite')
+        .addClass('reload-disabled')
+        .on('mouseenter mouseleave', self.runtime_hover)
+        .on('click', self.runtime_calculate);
 
       $('#runtime-signal img').attr('alt', 'recalculate runtime');
 
-      self.init_quick_set_layout();
+      // bind clicking on graphics to radio buttons
+      $('.slideshow-control-img').on('click', self.set_layout_control);
 
       // retrieve the currently active slideshow by default
       self.fetch_selected_slideshow();
     },
 
     init_add_new_state: function () {
-
       $('#slideshow_select').remove();
       $('#slideshow_select_chzn').remove();
       self.clear_drop_table_rows();
       // clear activated collection flag
       var activated = $('#slideshow-is-active-collection').filter(':checked');
       if (activated.length) {
-        $('#slideshow-is-active-collection').click();
+        $('#slideshow-is-active-collection').trigger('click');
       }
-      $('#slideshow-is-active-collection').removeAttr('checked');
+      $('#slideshow-is-active-collection').prop('checked', false);
       // clear the input field, show and set focus
       $('.slideshow-collection-name').show().val('').focus();
 
     },
 
-    init_quick_set_layout: function () {
-
-      // bind clicking on graphics to radio buttons
-      $('.slideshow-control-img').click(self.set_layout_control);
-
-      // fetch and set current/default values - WRONG
-      // we need to reset values this way only on creating a blank collection name form
-      //
-      // routinely the fetch_collection routine should reset the current slideshow's settings
-
-      /*
-      var layout = window.coop_slideshow_settings.current.currentLayout;
-      var transition = window.coop_slideshow_settings.current.mode;
-      $('input[value="'+layout+'"][name="slideshow-layout"]').attr('checked','checked');
-      $('input[value="'+transition+'"][name="slideshow-transition"]').attr('checked','checked');
-      */
-    },
-
-    alt_hover_in: function (obj) {
-
-      var type = 'img';
-      if (obj.type == 'mouseenter') {
-        type = 'event';
-        obj = obj.currentTarget;
-      }
-      var img = $(obj);
-      var tip = $('.alt-hover');
-      var txt = img.attr('alt');
-
-      if (txt == undefined || txt == '') {
-        return;
-      }
-      tip.empty().append(txt);
-
-      var twidth = parseInt(tip.width(), 10) / 2;
-      var theight = tip.outerHeight();
-
-      var box = img.parent();
-      var pos = box.offset(); // absolute left, top
-      var adminmenu = $('#adminmenuwrap').width();
-
-      var leftOffset = pos.left - 16 - adminmenu - twidth;
-      var topOffset = pos.top - 32 - theight;
-
-      tip.css('top', topOffset).css('margin-left', leftOffset).css('position', 'absolute');
-
-      tip.show();
-    },
-
-    alt_hover_out: function (evt) {
-      $('.alt-hover').hide();
-    },
-
-    add_mouseover_listener: function () {
-
-      var config = {
-        over: mouseInFetch,
-        out: mouseOutClear,
-        timeout: 500,
-      };
-
-      $('.ui-draggable-handle').hoverIntent(config);
-
-      function mouseInFetch(evt) {
-        var $id = $(this).data('img-id');
-        var loadedData = self.fetch_img_meta($id);
-
-        loadedData.done(function (result) {
-          parsed = JSON.parse(result);
-          create_hover_preview(evt, $id, parsed.meta);
-        }).fail(function () {
-          console.log("Fetch failed");
-        });
-      }
-
-      /* Not really sure why the hoverOut callback behaves badly
-      *  but we add separate listeners for clearing the slidepreview below
-      */
-
-      function mouseOutClear(evt) {
-        return false;
-      }
-
-      $('.ui-draggable-handle > .thumb').on('mouseleave', function (evt) {
-        $('.slide-preview').detach();
-      }).on('mousedown', function () {
-        $('.slide-preview').detach();
-      });
-    },
-
     add_text_only_slide: function () {
-
       var slideshow_collection_name = $('.slideshow-collection-name').val();
       var slideshow_id = $('#slideshow_select').val();
 
       if (slideshow_collection_name == '' && null == slideshow_id) {
         alert('Whoops! You need to name the slideshow first.');
-        $('.slideshow-collection-name').focus();
+        $('.slideshow-collection-name').trigger('focus');
         return false;
       }
 
@@ -228,13 +120,12 @@
 
       if (opt_class === 'page') {
         slide_link = '/?page=' + page_id;
-      }
-      else {
+      } else {
         slide_link = guid;
       }
 
       var data = {
-        action: 'slideshow_add_text_slide',
+        action: 'slideshow-add-text-slide',
         slideshow_name: slideshow_collection_name,
         slideshow_id: slideshow_id,
         title: title,
@@ -243,23 +134,24 @@
         is_active: is_active
       };
 
-      $.post(ajaxurl, data).complete(function (r) {
-        var res = JSON.parse(r.responseText);
-
+      $.post(ajaxurl, data).done(function (res) {
         if (res.result === 'success') {
           alert('Text slide saved');
-          self.clear_text_slide_form();
-          self.fetch_selected_slideshow();
-        }
-        else {
-          alert('Unable to save the text slide.');
+          // self.clear_text_slide_form();
+          // self.fetch_selected_slideshow();
+          window.history.go(0);
+        } else {
+          if (res.feedback !== undefined) {
+            alert(res.feedback);
+          } else {
+            alert('Unable to save the text slide.');
+          }
           $('#slideshow-text-slide-heading').focus();
         }
       });
     },
 
     clear_drop_table_rows: function () {
-
       var rows = $('.slideshow-collection-row');
       var caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
       var link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
@@ -288,53 +180,22 @@
       $('.slideshow-text-slide-link-input').empty().val('');
     },
 
-    collection_name_monitor_changes: function (evt) {
-
-      var input = this;
-      var spritebox = $('#collection-name-signal');
-      var sprite = $('img', spritebox);
-
-
-      if ($(input).val().trim() == '') {
-        // whitespace only in field
-        sprite.attr('class', 'signals-sprite cross-disabled');
-        $('#collection-name-status-msg').empty()
-          .append('Cannot use empty spaces for collection name');
-
-      }
-      else if ($(input).val().trim().length == 0) {
-        sprite.attr('class', 'signals-sprite plus-disabled');
-        $('#collection-name-status-msg').empty();
-      }
-      else {
-        sprite.attr('class', 'signals-sprite tick-disabled');
-        $('#collection-name-status-msg').empty().append('Checking if name already in use');
-        self.precheck_slideshow_name();
-      }
-
-    },
-
     delete_this_collection: function () {
-
       if (confirm("This is a destructive operation.\nAre you sure you want to\nremove this slideshow from the database?")) {
-
-        var is_active = $('#slideshow-is-active-collection').is(':checked');
+        // var is_active = $('#slideshow-is-active-collection').is(':checked');
 
         var data = {
           action: 'slideshow-delete-slide-collection',
           slideshow_id: $('#slideshow_select').val()
         };
 
-        $.post(ajaxurl, data).complete(function (r) {
-
-          var res = JSON.parse(r.responseText);
+        $.post(ajaxurl, data).done(function (res) {
           if (res.result == 'success') {
             alert(res.feedback);
             window.history.go(0);
           }
         });
-      }
-      else {
+      } else {
         alert('Operation cancelled');
       }
       return false;
@@ -349,36 +210,29 @@
     },
 
     drop_on_row: function (evt, ui) {
-
       var row = this.id;
       var dragged = ui.draggable;
 
       if ($(dragged).hasClass('slideshow-collection-row')) {
         self.drop_insert_row(this, ui);
-      }
-      else {
+      } else {
         self.drop_insert_thumbnail(row, dragged, this);
       }
     },
 
     drop_insert_row: function (row, ui) {
-
       var $t = $(row); // this
       var dragged = ui.draggable;
-      var dropzone_id = $($t).attr('id');
-
-      var dropped_id = $(dragged).attr('id');
+      // var dropzone_id = $($t).attr('id');
+      // var dropped_id = $(dragged).attr('id');
       var dropme = $(dragged).detach();
 
       $($t).before(dropme);
 
       self.runtime_calculate();
-
     },
 
-
     drop_insert_thumbnail: function (row, dragged, target) {
-
       var id = dragged.data('img-id');
       var cap = dragged.data('img-caption');
       var link = dragged.data('img-link');
@@ -404,15 +258,11 @@
       $(thumb).addClass('ghosted').parent().draggable('option', 'disabled', true);
 
       self.fetch_img_meta(id);
-
       self.runtime_calculate();
-
     },
 
     return_to_source: function (row, ui) {
-
       var $t = $(this); // this
-
       var dragged = ui.draggable;
 
       if (!dragged.hasClass('slideshow-collection-row')) {
@@ -423,12 +273,11 @@
 
       if (dropzone_id == 'slide-remove-local') {
         self.slide_remove_local(dragged);
-        return;
-      }
-      else if (dropzone_id == 'slide-remove-shared') {
+      } else if (dropzone_id == 'slide-remove-shared') {
         self.slide_remove_shared(dragged);
-        return;
       }
+
+      return;
     },
 
     over_source: function (evt, ui) {
@@ -439,7 +288,6 @@
 
     },
 
-
     over_drop: function (evt, ui) {
 
     },
@@ -449,27 +297,25 @@
     },
 
     drag_representation: function (evt) {
-
       if ($(this).hasClass('slideshow-collection-row')) {
         return self.drag_row_rep(evt, this);
       }
-      else {
-        return self.drag_thumb_rep(evt, this);
-      }
+
+      return self.drag_thumb_rep(evt, this);
     },
 
     drag_row_rep: function (evt, obj) {
-
       var row = $(obj).clone();
+
       return row;
     },
 
     drag_thumb_rep: function (evt, obj) {
-
       var d = $(obj).data('img-id');
       var t = $('#slotview' + d);
       var src = t.attr('src');
       var img = $('<img src="' + src + '" class="slotview" height="49" id="slotcopy' + d + '">');
+
       return $('<div class="slideshow-drag-helper draggable"></div>').append(img.show());
     },
 
@@ -478,32 +324,14 @@
         action: 'slideshow-fetch-img-meta',
         post_id: post_id
       }
-      //return a deferred object
+
+      // return a deferred object
       var poster = $.post(ajaxurl, data);
+
       return poster;
     },
 
-    // fetch_img_meta: function( post_id ) {
-
-    //  var data = {
-    //   action: 'slideshow-fetch-img-meta',
-    //   post_id: post_id
-    //  }
-
-    //  $.post( ajaxurl, data ).complete(function(r){
-    //   var res = JSON.parse(r.responseText);
-    //   if( res.result === 'success' ) {
-    //    return res.meta;
-    //   }
-    //   else {
-    //    alert( "Could not retrieve meta data for image: " + post_id );
-    //    return false;
-    //   }
-    //  });
-    // },
-
     first_empty_row: function () {
-
       var rows = $('.slideshow-collection-row');
       for (var i = 0; i < rows.length; i++) {
 
@@ -515,7 +343,6 @@
     },
 
     fetch_selected_slideshow: function () {
-
       self.clear_drop_table_rows();
       var opt = $('#slideshow_select option').filter(':selected');
 
@@ -526,76 +353,65 @@
         slideshow_id: opt.val()
       };
 
-      $.post(ajaxurl, data).complete(function (r) {
-
-        var res = JSON.parse(r.responseText);
+      $.post(ajaxurl, data).done(function (res) {
         var slides = res.slides;
         self.slideshow_id = opt.val();
 
         if (res.is_active === "1") {
-          $('#slideshow-is-active-collection').attr('checked', 'checked');
-        }
-        else {
-          $('#slideshow-is-active-collection').removeAttr('checked');
+          $('#slideshow-is-active-collection').prop('checked', true);
+        } else {
+          $('#slideshow-is-active-collection').prop('checked', false);
         }
 
         if (res.captions === "1") {
-          $('#slideshow-show-captions').attr('checked', 'checked');
-        }
-        else {
-          $('#slideshow-show-captions').removeAttr('checked');
+          $('#slideshow-show-captions').prop('checked', true);
+        } else {
+          $('#slideshow-show-captions').prop('checked', false);
         }
 
         var i;
         for (i = 0; i < slides.length; i++) {
-
           var row = $('.slideshow-collection-row').eq(i);
+
           if (slides[i].post_id == null) {
             // this is a text entry
             self.place_slide_text(slides[i].id, slides[i].text_title, slides[i].text_content, slides[i].slide_link, row);
-          }
-          else {
+          } else {
             // needs to include title/caption in db for image too - needs UI for setting same
             self.place_slide_img(slides[i].id, slides[i].post_id, slides[i].text_title, slides[i].slide_link, row);
           }
         }
 
         /* the layout and transition settings also need restoring */
-
         var layout = res.layout;
         var transition = res.transition;
 
-        $('input[value="' + layout + '"][name="slideshow-layout"]').attr('checked', 'checked');
-        $('input[value="' + transition + '"][name="slideshow-transition"]').attr('checked', 'checked');
-
-
+        $('input[value="' + layout + '"][name="slideshow-layout"]').prop('checked', true);
+        $('input[value="' + transition + '"][name="slideshow-transition"]').prop('checked', true);
       });
     },
 
     insert_inline_edit_toggle: function (opt) {
-
       var imgsrc = $('.slideshow-signals-preload img').attr('src');
-      var div = $('<div class="slideshow-inline-edit-toggle" />')
-        .css('background-image', 'url(' + imgsrc + ')');
+      var div = $('<div class="slideshow-inline-edit-toggle" />').css('background-image', 'url(' + imgsrc + ')');
       if (opt) {
         div.css('background-position', '-266px -70px');
-      }
-      else {
+      } else {
         div.css('background-position', '-266px -6px');
       }
+
       return div;
     },
 
-    inline_edit_hover_in: function (evt) {
-      $('.slideshow-inline-edit-toggle', evt.target).css('background-position', '-266px -70px');
-    },
-
-    inline_edit_hover_out: function (evt) {
-      $('.slideshow-inline-edit-toggle', evt.target).css('background-position', '-266px -6px');
+    inline_edit_hover: function (evt) {
+      if (evt.type === 'mouseenter') {
+        $('.slideshow-inline-edit-toggle', evt.target).css('background-position', '-266px -70px');
+      } else {
+        $('.slideshow-inline-edit-toggle', evt.target).css('background-position', '-266px -6px');
+      }
     },
 
     inline_form_toggle: function () {
-
       // this is only the title
       // top level element === TD.slideshow-slide-title
       var target;
@@ -603,11 +419,9 @@
 
       if (this.id === 'inline-editor') {
         target = $(this);
-      }
-      else if ($(this).parent().hasClass('slide-title-box')) {
+      } else if ($(this).parent().hasClass('slide-title')) {
         target = $(this).parent().parent();
-      }
-      else {
+      } else {
         target = $(this).parent();
       }
 
@@ -625,7 +439,6 @@
 
       if (target.attr('id') === 'inline-editor') {  // state marker == active editor
         // restore NON-EDIT view
-
         var td = self.editing_node;
 
         var title_edit = $('#slide-title-edit');
@@ -654,21 +467,20 @@
         }
 
         // restore click-to-edit functionality
-        title_div.hover(self.inline_edit_hover_in, self.inline_edit_hover_out);
+        title_div.on('mouseenter mouseleave', self.inline_edit_hover);
         title_div.append(self.insert_inline_edit_toggle());
-        title_div.click(self.inline_form_toggle);
+        title_div.on('click', self.inline_form_toggle);
 
         target.replaceWith(td);
+
         // clear buffer for reuse (also, a null buffer is part of active-inline-editor detection)
         self.editing_node = null;
-      }
-      else {
+      } else {
         // convert to INLINE-EDITOR
-
         var inline_editor = $('<td class="inline-editor" id="inline-editor" />');
         var title_edit = $('<input class="slide-title-edit" type="text" id="slide-title-edit" value="' + $('.slide-title', target).text() + '" placeholder="Caption/Title (required)" />');
         var link_edit = $('<input class="slide-link-edit" type="text" id="slide-link-edit" value="' + $('.slide-link', target).text() + '" placeholder="/?page_id=123" />');
-        var div_title = $('<div class="slide-title-box"/>').append(title_edit).append(self.insert_inline_edit_toggle(1));
+        var div_title = $('<div class="slide-title"/>').append(title_edit).append(self.insert_inline_edit_toggle(1));
 
         inline_editor.append(div_title).append(link_edit);
         title_edit.css('width', '94%');
@@ -683,17 +495,15 @@
         // else {
         // console.log( 'No content for this slide content-text' );
         // }
+
         inline_editor.css('top', top).css('width', width).css('left', left);
         self.editing_node = target.replaceWith(inline_editor);
-        $('.slideshow-inline-edit-toggle').click(self.inline_form_toggle);
-        title_edit.focus();
-
+        $('.slideshow-inline-edit-toggle').on('click', self.inline_form_toggle);
+        title_edit.trigger('focus');
       }
     },
 
-
     place_slide_img: function (id, post_id, slide_title, link, row) {
-
       if (row == null) {
         // get the first empty row ...
         row = self.first_empty_row();
@@ -704,12 +514,8 @@
         post_id: post_id
       }
 
-
-      $.post(ajaxurl, data).complete(function (r) {
-        var res = JSON.parse(r.responseText);
-
+      $.post(ajaxurl, data).done(function (res) {
         var meta = res.meta;
-
         var src = meta['folder'] + meta['medium']['file'];
         var w = meta['medium']['width'];
         var h = meta['medium']['height'];
@@ -725,8 +531,8 @@
         $(row).children().first().empty().append(img);
 
         var title = $('<div class="slide-title" />').append(this_title).append(self.insert_inline_edit_toggle());
-        title.hover(self.inline_edit_hover_in, self.inline_edit_hover_out);
-        title.click(self.inline_form_toggle);
+        title.on('mouseenter mouseleave', self.inline_edit_hover)
+        title.on('click', self.inline_form_toggle);
         $(row).children().eq(1).empty().append(title);
 
         if (undefined !== link) {
@@ -740,7 +546,6 @@
     },
 
     place_slide_text: function (id, title, content, link, row) {
-
       if (row == null) {
         // get the first empty row ...
         row = self.first_empty_row();
@@ -750,8 +555,8 @@
       $(row).children().first().empty().append($('<span class="slideshow-big-t">T</span>'));
 
       var titlediv = $('<div class="slide-title" />').append(title).append(self.insert_inline_edit_toggle());
-      titlediv.hover(self.inline_edit_hover_in, self.inline_edit_hover_out);
-      titlediv.click(self.inline_form_toggle);
+      titlediv.on('mouseenter mouseleave', self.inline_edit_hover);
+      titlediv.on('click', self.inline_form_toggle);
       $(row).children().eq(1).empty().append(titlediv);
 
       if (undefined !== link) {
@@ -764,53 +569,15 @@
       self.runtime_calculate();
     },
 
-    precheck_slideshow_name: function () {
-
-      if ($('.slideshow-collection-name').val() === '') return;
-
-      var data = {
-        action: 'precheck_slideshow_collection_name',
-        slideshow_name: $('.slideshow-collection-name').val()
-      };
-
-      $.post(ajaxurl, data).complete(function (r) {
-        var res = JSON.parse(r.responseText);
-        if (res.result == 'found') {
-          // not okay to use if keyed into field
-          $('#collection-name-signal img').addClass('cross-active');
-
-          if (res.slideshow_id > 0) {
-            $('#slideshow_select').attr('selectedIndex', res.slideshow_id);
-            $('#slideshow_select').trigger('liszt:updated');
-            $('#collection-name-signal img').attr('class', 'signals-sprite tick-active')
-              .attr('alt', 'reload this collection').unbind('click').bind('click', self.fetch_collection_by_name);
-            $('#collection-name-status-msg').empty().append('Found slideshow with that name. Click green tick to reload slideshow.');
-
-          }
-        }
-        else {
-          // okay to use if newly created
-          $('#collection-name-signal img').attr('class', 'signals-sprite plus-active')
-            .attr('alt', 'save collection name')
-            .unbind('click').bind('click', self.save_collection_name);
-          $('#collection-name-status-msg').empty().append('Click the green plus to save slideshow name.');
-
-        }
-
-      });
-
-    },
-
     runtime_calculate: function () {
-
       $('.slideshow-runtime-information').empty();
 
       var children = $('.thumbbox').children();
       var msg;
+
       if (undefined === children) {
         msg = "There must be slides before calculating the runtime.";
-      }
-      else {
+      } else {
         /// var index = parseInt(row.replace('row',''),10) + 1; // offset zero-based index
         var index = children.length;
         var dwell = parseInt(window.coop_slideshow_settings.current.pause, 10) / 1000;
@@ -822,46 +589,36 @@
         msg += "Transition between slides will take " + transit + " seconds. ";
         msg += "The slideshow will take a total of " + net + " seconds to cycle completely.";
       }
+
       $('.slideshow-runtime-information').empty().text(msg);
     },
 
-    reset_collection_name_signal: function () {
-      $('#collection-name-signal img').removeClass('cross-active').addClass('tick-disabled').attr('alt', 'name has been saved');
+    runtime_hover: function (evt) {
+      if (evt.type === 'mouseenter') {
+        $(this).removeClass('reload-disabled').addClass('reload-active');
+      } else {
+        $(this).removeClass('reload-active').addClass('reload-disabled');
+      }
     },
-
-    runtime_hover_in: function (evt) {
-      $(this).removeClass('reload-disabled').addClass('reload-active');
-      self.alt_hover_in(evt);
-    },
-
-    runtime_hover_out: function (evt) {
-      $(this).removeClass('reload-active').addClass('reload-disabled');
-      self.alt_hover_out(evt);
-    },
-
 
     save_collection: function () {
+      var slides = [];
+      var rows = $('.slideshow-collection-row');
 
       /* add check for an open inline-editor
         if open, toggle it closed before proceeding here
       */
-
       if (self.editing_node !== null && self.editing_node !== undefined) {
         // alert($(self.editing_node).attr('id'));
         var title = $('#inline-editor .slideshow-inline-edit-toggle');
-        title.click();
+        title.trigger('click');
       }
 
-      var slides = [];
-      var rows = $('.slideshow-collection-row');
-
       for (i = 0; i < rows.length; i++) {
-
         // remove the placeholder spans which are purely eyecandy
         $('span.placeholder', rows[i]).remove();
 
         // slide_id is set in the case of a collection having been reloaded into the editor
-
         var type = 'none';  // bias inherent in the system :-)
         var text_title = '';
         var text_content = '';
@@ -880,22 +637,19 @@
         slide_link = $(rows[i]).children().last().children('div.slide-link').children('a').attr('href');  // slide link box
 
         if (img_id == undefined) {
-
           // read the content of the content div
           text_content = $(rows[i]).children().last().children('div').last().text();
           if (text_title.length > 0 && text_content.length > 0) {
             type = 'text';
           }
-        }
-        else {
+        } else {
           type = 'image';
           post_id = img_id;
         }
 
+        // if (type == 'text' && text_title == '') {
 
-        if (type == 'text' && text_title == '') {
-
-        }
+        // }
 
         // if this slide has already been saved it has a slide_id index
         slide_id = $(rows[i]).data('slide-id');
@@ -946,16 +700,13 @@
         slides: slides
       };
 
-      $.post(ajaxurl, data).complete(function (r) {
-        var res = JSON.parse(r.responseText);
-
+      $.post(ajaxurl, data).done(function (res) {
         /// do something in response to the save attempt feedback ...
         if (res.result === 'success') {
           alert('Slide collection saved');
           // self.fetch_selected_slideshow();
           window.history.go(0);
-        }
-        else {
+        } else {
           alert(res.feedback);
         }
       });
@@ -969,11 +720,7 @@
     set_layout_control: function () {
       var t = $(this);
       var id = t.data('id');
-      $('#' + id).click();
-    },
-
-    show_checkmark: function () {
-      $('#collection-name-signal img').addClass('tick-active').fadeOut(2000);
+      $('#' + id).trigger('click');
     },
 
     slide_remove_local: function (dragged) {
@@ -987,24 +734,6 @@
       $('#thumb' + img_id).removeClass('ghosted').parent().draggable('option', 'disabled', false);
       self.clear_and_reinsert_row(dragged);
     },
-
-
-    /**
-    * slideshow-collection-name input sprite...
-    **/
-    spritebox: function () {
-
-      var box = $('<div class="slideshow-signals"></div>');
-      var left = parseInt($('.slideshow-collection-name').css('left'), 10);
-      left = left + parseInt($('.slideshow-collection-name').css('width'), 10) - 32;
-      box.css('left', left);
-
-      var top = parseInt($('.slideshow-collection-name').css('top'), 10) - 32;
-      box.css('top', top);
-      box.css('position', 'relative');
-
-      $('.slideshow-collection-name').parent().append(box);
-    }
   }
 
   $.fn.coop_slideshow_manager = function (opts) {
@@ -1064,7 +793,7 @@
         }
       }
 
-      $('#coop-slideshow-settings-submit').click(self.save_changes);
+      $('#coop-slideshow-settings-submit').on('click', self.save_changes);
 
       if (self._debug) console.log('returning initialized coop_slideshow_settings object');
 
@@ -1126,20 +855,21 @@
       if (changed === {} || keys.length === 0) {
         if (self._debug) console.log('nothing has changed');
         if (self._debug) alert('nothing to do! ');
+
+        alert('No changes found, not updating settings');
         return false;
       }
-      // otherwise continue to build data object to send server-side
 
+      // otherwise continue to build data object to send server-side
       changed['action'] = 'coop-save-slideshow-change';
+
       // because the exact changes are arbitrary, pass the array of keys as well
       changed['keys'] = JSON.stringify(keys);
 
       if (self._debug) console.log('posting data');
 
-      $.post(ajaxurl, changed).complete(function (r) {
-
+      $.post(ajaxurl, changed).done(function (res) {
         if (self._debug) console.log('response returned ');
-        var res = JSON.parse(r.responseText);
 
         alert(res.feedback);
 
@@ -1168,57 +898,37 @@
     }
   }
 
-  $.fn.coop_slideshow_settings = function (opts) {
-    return new SlideShowSettings(opts);
+  $.fn.coop_slideshow_settings = function () {
+    return new SlideShowSettings();
   }
 }(jQuery, window));
 
 jQuery().ready(function () {
+  if (window.pagenow === 'site-manager_page_top-slides') {
+    window.slideshow_manager = jQuery().coop_slideshow_manager();
+
+    jQuery('.draggable').draggable({
+      cursor: 'move',
+      stack: '.slide',
+      start: slideshow_manager.dragstart,
+      stop: slideshow_manager.dragstop,
+      helper: slideshow_manager.drag_representation
+    });
+
+    jQuery('.droppable').droppable({
+      drop: slideshow_manager.drop_on_row,
+      over: slideshow_manager.over_drop,
+      out: slideshow_manager.leave_drop,
+      hoverClass: 'drop_highlight'
+    });
+
+    jQuery('.returnable').droppable({
+      drop: slideshow_manager.return_to_source,
+      over: slideshow_manager.over_source,
+      out: slideshow_manager.leave_source,
+      hoverClass: 'return_highlight'
+    });
+  }
+
   window.coop_slideshow_settings = jQuery().coop_slideshow_settings();
-  window.slideshow_manager = jQuery().coop_slideshow_manager();
-
-  jQuery('.draggable').draggable({
-    cursor: 'move',
-    stack: '.slide',
-    start: slideshow_manager.dragstart,
-    stop: slideshow_manager.dragstop,
-    helper: slideshow_manager.drag_representation
-  });
-
-  jQuery('.droppable').droppable({
-    drop: slideshow_manager.drop_on_row,
-    over: slideshow_manager.over_drop,
-    out: slideshow_manager.leave_drop,
-    hoverClass: 'drop_highlight'
-  });
-
-  jQuery('.returnable').droppable({
-    drop: slideshow_manager.return_to_source,
-    over: slideshow_manager.over_source,
-    out: slideshow_manager.leave_source,
-    hoverClass: 'return_highlight'
-  });
 });
-
-/**
-jQuery(document).ready(function() {
-    window.slideshow_manager.add_mouseover_listener();
-});
-**/
-
-function create_hover_preview(evt, id, data) {
-  x_offset = -20;
-  y_offset = 30;
-
-  jQuery('body').append("<p id='slide-preview-" + id + "' class='slide-preview'><img src='" +
-    data.folder + data.file
-    + "' height='200' width='660' alt='" +
-    data.title +
-    "'></p>");
-
-  jQuery("#slide-preview-" + id).css({
-    "top": (evt.pageY - x_offset) + "px",
-    "left": (evt.pageX + y_offset) + "px",
-    "display": 'block'
-  }).fadeIn(1000);
-}
