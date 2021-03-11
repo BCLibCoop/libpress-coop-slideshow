@@ -28,17 +28,11 @@ class SlideshowDefaults
 
         $this->db_init = get_option('_slideshow_db_init');
 
-        add_action('init', [&$this, 'init']);
-        add_action('admin_menu', [&$this, 'addSlideshowMenu']);
-    }
+        add_action('wp_ajax_coop-save-slideshow-change', [&$this, 'defaultsPageSave']);
+        add_filter('attachment_fields_to_edit', [&$this, 'addRegionField'], 10, 2);
+        add_filter('attachment_fields_to_save', [&$this, 'regionFieldSave'], 10, 2);
 
-    public function init()
-    {
-        if (is_admin()) {
-            add_action('wp_ajax_coop-save-slideshow-change', [&$this, 'defaultsPageSave']);
-            add_filter('attachment_fields_to_edit', [&$this, 'addRegionField'], 10, 2);
-            add_filter('attachment_fields_to_save', [&$this, 'regionFieldSave'], 10, 2);
-        }
+        add_action('admin_menu', [&$this, 'addSlideshowMenu']);
     }
 
     public function addSlideshowMenu()
@@ -69,7 +63,7 @@ class SlideshowDefaults
 
         $out[] = '<h2>Slideshow Settings</h2>';
         $out[] = '<p>&nbsp;</p>';
-        $out[] = '<p>Instructions go here.</p>';
+        $out[] = '<p>Change defaults for all slideshows on the site. Per-slideshow options can still override.</p>';
 
         $out[] = '<table class="form-table">';
 
@@ -85,20 +79,20 @@ class SlideshowDefaults
         echo implode("\n", $out);
     }
 
+    /**
+     * Process options posted back via AJAX. There's no sanitizing happening here
+     * because some of these fields can contain javascript functions which are sure to
+     * get mangled.
+     */
     public function defaultsPageSave()
     {
-        // reconstitute the keys we need to get into the $_POST object
-        $keys = stripslashes($_POST['keys']);
-        $keys = str_replace(['[', ']', '"'], '', $keys);
-        $keys = explode(",", $keys);
-
-        foreach ($keys as $k) {
+        foreach ($_POST['keys'] as $k) {
             $val = $_POST[$k];
-            update_option('_' . $this->slug . '_' . $k, "$val");
+            update_option('_' . $this->slug . '_' . $k, $val);
         }
 
         wp_send_json([
-            'feedback' => count($keys) . ' settings updated',
+            'feedback' => count($_POST['keys']) . ' settings updated',
         ]);
     }
 
@@ -279,7 +273,7 @@ class SlideshowDefaults
             $form_fields['slide_region'] = [
                 'label' => 'Slide Region',
                 'input' => 'html',
-                'html' => '<select name="'.$inputname.'" id="'.$inputname.'">',
+                'html' => '<select name="' . $inputname . '" id="' . $inputname . '">',
                 'helps' => 'Which province is this slide from?',
             ];
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: Slideshow
  * Description: Slideshow frontside theme support script.
@@ -59,6 +60,35 @@ class Slideshow
     public function enqueueAssets()
     {
         if ($this->shouldEnqueueAssets()) {
+            /* Script to resize text slide based on screen and layout width */
+            wp_enqueue_script(
+                'bxslider-text-shim',
+                plugins_url('/bxslider/plugins/text-slide-shim.js', dirname(__FILE__)),
+                ['jquery'],
+                null
+            );
+
+            wp_enqueue_script(
+                'bxslider-jquery-easing',
+                plugins_url('/bxslider/plugins/jquery.easing.1.3.js', dirname(__FILE__)),
+                ['jquery'],
+                null
+            );
+
+            wp_enqueue_script(
+                'bxslider-jquery-fitvids',
+                plugins_url('/bxslider/plugins/jquery.fitvids.js', dirname(__FILE__)),
+                ['jquery'],
+                null
+            );
+
+            wp_enqueue_script(
+                'bxslider',
+                plugins_url('/bxslider/jquery.bxslider.min.js', dirname(__FILE__)),
+                ['jquery', 'bxslider-text-shim', 'bxslider-jquery-easing', 'bxslider-jquery-fitvids'],
+                '4.1.1'
+            );
+
             /* Attach slideshow loader script to bxslider */
             wp_add_inline_script('bxslider', $this->loaderScript(false));
 
@@ -114,10 +144,6 @@ class Slideshow
 
     public function fetchStylesUri()
     {
-        //  get_template_directory_uri() . '/bxslider/themes/theme/pn-theme.css
-        //  get_template_directory_uri() . '/bxslider/themes/v-theme/v-theme.css
-        //  get_template_directory_uri() . '/bxslider/themes/h-theme/h-theme.css
-
         $theme = get_option('_' . $this->slug . '_horizontalThumbsCSSFile');
 
         if (!empty($theme) && $this->show) {
@@ -126,9 +152,18 @@ class Slideshow
             } elseif ($this->show->layout == 'vertical') {
                 $theme = get_option('_' . $this->slug . '_verticalThumbsCSSFile');
             }
-            $dir = str_replace('.css', '', $theme);
 
-            return get_template_directory_uri() . '/bxslider/themes/' . $dir . '/' . $theme;
+            $dir = str_replace('.css', '', $theme);
+            $file_path = '/bxslider/themes/' . $dir . '/' . $theme;
+
+            // Check if there's an override in the theme or the parent theme
+            if (file_exists(get_stylesheet_directory() . $file_path)) {
+                return get_stylesheet_directory_uri() . $file_path;
+            } elseif (file_exists(get_template_directory_uri() . $file_path)) {
+                return get_template_directory_uri() . $file_path;
+            }
+
+            return plugins_url($file_path, dirname(__FILE__));
         }
     }
 

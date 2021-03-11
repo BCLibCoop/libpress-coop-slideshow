@@ -862,9 +862,7 @@
 
       // otherwise continue to build data object to send server-side
       changed['action'] = 'coop-save-slideshow-change';
-
-      // because the exact changes are arbitrary, pass the array of keys as well
-      changed['keys'] = JSON.stringify(keys);
+      changed['keys'] = keys;
 
       if (self._debug) console.log('posting data');
 
@@ -874,7 +872,6 @@
         alert(res.feedback);
 
         self._touched = [];
-
       });
     },
 

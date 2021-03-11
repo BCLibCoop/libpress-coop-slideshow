@@ -4,16 +4,11 @@ namespace BCLibCoop;
 
 class SlideshowAdmin
 {
-    private static $instance;
-
-    public function __construct()
+    public static function activate()
     {
-        if (isset(self::$instance)) {
-            return;
-        }
-
-        self::$instance = $this;
+        self::createDbTable();
     }
+
     /**
      * Create slideshow-related tables any time a blog
      * loads this plugin and that blog does _not_already_
@@ -32,7 +27,7 @@ class SlideshowAdmin
 
         if ('1.2' === $slideshow_db_version) {
             // return or run an update ...
-            // error_log( '_slideshow_db_version: ' . $slideshow_db_version );
+            // error_log('_slideshow_db_version: ' . $slideshow_db_version);
             return;
         }
 

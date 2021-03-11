@@ -42,7 +42,7 @@ require_once 'inc/slideshow-frontside.php';
 /**
  * Check for DB updates on activation
  */
-register_activation_hook(__FILE__, ['SlideshowAdmin', 'createDbTable']);
+register_activation_hook(__FILE__, ['BCLibCoop\SlideshowAdmin', 'activate']);
 
 /**
  * Only load admin interfaces for an admin request
