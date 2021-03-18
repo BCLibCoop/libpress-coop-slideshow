@@ -65,28 +65,32 @@ class Slideshow
                 'bxslider-text-shim',
                 plugins_url('/bxslider/plugins/text-slide-shim.js', dirname(__FILE__)),
                 ['jquery'],
-                null
+                null,
+                true
             );
 
             wp_enqueue_script(
                 'bxslider-jquery-easing',
                 plugins_url('/bxslider/plugins/jquery.easing.1.3.js', dirname(__FILE__)),
                 ['jquery'],
-                null
+                null,
+                true
             );
 
             wp_enqueue_script(
                 'bxslider-jquery-fitvids',
                 plugins_url('/bxslider/plugins/jquery.fitvids.js', dirname(__FILE__)),
                 ['jquery'],
-                null
+                null,
+                true
             );
 
             wp_enqueue_script(
                 'bxslider',
                 plugins_url('/bxslider/jquery.bxslider.min.js', dirname(__FILE__)),
                 ['jquery', 'bxslider-text-shim', 'bxslider-jquery-easing', 'bxslider-jquery-fitvids'],
-                '4.1.1'
+                '4.1.1',
+                true
             );
 
             /* Attach slideshow loader script to bxslider */
