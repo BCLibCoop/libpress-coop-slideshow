@@ -36,8 +36,7 @@ class Slideshow
         }
 
         add_shortcode('coop-slideshow', [&$this, 'slideshowShortcode']);
-        add_action('wp_head', [&$this, 'frontsideEnqueueStylesScripts'], 8);
-        add_action('wp_enqueue_scripts', [&$this, 'enqueueAssets'], 101);
+        add_action('wp_enqueue_scripts', [&$this, 'enqueueAssets']);
     }
 
     /**
@@ -49,17 +48,12 @@ class Slideshow
         return is_front_page();
     }
 
-    public function frontsideEnqueueStylesScripts()
-    {
-        if ($this->shouldEnqueueAssets()) {
-            // echos the current slideshow settings file into JS, frontside
-            SlideshowDefaults::defaultsPublishConfig();
-        }
-    }
-
     public function enqueueAssets()
     {
         if ($this->shouldEnqueueAssets()) {
+            /* Get theme-specific CSS from plugin */
+            wp_enqueue_style('coop-slideshow-theme', $this->fetchStylesUri(), [], null);
+
             /* Script to resize text slide based on screen and layout width */
             wp_enqueue_script(
                 'bxslider-text-shim',
@@ -93,11 +87,11 @@ class Slideshow
                 true
             );
 
-            /* Attach slideshow loader script to bxslider */
-            wp_add_inline_script('bxslider', $this->loaderScript(false));
+            /* Attach global slideshow defaults */
+            wp_add_inline_script('bxslider', SlideshowDefaults::defaultsPublishConfig(false));
 
-            /* Get theme-specific CSS from plugin */
-            wp_enqueue_style('coop-slideshow-theme', $this->fetchStylesUri(), [], null);
+            /* Attach per-slideshow settings and loader script */
+            wp_add_inline_script('bxslider', $this->loaderScript(false));
         }
     }
 
@@ -113,27 +107,31 @@ class Slideshow
             if ($echo) {
                 $out[] = '<script type="text/javascript">';
             }
-            $out[] = 'jQuery().ready(function() { ';
+
+            $out[] = '';
+            $out[] = '/* Per-show settings */';
 
             if ($layout == 'no-thumb') {
-                $out[] = '  window.slideshow_custom_settings.pager = false;';
-                $out[] = '  window.slideshow_custom_settings.controls = true;';
-                $out[] = '  window.slideshow_custom_settings.nextSelector = null;';
-                $out[] = '  window.slideshow_custom_settings.prevSelector = null;';
+                $out[] = 'window.slideshow_custom_settings.pager = false;';
+                $out[] = 'window.slideshow_custom_settings.controls = true;';
+                $out[] = 'window.slideshow_custom_settings.nextSelector = null;';
+                $out[] = 'window.slideshow_custom_settings.prevSelector = null;';
             } else {
-                $out[] = '  window.slideshow_custom_settings.pager = true;';
-                $out[] = '  window.slideshow_custom_settings.controls = false;';
+                $out[] = 'window.slideshow_custom_settings.pager = true;';
+                $out[] = 'window.slideshow_custom_settings.controls = false;';
             }
 
-            $out[] = '  window.slideshow_custom_settings.autoPlay = true;';
-            // $out[] = '  window.slideshow_custom_settings.easing = null;';
+            $out[] = 'window.slideshow_custom_settings.autoPlay = true;';
+            // $out[] = 'window.slideshow_custom_settings.easing = null;';
 
-            $out[] = '  window.slideshow_custom_settings.captions = ' . $captions . ';';
+            $out[] = 'window.slideshow_custom_settings.captions = ' . $captions . ';';
 
-            $out[] = '  window.slideshow_custom_settings.layout = "' . $layout . '";';
-            $out[] = '  window.slideshow_custom_settings.mode = "' . $transition . '";';
+            $out[] = 'window.slideshow_custom_settings.layout = "' . $layout . '";';
+            $out[] = 'window.slideshow_custom_settings.mode = "' . $transition . '";';
 
-            $out[] = '	jQuery(".slider").bxSlider( window.slideshow_custom_settings ); ';
+            $out[] = '';
+            $out[] = 'jQuery().ready(function() {';
+            $out[] = '  jQuery(".slider").bxSlider(window.slideshow_custom_settings);';
             $out[] = '});';
 
             if ($echo) {
