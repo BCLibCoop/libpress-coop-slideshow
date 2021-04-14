@@ -962,6 +962,7 @@ class SlideshowManager
         }
 
         if (!$attachment || $attachment->post_type !== 'attachment') {
+            restore_current_blog();
             return [];
         }
 
