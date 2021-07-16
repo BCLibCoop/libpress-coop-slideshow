@@ -853,9 +853,6 @@
 
       // if changed is still an empty object ...
       if (changed === {} || keys.length === 0) {
-        if (self._debug) console.log('nothing has changed');
-        if (self._debug) alert('nothing to do! ');
-
         alert('No changes found, not updating settings');
         return false;
       }
@@ -867,7 +864,7 @@
       if (self._debug) console.log('posting data');
 
       $.post(ajaxurl, changed).done(function (res) {
-        if (self._debug) console.log('response returned ');
+        if (self._debug) console.log('response returned');
 
         alert(res.feedback);
 

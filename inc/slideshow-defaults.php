@@ -171,7 +171,7 @@ class SlideshowDefaults
             list($t, $s) = explode(": ", rtrim($l, ",\n "));
 
             $widget = [];
-            $_opt = get_option('_slideshow_' . $t);
+            $_opt = get_option('_slideshow_' . $t, null);
             $default = '';
 
             if (false !== strpos($s, ',')) {
@@ -179,7 +179,7 @@ class SlideshowDefaults
                 $s = str_replace(['"', "'"], '', $s);
                 $pcs = explode(',', $s);
                 $default = $pcs[0];
-                $actual = (!empty($_opt) ? $_opt : $default);
+                $actual = ($_opt !== null ? $_opt : $default);
 
                 for ($i = 0; $i < count($pcs); $i++) {
                     $id = $t . $i;
@@ -199,7 +199,7 @@ class SlideshowDefaults
             } elseif (false !== strpos($s, 'true')) {
                 // binary radio T/f
                 $default = 'true';
-                $actual = (!empty($_opt) ? $_opt : $default);
+                $actual = ($_opt !== null ? $_opt : $default);
 
                 $checked = '';
                 if ($actual == 'true') {
@@ -217,7 +217,7 @@ class SlideshowDefaults
             } elseif (false !== strpos($s, 'false')) {
                 // binary radio t/F
                 $default = 'false';
-                $actual = (!empty($_opt) ? $_opt : $default);
+                $actual = ($_opt !== null ? $_opt : $default);
 
                 $checked = '';
                 if ($actual == 'true') {
@@ -235,13 +235,13 @@ class SlideshowDefaults
             } elseif (false !== strpos($s, "'")) {
                 // quoted string value - strip quotes
                 $default = str_replace(['"', "'"], '', $s);
-                $actual = (!empty($_opt) ? $_opt : $default);
+                $actual = ($_opt !== null ? $_opt : $default);
 
                 $widget[] = sprintf('<input type="text" id="%s" name="%s" value="%s">', $t, $t, $actual);
             } else {
                 // text field
                 $default = $s;
-                $actual = (!empty($_opt) ? $_opt : $default);
+                $actual = ($_opt !== null ? $_opt : $default);
 
                 $widget[] = sprintf('<input type="text" id="%s" name="%s" value="%s">', $t, $t, $actual);
             }
