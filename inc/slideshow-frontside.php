@@ -161,7 +161,7 @@ class Slideshow
             // Check if there's an override in the theme or the parent theme
             if (file_exists(get_stylesheet_directory() . $file_path)) {
                 return get_stylesheet_directory_uri() . $file_path;
-            } elseif (file_exists(get_template_directory_uri() . $file_path)) {
+            } elseif (file_exists(get_template_directory() . $file_path)) {
                 return get_template_directory_uri() . $file_path;
             }
 
