@@ -54,6 +54,9 @@ class Slideshow
             /* Get theme-specific CSS from plugin */
             wp_enqueue_style('coop-slideshow-theme', $this->fetchStylesUri(), [], null);
 
+            /* Global Slideshow Styling */
+            wp_enqueue_style('coop-slideshow', plugins_url('/css/coop-slideshow.css', dirname(__FILE__)), [], null);
+
             /* Script to resize text slide based on screen and layout width */
             wp_enqueue_script(
                 'bxslider-text-shim',

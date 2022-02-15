@@ -1,0 +1,12 @@
+/* Only show first slide while loading */
+.hero .slider .slide {
+  display: none;
+}
+
+.hero .slider .slide:first-child {
+  display: block;
+}
+
+.hero .bx-wrapper .slider .slide {
+  display: block;
+}
