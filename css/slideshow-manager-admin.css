@@ -1,7 +1,3 @@
-#wp-admin-bar-ubermenu_update_notifier {
-  display: none;
-}
-
 .hidden {
   display: none;
 }
@@ -58,12 +54,12 @@ div.alt-hover {
 #collection-name-signal {
   display: none;
   /*
-	z-index: 1000;
-	float: right;
-	top: -35px;
-	margin-right: 109%;
-	position: relative;
-	*/
+  z-index: 1000;
+  float: right;
+  top: -35px;
+  margin-right: 109%;
+  position: relative;
+  */
 }
 
 .slideshow-signals {
@@ -121,7 +117,7 @@ td.slideshow-dragzone 		/* right - contains the dragging rsources */ {
   vertical-align: top;
 }
 td.slideshow-gutter {
-  /*	min-width:20px; */
+  /* min-width: 20px; */
 }
 
 table.slideshow-sortable-rows {
@@ -292,9 +288,9 @@ table.slideshow-drag-table {
   min-height: 500px;
   width: 100%;
   /* four rows -
-		one for local media,
-		one for network media
-		one for each one's heading */
+    one for local media,
+    one for network media
+    one for each one's heading */
 }
 
 td.slideshow-draggable-items {

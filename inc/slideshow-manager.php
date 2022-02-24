@@ -1,15 +1,5 @@
 <?php
 
-/**
- * Plugin Name: Slideshow Manager
- * Description: Slideshow collection manager. User interaction interface.  NETWORK ACTIVATE.
- * Author: Erik Stainsby, Roaring Sky Software
- * Version: 0.3.4
- *
- * @package   Slideshow Manager
- * @copyright BC Libraries Coop 2013
- **/
-
 namespace BCLibCoop;
 
 class SlideshowManager
@@ -85,117 +75,7 @@ class SlideshowManager
 
     public function slideshowManagerPage()
     {
-        $out = [];
-        $out[] = '<div class="wrap">';
-
-        $out[] = '<div id="icon-options-general" class="icon32">';
-        $out[] = '<br>';
-        $out[] = '</div>';
-
-        $out[] = '<h2>Slideshow Collection Manager</h2>';
-
-        $out[] = '<p>&nbsp;</p>';
-
-        $out[] = '<p>This page supports the creation of Slideshows: a series of images / text slides which rotate '
-                 . 'automatically from one to the next. A slideshow can comprise up to five slides '
-                 . '(for best viewing effect). An image suitable for use in the slideshow is 1000 pixels wide x 300 '
-                 . 'pixels high. Images should be prepared under the Media menu, and must be given a Media Tag of:'
-                 . ' <b>slide</b>.</p>';
-
-        $out[] = '<table class="slideshow-header-controls">';
-        $out[] = '<tr><td class="slideshow-name">';
-
-        $out[] = '<a class="button add-new" href="">Add new</a>&nbsp;<input type="text" '
-                 . 'class="slideshow-collection-name" name="slideshow-collection-name" value="" placeholder="Enter a '
-                 . 'name for a new slideshow">';
-
-        $out[] = '</td><td class="slideshow-gutter">&nbsp;</td><td class="slideshow-controls">';
-
-        $out[] = '<a href="" class="button button-primary slideshow-save-collection-btn">Save collection</a>';
-        $out[] = '<a href="" class="button slideshow-delete-collection-btn">Delete the loaded slideshow</a>';
-
-        $out[] = '</td></tr>';
-
-        $out[] = '<tr><td class="slideshow-name">';
-
-        $out[] = $this->slideshowCollectionSelector();
-
-        $out[] = '</td><td class="slideshow-gutter">&nbsp;</td><td class="slideshow-signal-preload">';
-
-        $out[] = '</td></tr>';
-        $out[] = '</table>';
-
-        $out[] = $this->slideshowDroppableTable();
-
-        $out[] = '<h3 class="slideshow-runtime-heading">Runtime information:</h3>';
-        $out[] = '<div class="slideshow-runtime-information"></div>';
-
-
-        $out[] = $this->textSlideCreateForm();
-        $out[] = $this->quickSetLayoutControls();
-
-        $out[] = '</td><!-- .slideshow-dropzone -->';
-
-        $out[] = '<td class="slideshow-gutter">&nbsp;</td>';
-        $out[] = '<td class="slideshow-dragzone">';
-
-
-        $out[] = '<table class="slideshow-drag-table">';
-        $out[] = '<tr><th class="alignleft slide-heading">Your Slide Images</th></tr>';
-        $out[] = '<tr><td id="slide-remove-local" class="slideshow-draggable-items returnable local">';
-
-        // Get media slides for current blog
-        $fetched = $this->fetchSlides(null);
-        $out = array_merge($out, $fetched);
-
-        $out[] = '</td></tr>';
-
-        // Network Shared Media (NSM) section
-        $out[] = '<th class="alignleft slide-heading shared-slides">Shared Slide Images</th>';
-        $out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
-
-        // Switch to shared media site context
-        switch_to_blog(1);
-
-        $fetched = $this->fetchSlides();
-        $out = array_merge($out, $fetched);
-
-        //BC Slides
-        $out[] = '<tr><th class="alignleft bc-slides">British Columbia</th>';
-        $out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
-
-        $fetched = $this->fetchSlides('BC');
-        $out = array_merge($out, $fetched);
-
-        $out[] = '</td></tr>';
-
-        //MB Slides
-        $out[] = '<tr><th class="alignleft mb-slides">Manitoba</th>';
-        $out[] = '<tr><td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">';
-
-        $fetched = $this->fetchSlides('MB');
-        $out = array_merge($out, $fetched);
-
-        // Done with blog switching
-        restore_current_blog();
-
-        $out[] = '</td></tr>';
-
-        $out[] = '</table>';
-        $out[] = '</form><!-- .slideshow-definition-form -->';
-
-
-        $out[] = '</td><!-- .slideshow-dragzone -->';
-        $out[] = '</tr><!-- .master-row -->';
-        $out[] = '</table><!-- .slideshow-drag-drop-layout -->';
-
-
-        $out[] = '<div class="slideshow-signals-preload">';
-        $out[] = '<img src="' . $this->sprite . '" width="362" height="96">';
-        $out[] = '</div>';
-
-
-        echo implode("\n", $out);
+        require 'views/manager.php';
     }
 
     public function fetchSlides($region = '')
@@ -292,42 +172,6 @@ class SlideshowManager
         }
 
         $out[] = '</select>';
-
-        return implode("\n", $out);
-    }
-
-    private function slideshowDroppableTable()
-    {
-        $out = [];
-
-        $out[] = '<table class="slideshow-drag-drop-layout">';
-        $out[] = '<tr class="master-row">';
-        $out[] = '<td class="slideshow-dropzone">';
-
-        $out[] = '<table class="slideshow-sortable-rows">';
-
-        $out[] = '<tr class="head-row"><th></th><th>';
-
-        $out[] = '<div class="slideshow-controls-right"><input type="checkbox" id="slideshow-is-active-collection" '
-                 . 'class="slideshow-is-active-collection" value="1"> <label for="slideshow-is-active-collection" '
-                 . 'class="slideshow-activate-collection">This is the active slideshow</label></div>';
-
-        $out[] = 'Caption/Title<br/><span class="slideshow-slide-link-header">Slide Link</span>';
-
-        $out[] = '</th></tr>';
-
-        for ($i = 0; $i < 5; $i++) {
-            $out[] = '<tr id="row' . $i . '" class="slideshow-collection-row draggable droppable" id="dropzone' . $i
-                     . '"><td class="thumbbox">&nbsp;</td>';
-            $out[] = '<td class="slideshow-slide-title">';
-            $out[] = '<div class="slide-title"><span class="placeholder">Caption/Title</span></div>';
-            $out[] = '<div class="slide-link"><span class="placeholder">Link URL</span></div></td></tr>';
-        }
-
-        $out[] = '</table><!-- .slideshow-droppable-rows -->';
-
-        $out[] = '<div id="runtime-signal" class="slideshow-signals"><img src="' . $this->sprite
-                 . '" class="signals-sprite"></div>';
 
         return implode("\n", $out);
     }
@@ -682,15 +526,15 @@ class SlideshowManager
         $slideshow_title = sanitize_text_field($_POST['title']);
 
         if (array_key_exists('slideshow_id', $_POST)) {
-            $slideshow_id = (int) $_POST['slideshow_id'];
+            $slideshow_id = (int) sanitize_text_field($_POST['slideshow_id']);
         }
 
         $captions = 0;
         if (array_key_exists('captions', $_POST)) {
-            $captions = (int) $_POST['captions'];
+            $captions = (int) sanitize_text_field($_POST['captions']);
         }
 
-        $is_active = (int) $_POST['is_active'];
+        $is_active = (int) sanitize_text_field($_POST['is_active']);
         if (empty($is_active) || $is_active == 'false' || $is_active == '0') {
             // error_log( 'is_active setting to zero' );
             $is_active = 0;
@@ -792,11 +636,12 @@ class SlideshowManager
         }
 
         foreach ($slides as $s) {
-            $type = $s['type'];
-            $slide_id = '';
+            $type = sanitize_text_field($s['type']);
+            $slide_id = 0;
+
             if (array_key_exists('slide_id', $s)) {
                 // don't change the slide's id
-                $slide_id = $s['slide_id'];
+                $slide_id = (int) sanitize_text_field($s['slide_id']);
             }
 
             $data = [
@@ -807,7 +652,7 @@ class SlideshowManager
             ];
 
             if ('image' === $type) {
-                $data['post_id'] = (int) $s['post_id'];
+                $data['post_id'] = (int) sanitize_text_field($s['post_id']);
                 $formats[] = '%d';
 
                 $data['text_title'] = sanitize_text_field($s['text_title']);
@@ -820,8 +665,8 @@ class SlideshowManager
                 $formats[] = '%s';
             }
 
-            if (array_key_exists('ordering', $s) && is_numeric($s['ordering'])) {
-                $data['ordering'] = (int) $s['ordering'];
+            if (array_key_exists('ordering', $s) && is_numeric(sanitize_text_field($s['ordering']))) {
+                $data['ordering'] = (int) sanitize_text_field($s['ordering']);
                 $formats[] = '%d';
             }
 
@@ -858,7 +703,7 @@ class SlideshowManager
             }
         }
 
-        // clean up any orphaned slides
+        // Clean up any orphaned slides
         $table_name = $wpdb->prefix . 'slideshow_slides';
         $wpdb->delete($table_name, ['slideshow_id' => 0]);
 
@@ -873,7 +718,7 @@ class SlideshowManager
     {
         global $wpdb;
 
-        $slideshow_id = empty($_POST['slideshow_id']) ? '' : (int) $_POST['slideshow_id'];
+        $slideshow_id = empty($_POST['slideshow_id']) ? '' : (int) sanitize_text_field($_POST['slideshow_id']);
 
         if (empty($slideshow_id)) {
             wp_send_json(['result' => 'none']);
@@ -924,7 +769,7 @@ class SlideshowManager
     {
         global $wpdb;
 
-        $slideshow_id = (int) $_POST['slideshow_id'];
+        $slideshow_id = (int) sanitize_text_field($_POST['slideshow_id']);
 
         $table_name = $wpdb->prefix . 'slideshow_slides';
         $wpdb->delete($table_name, ['slideshow_id' => $slideshow_id], ['%d']);
@@ -946,8 +791,9 @@ class SlideshowManager
     public static function fetchImageMeta($post_id = null, $source = 'local')
     {
         if ($post_id === null) {
-            $post_id = $_POST['post_id'];
+            $post_id = sanitize_text_field($_POST['post_id']);
         }
+
         $post_id = (int) $post_id;
 
         if ($source === 'network') {
@@ -955,12 +801,15 @@ class SlideshowManager
         }
 
         $attachment = get_post($post_id);
+
+        // If we didn't find the image in the current blog, try the shared media blog
         if ((!$attachment || $attachment->post_type !== 'attachment') && !ms_is_switched()) {
             switch_to_blog(1);
             $source = 'network';
             $attachment = get_post($post_id);
         }
 
+        // If there was still no image, return
         if (!$attachment || $attachment->post_type !== 'attachment') {
             restore_current_blog();
             return [];
@@ -1004,6 +853,7 @@ class SlideshowManager
             'height' => $meta['sizes']['drag-slide']['height'],
         ];
 
+        // Always try and restore, does no harm if we never switched
         restore_current_blog();
 
         return $postmeta;
@@ -1016,7 +866,7 @@ class SlideshowManager
      **/
     public function fetchImageMetaCallback()
     {
-        $post_id = (int) $_POST['post_id'];
+        $post_id = (int) sanitize_text_field($_POST['post_id']);
 
         $meta = self::fetchImageMeta($post_id);
 
@@ -1039,7 +889,7 @@ class SlideshowManager
     {
         global $wpdb;
 
-        $slideshow_id = !empty($_POST['slideshow_id']) ? (int) $_POST['slideshow_id'] : null;
+        $slideshow_id = !empty($_POST['slideshow_id']) ? (int) sanitize_text_field($_POST['slideshow_id']) : null;
         $slideshow_name = sanitize_text_field($_POST['slideshow_name']);
 
         if (empty($slideshow_name)) {

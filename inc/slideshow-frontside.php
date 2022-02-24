@@ -62,7 +62,7 @@ class Slideshow
                 'bxslider-text-shim',
                 plugins_url('/bxslider/plugins/text-slide-shim.js', dirname(__FILE__)),
                 ['jquery'],
-                null,
+                '1.0',
                 true
             );
 
@@ -70,7 +70,7 @@ class Slideshow
                 'bxslider-jquery-easing',
                 plugins_url('/bxslider/plugins/jquery.easing.1.3.js', dirname(__FILE__)),
                 ['jquery'],
-                null,
+                '1.3',
                 true
             );
 
@@ -78,7 +78,7 @@ class Slideshow
                 'bxslider-jquery-fitvids',
                 plugins_url('/bxslider/plugins/jquery.fitvids.js', dirname(__FILE__)),
                 ['jquery'],
-                null,
+                '1.0',
                 true
             );
 
@@ -181,6 +181,13 @@ class Slideshow
         $pager_ml = [];
 
         if ($this->show) {
+            $id = $this->show->id;
+            $table_name =  $wpdb->prefix . 'slideshow_slides';
+
+            $slides = $wpdb->get_results(
+                $wpdb->prepare("SELECT * FROM `$table_name` WHERE `slideshow_id` = %d ORDER BY `ordering`", $id)
+            );
+
             $out[] = '<div class="hero row ' . $this->show->layout . '" role="banner">';
             $out[] = '<div id="slider" class="slider">';
 
@@ -190,11 +197,6 @@ class Slideshow
                 $pager_ml[] = '<div class="row ' . $pager_class . ' ' . $this->show->layout . '">';
             }
 
-            $id = $this->show->id;
-            $table_name =  $wpdb->prefix . 'slideshow_slides';
-            $slides = $wpdb->get_results(
-                $wpdb->prepare("SELECT * FROM `$table_name` WHERE `slideshow_id` = %d ORDER BY `ordering`", $id)
-            );
             foreach ($slides as $slide) {
                 if ($slide->post_id != null) {
                     $meta = SlideShowManager::fetchImageMeta($slide->post_id);

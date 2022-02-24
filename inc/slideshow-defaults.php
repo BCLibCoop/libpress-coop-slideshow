@@ -15,7 +15,7 @@ namespace BCLibCoop;
 class SlideshowDefaults
 {
     private static $instance;
-    private $slug = 'slideshow';
+    private static $slug = 'slideshow';
     private $db_init = false;
 
     public function __construct()
@@ -26,7 +26,7 @@ class SlideshowDefaults
 
         self::$instance = $this;
 
-        $this->db_init = get_option('_slideshow_db_init');
+        $this->db_init = get_option('_' . self::$slug . '_db_init');
 
         add_action('wp_ajax_coop-save-slideshow-change', [&$this, 'defaultsPageSave']);
         add_filter('attachment_fields_to_edit', [&$this, 'addRegionField'], 10, 2);
@@ -57,12 +57,9 @@ class SlideshowDefaults
         $out = [];
         $out[] = '<div class="wrap">';
 
-        $out[] = '<div id="icon-options-general" class="icon32">';
-        $out[] = '<br>';
-        $out[] = '</div>';
+        $out[] = '<h1 class="wp-heading-inline">Slideshow Settings</h1>';
+        $out[] = '<hr class="wp-header-end">';
 
-        $out[] = '<h2>Slideshow Settings</h2>';
-        $out[] = '<p>&nbsp;</p>';
         $out[] = '<p>Change defaults for all slideshows on the site. Per-slideshow options can still override.</p>';
 
         $out[] = '<table class="form-table">';
@@ -88,7 +85,7 @@ class SlideshowDefaults
     {
         foreach ($_POST['keys'] as $k) {
             $val = $_POST[$k];
-            update_option('_' . $this->slug . '_' . $k, $val);
+            update_option('_' . self::$slug . '_' . $k, $val);
         }
 
         wp_send_json([
@@ -98,9 +95,9 @@ class SlideshowDefaults
 
     public static function defaultsPublishConfig($echo = true)
     {
-        $tag = '_slideshow_';
+        $tag = '_' . self::$slug . '_';
 
-        // Get all db options
+        // Get all db options, quicker, probably already cached
         $alloptions = wp_load_alloptions();
 
         $out = [];
@@ -171,7 +168,7 @@ class SlideshowDefaults
             list($t, $s) = explode(": ", rtrim($l, ",\n "));
 
             $widget = [];
-            $_opt = get_option('_slideshow_' . $t, null);
+            $_opt = get_option('_' . self::$slug . '_' . $t, null);
             $default = '';
 
             if (false !== strpos($s, ',')) {
@@ -253,9 +250,9 @@ class SlideshowDefaults
 
         if (empty($this->db_init) || $this->db_init == false) {
             foreach ($all_defaults as $term => $val) {
-                update_option('_' . $this->slug . '_' . $term, $val);
+                update_option('_' . self::$slug . '_' . $term, $val);
             }
-            update_option('_' . $this->slug . '_db_init', true);
+            update_option('_' . self::$slug . '_db_init', true);
         }
 
         return implode("\n", $out);
@@ -268,7 +265,7 @@ class SlideshowDefaults
 
     public function addRegionField($form_fields, $post)
     {
-        if (get_current_blog_id() == 1) {
+        if (get_current_blog_id() === 1) {
             $inputname = "attachments[{$post->ID}][slide_region]";
             $form_fields['slide_region'] = [
                 'label' => 'Slide Region',
@@ -295,7 +292,7 @@ class SlideshowDefaults
     public function regionFieldSave($post, $attachment)
     {
         if (isset($attachment['slide_region'])) {
-            update_post_meta($post['ID'], 'slide_region', $attachment['slide_region']);
+            update_post_meta($post['ID'], 'slide_region', sanitize_text_field($attachment['slide_region']));
         }
 
         return $post;
