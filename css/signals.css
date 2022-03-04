@@ -62,7 +62,8 @@
   left: -128px;
   top: -64px;
 }
-.signals-sprite.reload:active {
+.signals-sprite.reload:active,
+.signals-sprite.reload.active {
   left: -128px;
   top: -32px;
 }
@@ -106,16 +107,16 @@
   top: -64px;
 }
 
-.pencil-disabled {
+.signals-sprite.pencil {
   left: -256px;
   top: 0px;
 }
-
-.pencil-enabled {
+.signals-sprite.pencil:hover {
   left: -256px;
   top: -32px;
 }
-.pencil-active {
+.signals-sprite.pencil:active,
+.signals-sprite.pencil.active {
   left: -256px;
   top: -64px;
 }

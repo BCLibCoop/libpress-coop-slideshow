@@ -146,15 +146,27 @@ div.slide-link {
 }
 
 div.slideshow-inline-edit-toggle {
-  height: 20px;
-  width: 20px;
   position: relative;
-  top: 0px;
+  top: -20px;
   float: right;
-  margin: 0 0;
-  padding: 0 0;
-  z-index: 1000;
-  overflow: hidden;
+}
+
+.inline-editor {
+  padding: 5px;
+}
+
+.inline-editor .slide-title-edit {
+  width: 90%;
+}
+
+.inline-editor .slide-link-edit,
+.inline-editor .slide-content-edit {
+  width: 100%;
+}
+
+.inline-editor div.slideshow-inline-edit-toggle {
+  /* top: -40px; */
+  left: 10px;
 }
 
 input#inline-edit {
@@ -188,13 +200,9 @@ span.slideshow-slide-link {
   box-shadow: inset 0px 0px 15px rgba(177, 234, 34, 0.75);
 }
 
-h3.slideshow-runtime-heading {
-  margin-left: 10px;
-}
 div.slideshow-runtime-information {
   height: 4.5em;
   width: 96%;
-  /* border: thin solid #eee; */
   margin: 10px auto;
   padding: 6px;
 }
@@ -204,12 +212,14 @@ div.slideshow-runtime-information {
   min-height: 250px;
   width: 100%;
   border: thin solid #eee;
+  overflow: auto;
 }
 
 .slideshow-draggable-items div {
   float: left;
   margin: 6px;
   width: 180px;
+  height: 85px; /* Fixed height so float works nicely */
 }
 
 img.slotview {

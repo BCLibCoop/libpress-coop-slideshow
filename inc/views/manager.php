@@ -25,7 +25,8 @@
                     </div>
                     <div class="form-field">
                         <label for="slideshow-is-active-collection" class="slideshow-activate-collection">
-                            <input type="checkbox" id="slideshow-is-active-collection" class="slideshow-is-active-collection" value="1">
+                            <input type="checkbox" id="slideshow-is-active-collection"
+                                class="slideshow-is-active-collection" value="1">
                             This is the active slideshow
                         </label>
                     </div>
@@ -41,7 +42,8 @@
                     </tr>
 
                     <?php for ($i = 0; $i < 5; $i++) : ?>
-                        <tr id="row<?= $i ?>" class="slideshow-collection-row draggable droppable" id="dropzone<?= $i ?>">
+                        <tr id="row<?= $i ?>" class="slideshow-collection-row draggable droppable"
+                            id="dropzone<?= $i ?>">
                             <td class="thumbbox">&nbsp;</td>
                             <td class="slideshow-slide-title">
                                 <div class="slide-title"><span class="placeholder">Caption/Title</span></div>
