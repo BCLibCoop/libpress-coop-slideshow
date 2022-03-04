@@ -3,7 +3,7 @@
 }
 
 .ghosted {
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 .update-halo {
@@ -84,8 +84,8 @@ table.slideshow-header-controls {
 table.slideshow-header-controls td {
 }
 
-td.slideshow-name,
-td.slideshow-controls {
+.slideshow-name,
+.slideshow-controls {
   vertical-align: middle;
   width: 48%;
   text-align: left;
@@ -110,13 +110,13 @@ input.slideshow-collection-name {
   margin-bottom: 10px;
 }
 
-td.slideshow-dropzone,		/* left - contains the sorting table */
-td.slideshow-dragzone 		/* right - contains the dragging rsources */ {
+.slideshow-dropzone,		/* left - contains the sorting table */
+.slideshow-dragzone 		/* right - contains the dragging rsources */ {
   /* border: thin solid #ccc;  */
   min-width: 48%;
   vertical-align: top;
 }
-td.slideshow-gutter {
+.slideshow-gutter {
   /* min-width: 20px; */
 }
 
@@ -142,7 +142,7 @@ label.slideshow-activate-collection {
   font-weight: normal;
 }
 
-tr.slideshow-collection-row {
+.slideshow-collection-row {
   margin: 5px;
   border: thin solid #ccc;
 }
@@ -183,7 +183,7 @@ th span.slideshow-slide-link-header {
   margin-bottom: 0.5em;
 }
 
-td.thumbbox {
+.thumbbox {
   height: 50px;
   width: 50px;
   text-align: center;
@@ -191,12 +191,12 @@ td.thumbbox {
   border: thin solid #ccc;
 }
 
-td.thumbbox img {
+.thumbbox img {
   margin: auto auto;
   vertical-align: middle;
 }
 
-td.slideshow-slide-title {
+.slideshow-slide-title {
   height: 50px;
   text-align: left;
   vertical-align: middle;
@@ -255,12 +255,12 @@ div.slide-content {
   font-weight: normal;
 }
 
-td.signalbox {
+.signalbox {
   width: 36px;
   border: thin solid #ccc;
 }
 
-td span.slideshow-slide-link {
+span.slideshow-slide-link {
   font-weight: normal;
   color: #999;
 }
@@ -293,14 +293,14 @@ table.slideshow-drag-table {
     one for each one's heading */
 }
 
-td.slideshow-draggable-items {
+.slideshow-draggable-items {
   vertical-align: top;
   min-height: 250px;
   width: 100%;
   border: thin solid #eee;
 }
 
-td.slideshow-draggable-items div {
+.slideshow-draggable-items div {
   float: left;
   margin: 6px;
   width: 180px;
@@ -322,7 +322,7 @@ table.slideshow-text-slide-create {
   /* 	margin-top: 30px; */
   width: 100%;
 }
-td.slideshow-label {
+.slideshow-label {
   font-size: 1.2em;
 }
 
@@ -331,7 +331,7 @@ input.slideshow-text-slide-heading {
   width: 100%;
 }
 textarea.slideshow-text-slide-content {
-  width: 100%;
+  /* width: 100%; */
   height: 100px;
 }
 
@@ -379,10 +379,10 @@ table.slideshow-control td label {
   font-weight: bold;
   white-space: nowrap;
 }
-td.slideshow-control-annotation {
+.slideshow-control-annotation {
   color: #999;
 }
-td.radio-box {
+.radio-box {
   width: 5%;
   text-align: right;
 }

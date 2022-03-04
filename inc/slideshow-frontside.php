@@ -52,7 +52,8 @@ class Slideshow
     {
         if ($this->shouldEnqueueAssets()) {
             /* Get theme-specific CSS from plugin */
-            wp_enqueue_style('coop-slideshow-theme', $this->fetchStylesUri(), [], null);
+            $theme_styles = $this->fetchStylesUri();
+            wp_enqueue_style('coop-slideshow-theme', $theme_styles['uri'], [], filemtime($theme_styles['path']));
 
             /* Global Slideshow Styling */
             wp_enqueue_style('coop-slideshow', plugins_url('/css/coop-slideshow.css', dirname(__FILE__)), [], null);
@@ -163,12 +164,21 @@ class Slideshow
 
             // Check if there's an override in the theme or the parent theme
             if (file_exists(get_stylesheet_directory() . $file_path)) {
-                return get_stylesheet_directory_uri() . $file_path;
+                return [
+                    'path' => get_stylesheet_directory() . $file_path,
+                    'uri' => get_stylesheet_directory_uri() . $file_path,
+                ];
             } elseif (file_exists(get_template_directory() . $file_path)) {
-                return get_template_directory_uri() . $file_path;
+                return [
+                    'path' => get_template_directory() . $file_path,
+                    'uri' => get_template_directory_uri() . $file_path,
+                ];
             }
 
-            return plugins_url($file_path, dirname(__FILE__));
+            return [
+                'path' => dirname(__FILE__) . $file_path,
+                'uri' => plugins_url($file_path, dirname(__FILE__)),
+            ];
         }
     }
 
@@ -198,6 +208,13 @@ class Slideshow
             }
 
             foreach ($slides as $slide) {
+                // Try and clean up old links, only IDs are stored now
+                $slide->slide_link = preg_replace('/^\/\?page=/', '', $slide->slide_link);
+
+                if (is_numeric($slide->slide_link)) {
+                    $slide->slide_link = get_permalink($slide->slide_link);
+                }
+
                 if ($slide->post_id != null) {
                     $meta = SlideShowManager::fetchImageMeta($slide->post_id);
 

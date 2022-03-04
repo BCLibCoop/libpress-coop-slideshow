@@ -8,6 +8,13 @@ class SlideshowManager
     protected $slug = 'slideshow';
     protected $sprite = '';
 
+    private static $media_sources = [
+        'local' => 'Your Slide Images',
+        'shared' => 'Shared Slide Images',
+        'BC' => 'British Columbia',
+        'MB' => 'Manitoba',
+    ];
+
     public function __construct()
     {
         if (isset(self::$instance)) {
@@ -46,17 +53,19 @@ class SlideshowManager
             );
             wp_enqueue_style('coop-signals', plugins_url('/css/signals.css', dirname(__FILE__)));
 
-            wp_enqueue_script('coop-chosen-jq-min-js', plugins_url('/js/chosen.jquery.min.js', dirname(__FILE__)));
-            wp_enqueue_script('coop-slideshow-defaults-js', plugins_url('/inc/default-settings.js', dirname(__FILE__)));
+            wp_register_script('coop-chosen-jq-min-js', plugins_url('/js/chosen.jquery.min.js', dirname(__FILE__)));
+            wp_register_script('coop-slideshow-defaults-js', plugins_url('/inc/default-settings.js', dirname(__FILE__)));
             wp_enqueue_script(
                 'coop-slideshow-admin-js',
                 plugins_url('/js/slideshow-admin.js', dirname(__FILE__)),
-                ['jquery', 'jquery-ui-core', 'jquery-ui-draggable', 'jquery-ui-droppable']
-            );
-            wp_enqueue_script(
-                'coop-slideshow-hoverintent-js',
-                plugins_url('/js/jquery.hoverIntent.minified.js', dirname(__FILE__)),
-                ['jquery']
+                [
+                    'jquery',
+                    'jquery-ui-core',
+                    'jquery-ui-draggable',
+                    'jquery-ui-droppable',
+                    'coop-chosen-jq-min-js',
+                    'coop-slideshow-defaults-js',
+                ]
             );
         }
     }
@@ -78,7 +87,7 @@ class SlideshowManager
         require 'views/manager.php';
     }
 
-    public function fetchSlides($region = '')
+    public static function fetchSlides($region = 'shared')
     {
         /**
          * Fetch images with Media Tag: 'slide'
@@ -104,7 +113,10 @@ class SlideshowManager
             ],
         ];
 
-        if ($region !== null) {
+        if ($region !== 'local') {
+            switch_to_blog(1);
+            $region = $region === 'shared' ? '' : $region;
+
             $args['meta_query'] = [
                 [
                     'key' => 'slide_region',
@@ -147,6 +159,8 @@ class SlideshowManager
             }
         }
 
+        restore_current_blog();
+
         return $slides;
     }
 
@@ -158,6 +172,7 @@ class SlideshowManager
         $res = $wpdb->get_results("SELECT * FROM `$table_name` ORDER BY `title`");
 
         $out = [];
+
         $out[] = '<select data-placeholder="... or choose a past slideshow to reload" name="slideshow_select" '
                  . 'id="slideshow_select" class="slideshow_select chzn-select">';
 
@@ -190,302 +205,13 @@ class SlideshowManager
         $out[] = '<select data-placeholder="Link to a post or page..." id="slideshow_page_selector" '
                  . 'name="slideshow_page_selector" class="slideshow-page-selector chzn-select">';
         $out[] = '<option value=""></option>';
+
         foreach ($pages as $page) {
             $out[] = '<option value="' . $page->ID . '" class="' . $page->post_type . '" data-guid="' . $page->guid
                      . '">' . $page->post_title . '</option>';
         }
+
         $out[] = '</select>';
-
-        return implode("\n", $out);
-    }
-
-    private function textSlideCreateForm()
-    {
-        $out = [];
-        $out[] = '<table class="slideshow-text-slide-create">';
-        $out[] = '<tr>';
-        $out[] = '<td class="slideshow-label"><h3>Add text-only slide</h3></td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td><input type="text" id="slideshow-text-slide-heading" class="slideshow-text-slide-heading" '
-                 . 'name="slideshow-text-slide-heading" value="" placeholder="Headline"></td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td><textarea id="slideshow-text-slide-content" class="slideshow-text-slide-content" '
-                 . 'name="slideshow-text-slide-content" placeholder="Message text"></textarea></td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td class="slideshow-text-slide-link-box">';
-
-        $out[] = $this->targetPagesSelector();
-
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td class="slideshow-text-slide-save-box">';
-        $out[] = 'Items listed in blue are blog posts. Items in green are pages.';
-        $out[] = '<a href="javascript:void(0);" class="button slideshow-text-slide-cancel-btn">Cancel</a>';
-        $out[] = '<a href="javascript:void(0);" class="button slideshow-text-slide-save-btn">Add the slide</a>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '</table><!-- .slideshow-text-slide-create -->';
-
-        return implode("\n", $out);
-    }
-
-    private function quickSetLayoutControls()
-    {
-        $out = [];
-
-        /**
-         * Quick set modes and effects
-         *
-         * This is the matrix at the bottom of the form for setting
-         * thumbnails style and slide transition direction/fade
-         *
-         * Makes no db calls to reset state; this is handled in
-         * javascript on collection reloading.
-         **/
-        $out[] = '<table class="slideshow-layout-controls">';
-
-        $out[] = '<tr>';
-        $out[] = '<td colspan="3">';
-        $out[] = '<h3>Display Captions</h3>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td>&nbsp;</td>';
-        $out[] = '<td colspan="2" align="left">';
-        $out[] = '<input type="checkbox" id="slideshow-show-captions" value="true">&nbsp;<label '
-                 . 'for="slideshow-show-captions">Enable caption display for slideshow</label>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td colspan="3">';
-        $out[] = '<h3>Slideshow Layout</h3>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '<table class="slideshow-control">';
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<img src="' . plugins_url('/imgs/NoThumbnails.png', dirname(__FILE__))
-                 . '" data-id="slideshow-control-1" class="slideshow-control-img">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td class="radio-box">';
-        $out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-1" value="no-thumb">';
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<label for="slideshow-control-1">No thumbnails</label>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td class="slideshow-control-annotation">';
-        $out[] = 'Previous / Next arrows';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-        $out[] = '</table><!-- .slideshow-control -->';
-
-        $out[] = '</td>';
-        $out[] = '<td>';
-
-        $out[] = '<table class="slideshow-control">';
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<img src="' . plugins_url('/imgs/VerticalThumbnails.png', dirname(__FILE__))
-                 . '" data-id="slideshow-control-2" class="slideshow-control-img">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td class="radio-box">';
-        $out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-2" value="vertical">';
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<label for="slideshow-control-2">Vertical thumbnails</label>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td class="slideshow-control-annotation">';
-        $out[] = 'Clickable thumbnails displayed vertically on the left-hand side';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-        $out[] = '</table><!-- .slideshow-control -->';
-
-        $out[] = '</td>';
-        $out[] = '<td>';
-
-        $out[] = '<table class="slideshow-control">';
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<img src="' . plugins_url('/imgs/HorizontalThumbnails.png', dirname(__FILE__))
-                 . '" data-id="slideshow-control-3" class="slideshow-control-img">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td class="radio-box">';
-        $out[] = '<input type="radio" name="slideshow-layout" id="slideshow-control-3" value="horizontal">';
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<label for="slideshow-control-3">Horizontal thumbnails</label>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td class="slideshow-control-annotation">';
-        $out[] = 'Clickable thumbnails displayed horizontally below the slideshow';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-        $out[] = '</table><!-- .slideshow-control -->';
-
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-
-        $out[] = '<tr>';
-        $out[] = '<td colspan="3">';
-        $out[] = '<h3>Transitions</h3>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '<table class="slideshow-control">';
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<img src="' . plugins_url('/imgs/HorizontalSlide.png', dirname(__FILE__))
-                 . '" data-id="slideshow-control-4" class="slideshow-control-img">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td class="radio-box">';
-        $out[] = '<input type="radio" name="slideshow-transition" id="slideshow-control-4" value="horizontal">';
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<label for="slideshow-control-4">Slide Horizontal</label>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td class="slideshow-control-annotation">';
-        $out[] = 'Slides enter from the right and exit to the left';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-        $out[] = '</table><!-- .slideshow-control -->';
-
-        $out[] = '</td>';
-        $out[] = '<td>';
-
-        $out[] = '<table class="slideshow-control">';
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<img src="' . plugins_url('/imgs/VerticalSlide.png', dirname(__FILE__))
-                 . '" data-id="slideshow-control-5" class="slideshow-control-img">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td class="radio-box">';
-        $out[] = '<input type="radio" name="slideshow-transition" id="slideshow-control-5" value="vertical">';
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<label for="slideshow-control-5">Slide Vertical</label>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td class="slideshow-control-annotation">';
-        $out[] = 'Slides enter below and exit above';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-        $out[] = '</table><!-- .slideshow-control -->';
-
-        $out[] = '</td>';
-        $out[] = '<td>';
-
-        $out[] = '<table class="slideshow-control">';
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<img src="' . plugins_url('/imgs/Fade.png', dirname(__FILE__))
-                 . '" data-id="slideshow-control-6" class="slideshow-control-img">';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td class="radio-box">';
-        $out[] = '<input type="radio" name="slideshow-transition" id="slideshow-control-6" value="fade">';
-        $out[] = '</td>';
-        $out[] = '<td>';
-        $out[] = '<label for="slideshow-control-6">Cross-fade</label>';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-        $out[] = '<tr>';
-        $out[] = '<td>';
-
-        $out[] = '</td>';
-        $out[] = '<td class="slideshow-control-annotation">';
-        $out[] = 'One slide dissolves into the next';
-        $out[] = '</td>';
-        $out[] = '</tr>';
-        $out[] = '</table><!-- .slideshow-control -->';
-
-        $out[] = '</td>';
-        $out[] = '</tr>';
-
-
-        $out[] = '</table><!-- .slideshow-layout-controls -->';
 
         return implode("\n", $out);
     }
@@ -670,13 +396,12 @@ class SlideshowManager
                 $formats[] = '%d';
             }
 
-            if (array_key_exists('slide_link', $s) && !empty($s['slide_link'])) {
-                $data['slide_link'] = esc_url_raw($s['slide_link']);
-                $formats[] = '%s';
-            } else {
-                // slide_link may have been deleted - always set to empty if not present
-                $data['slide_link'] = '';
-                $formats[] = '%s';
+            // slide_link may have been deleted - always set to empty if not present
+            $data['slide_link'] = null;
+            $formats[] = '%d';
+
+            if (array_key_exists('slide_link', $s) && is_numeric(sanitize_text_field($s['slide_link']))) {
+                $data['slide_link'] = (int) sanitize_text_field($s['slide_link']);
             }
 
             $table_name = $wpdb->prefix . 'slideshow_slides';
@@ -913,9 +638,10 @@ class SlideshowManager
         $title = sanitize_text_field($_POST['title']);
         $content = sanitize_textarea_field($_POST['content']);
 
-        $link = '';
-        if (array_key_exists('slide_link', $_POST)) {
-            $link = esc_url_raw($_POST['slide_link']);
+        $link = null;
+
+        if (array_key_exists('slide_link', $_POST) && !empty($_POST['slide_link'])) {
+            $link = (int) sanitize_text_field($_POST['slide_link']);
         }
 
         if (!empty($slideshow_id)) {
@@ -933,7 +659,7 @@ class SlideshowManager
                     '%d',
                     '%s',
                     '%s',
-                    '%s',
+                    '%d',
                 ]
             );
 

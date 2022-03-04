@@ -12,48 +12,29 @@
         <b>slide</b>.
     </p>
 
-    <table class="slideshow-header-controls">
-        <tr>
-            <td class="slideshow-name">
-                <a class="button add-new" href="">Add new</a>&nbsp;
+    <div id="col-container" class="wp-clearfix">
+        <div id="col-left">
+            <div class="col-wrap">
+                <button class="button add-new">Add new</button>&nbsp;
                 <input type="text" class="slideshow-collection-name" name="slideshow-collection-name"
                     value="" placeholder="Enter a name for a new slideshow">
-            </td>
 
-            <td class="slideshow-gutter">&nbsp;</td>
+                <div class="form-wrap">
+                    <div class="form-field">
+                        <?php echo $this->slideshowCollectionSelector(); ?>
+                    </div>
+                    <div class="form-field">
+                        <label for="slideshow-is-active-collection" class="slideshow-activate-collection">
+                            <input type="checkbox" id="slideshow-is-active-collection" class="slideshow-is-active-collection" value="1">
+                            This is the active slideshow
+                        </label>
+                    </div>
+                </div>
 
-            <td class="slideshow-controls">
-                <a href="" class="button button-primary slideshow-save-collection-btn">Save collection</a>
-                <a href="" class="button slideshow-delete-collection-btn">Delete the loaded slideshow</a>
-            </td>
-        </tr>
-
-        <tr>
-            <td class="slideshow-name">
-                <?php echo $this->slideshowCollectionSelector(); ?>
-            </td>
-
-            <td class="slideshow-gutter">&nbsp;</td>
-
-            <td class="slideshow-signal-preload"></td>
-        </tr>
-    </table>
-
-    <table class="slideshow-drag-drop-layout">
-        <tr class="master-row">
-            <td class="slideshow-dropzone">
                 <table class="slideshow-sortable-rows">
                     <tr class="head-row">
                         <th></th>
                         <th>
-                            <div class="slideshow-controls-right">
-                                <input type="checkbox" id="slideshow-is-active-collection"
-                                    class="slideshow-is-active-collection" value="1">
-                                <label for="slideshow-is-active-collection" class="slideshow-activate-collection">
-                                    This is the active slideshow
-                                </label>
-                            </div>
-
                             Caption/Title<br/>
                             <span class="slideshow-slide-link-header">Slide Link</span>
                         </th>
@@ -70,73 +51,37 @@
                     <?php endfor; ?>
                 </table><!-- .slideshow-sortable-rows -->
 
+                <p class="submit">
+                    <button class="button button-primary slideshow-save-collection-btn">Save Current Slideshow</button>
+                    <button class="button slideshow-delete-collection-btn">Delete Current Slideshow</button>
+                </p>
+
+                <!-- Runtime Information -->
                 <div id="runtime-signal" class="slideshow-signals">
-                    <img src="<?= $this->sprite ?>" class="signals-sprite">
+                    <img src="<?= $this->sprite ?>" class="signals-sprite reload" alt="" title="recalculate runtime">
                 </div>
-
-                <h3 class="slideshow-runtime-heading">Runtime information:</h3>
-
+                <h2>Runtime Information</h2>
                 <div class="slideshow-runtime-information"></div>
 
-                <?php echo $this->textSlideCreateForm(); ?>
+                <?php require 'add-text-slide.php'; ?>
 
-                <?php echo $this->quickSetLayoutControls(); ?>
+                <?php require 'slideshow-options.php'; ?>
+            </div>
+        </div>
 
-            </td><!-- .slideshow-dropzone -->
-
-            <td class="slideshow-gutter">&nbsp;</td>
-
-            <td class="slideshow-dragzone">
-                <table class="slideshow-drag-table">
-                    <tr>
-                        <th class="alignleft slide-heading">Your Slide Images</th>
-                    </tr>
-
-                    <tr>
-                        <td id="slide-remove-local" class="slideshow-draggable-items returnable local">
-                            <?php echo implode("\n", $this->fetchSlides(null)); ?>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th class="alignleft slide-heading shared-slides">Shared Slide Images</th>
-                    </tr>
-
-                    <tr>
-                        <td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">
-                            <?php
-                            switch_to_blog(1);
-                            echo implode("\n", $this->fetchSlides());
-                            ?>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th class="alignleft bc-slides">British Columbia</th>
-                    </tr>
-
-                    <tr>
-                        <td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">
-                            <?php echo implode("\n", $this->fetchSlides('BC')); ?>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th class="alignleft mb-slides">Manitoba</th>
-                    </tr>
-
-                    <tr>
-                        <td id="slide-remove-shared" class="slideshow-draggable-items returnable shared">
-                            <?php
-                            echo implode("\n", $this->fetchSlides('MB'));
-                            restore_current_blog();
-                            ?>
-                        </td>
-                    </tr>
-                </table>
-            </td><!-- .slideshow-dragzone -->
-        </tr><!-- .master-row -->
-    </table><!-- .slideshow-drag-drop-layout -->
+        <div id="col-right">
+            <div class="col-wrap">
+                <?php foreach (self::$media_sources as $region_id => $region_name) : ?>
+                    <div class="wp-clearfix">
+                        <h3><?= $region_name ?></h3>
+                        <div class="slideshow-draggable-items returnable local">
+                            <?php echo implode("\n", self::fetchSlides($region_id)); ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
 
     <div class="slideshow-signals-preload">
         <img src="<?= $this->sprite ?>" width="362" height="96">
