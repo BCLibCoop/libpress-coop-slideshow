@@ -34,6 +34,8 @@ namespace BCLibCoop;
 // No Direct Access
 defined('ABSPATH') || die(-1);
 
+define('COOP_SLIDESHOW_PLUGIN', __FILE__);
+
 require_once 'inc/slideshow-admin.php';
 require_once 'inc/slideshow-defaults.php';
 require_once 'inc/slideshow-manager.php';

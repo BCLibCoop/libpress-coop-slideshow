@@ -1,28 +1,9 @@
-.hidden {
-  display: none;
-}
-
 .ghosted {
   opacity: 0.7;
 }
 
-.update-halo {
-  box-shadow: 6px 6px 6px rgba(0, 250, 50, 0.5);
-}
-
 span.placeholder {
   color: #ccc;
-}
-
-div.alt-hover {
-  background-color: rgba(209, 227, 152, 0.83);
-  padding: 10px;
-  color: #666;
-  border: thin solid #999;
-  box-shadow: 0px 3px 3px 0px rgba(30, 30, 30, 0.5);
-  z-index: 1200;
-  float: left;
-  display: none;
 }
 
 .slideshow-signals-preload {
@@ -51,50 +32,12 @@ div.alt-hover {
   position: relative;
 }
 
-#collection-name-signal {
-  display: none;
-  /*
-  z-index: 1000;
-  float: right;
-  top: -35px;
-  margin-right: 109%;
-  position: relative;
-  */
-}
-
 .slideshow-signals {
   /* container for signals */
   width: 32px;
   height: 32px;
   position: relative;
   overflow: hidden;
-}
-
-table.slideshow-drag-drop-layout {
-  margin-top: 10px;
-  width: 95%;
-  /*	border: thin solid #ccf; */
-}
-
-/* subtable layout */
-table.slideshow-header-controls {
-  width: 95%;
-}
-
-table.slideshow-header-controls td {
-}
-
-.slideshow-name,
-.slideshow-controls {
-  vertical-align: middle;
-  width: 48%;
-  text-align: left;
-  padding: 0px 0px;
-}
-
-div.collection-name-status-msg {
-  width: 100%;
-  color: #999;
 }
 
 input.slideshow-collection-name {
@@ -110,32 +53,11 @@ input.slideshow-collection-name {
   margin-bottom: 10px;
 }
 
-.slideshow-dropzone,		/* left - contains the sorting table */
-.slideshow-dragzone 		/* right - contains the dragging rsources */ {
-  /* border: thin solid #ccc;  */
-  min-width: 48%;
-  vertical-align: top;
-}
-.slideshow-gutter {
-  /* min-width: 20px; */
-}
-
 table.slideshow-sortable-rows {
   border-collapse: separate;
   border-spacing: 6px;
   width: 100%;
   overflow: scroll;
-}
-
-div.sort-table-signal {
-  width: 32px;
-  height: 32px;
-  overflow: hidden;
-  background-color: rgba(255, 255, 255, 0.5);
-}
-
-div.slideshow-controls-right {
-  float: right;
 }
 
 label.slideshow-activate-collection {
@@ -155,19 +77,6 @@ th span.slideshow-slide-link-header {
   color: #999;
 }
 
-.slideshow-dragzone .th {
-  font-size: 18px;
-}
-
-.shared-slides {
-  margin-top: 1em;
-}
-
-.bc-slides,
-.mb-slides {
-  font-size: 16px;
-}
-
 .draggable .caption {
   margin-top: 0;
   width: 170px;
@@ -181,6 +90,11 @@ th span.slideshow-slide-link-header {
 .slide-heading {
   font-size: 18px;
   margin-bottom: 0.5em;
+}
+
+.slideshow-big-t {
+  font-family: Georgia, Times, serif;
+  font-size: 3em;
 }
 
 .thumbbox {
@@ -216,12 +130,13 @@ p.slide-preview {
 }
 
 /**
-*	Inline edit function
+* Inline edit function
 *
 **/
 div.slide-title {
   margin-top: 5px;
 }
+
 div.slide-title,
 div.slide-link {
   margin-left: 5px;
@@ -279,18 +194,9 @@ h3.slideshow-runtime-heading {
 div.slideshow-runtime-information {
   height: 4.5em;
   width: 96%;
-  /*	border: thin solid #eee; */
+  /* border: thin solid #eee; */
   margin: 10px auto;
   padding: 6px;
-}
-
-table.slideshow-drag-table {
-  min-height: 500px;
-  width: 100%;
-  /* four rows -
-    one for local media,
-    one for network media
-    one for each one's heading */
 }
 
 .slideshow-draggable-items {
@@ -306,92 +212,54 @@ table.slideshow-drag-table {
   width: 180px;
 }
 
-div.draggable {
-}
-
 img.slotview {
   display: none;
 }
 
 /**
 *
-*	Add text slide section
+* text slide section
 *
 **/
-table.slideshow-text-slide-create {
-  /* 	margin-top: 30px; */
-  width: 100%;
-}
-.slideshow-label {
-  font-size: 1.2em;
-}
-
 input.slideshow-text-slide-heading {
   font-size: 1.2em;
-  width: 100%;
+  /* width: 100%; */
 }
 textarea.slideshow-text-slide-content {
   /* width: 100%; */
   height: 100px;
 }
 
-.slideshow-text-slide-link-box {
-  text-align: left;
-  width: 100%;
+#slideshow_page_selector_chzn li.post,
+#slideshow_page_selector_chzn option.post {
+  color: blue;
 }
-
-#slideshow_page_selector {
-  width: 100%;
-}
-
-.slideshow-text-slide-save-box {
-  text-align: right;
-}
-
-.slideshow-big-t {
-  font-family: Georgia, Times, serif;
-  font-size: 3em;
+#slideshow_page_selector_chzn li.page,
+#slideshow_page_selector_chzn option.page {
+  color: green;
 }
 
 /**
 *
-*	Slideshow Layout graphics
+* Slideshow Layout graphics
 *
 **/
 
-table.slideshow-layout-controls {
-  width: 100%;
-  margin: 30px auto 30px 0px;
-  border-top: thin solid #ccc;
-  border-bottom: thin solid #ccc;
+.slideshow-control {
+  width: 33%;
+  float: left;
 }
 
-table.slideshow-layout-controls td {
-  width: 32%;
-  vertical-align: top;
-}
-
-table.slideshow-control {
-  width: 100%;
-}
-table.slideshow-control td label {
-  width: 90%;
+.slideshow-control label.input-label {
   font-weight: bold;
-  white-space: nowrap;
 }
+
+.slideshow-control-annotation,
+.slideshow-control-img {
+  padding-left: 23px;
+}
+
 .slideshow-control-annotation {
   color: #999;
-}
-.radio-box {
-  width: 5%;
-  text-align: right;
-}
-
-li.post,
-option.post {
-  color: blue;
-}
-li.page,
-option.page {
-  color: green;
+  width: 65%;
 }

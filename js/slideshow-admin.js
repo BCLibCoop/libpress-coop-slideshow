@@ -38,14 +38,6 @@
 
       $('#runtime-signal img.signals-sprite').on('click', this.runtime_calculate);
 
-      // bind clicking on graphics to radio buttons
-      // TODO: <label>?
-      $('.slideshow-control-img').on('click', function () {
-        var t = $(this);
-        var id = t.data('id');
-        $('#' + id).trigger('click');
-      });
-
       // retrieve the currently active slideshow by default
       this.fetch_selected_slideshow();
     },
@@ -795,6 +787,7 @@
 
 jQuery().ready(function () {
   if (window.pagenow === 'site-manager_page_top-slides') {
+    window.coop_slideshow_settings = jQuery().coop_slideshow_settings();
     window.slideshow_manager = jQuery().coop_slideshow_manager();
 
     jQuery('.draggable').draggable({
@@ -814,6 +807,4 @@ jQuery().ready(function () {
       hoverClass: 'return_highlight'
     });
   }
-
-  window.coop_slideshow_settings = jQuery().coop_slideshow_settings();
 });
