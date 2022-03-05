@@ -48,7 +48,7 @@ input.slideshow-collection-name {
   display: none;
 }
 
-.slideshow_select {
+.slideshow-select {
   width: 100%;
   margin-bottom: 10px;
 }
@@ -192,11 +192,11 @@ span.slideshow-slide-link {
   color: #999;
 }
 
-.drop_highlight {
+.drop-highlight td {
   box-shadow: inset 0px 0px 15px rgba(23, 23, 229, 0.75);
 }
 
-.return_highlight {
+.return-highlight {
   box-shadow: inset 0px 0px 15px rgba(177, 234, 34, 0.75);
 }
 
@@ -238,6 +238,10 @@ input.slideshow-text-slide-heading {
 textarea.slideshow-text-slide-content {
   /* width: 100%; */
   height: 100px;
+}
+
+.slideshow-page-selector {
+  width: 100%;
 }
 
 #slideshow_page_selector_chzn li.post,

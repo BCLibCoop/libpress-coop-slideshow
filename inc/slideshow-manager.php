@@ -174,7 +174,7 @@ class SlideshowManager
         $out = [];
 
         $out[] = '<select data-placeholder="... or choose a past slideshow to reload" name="slideshow_select" '
-                 . 'id="slideshow_select" class="slideshow_select chzn-select">';
+                 . 'id="slideshow-select" class="slideshow-select chzn-select">';
 
         $out[] = '<option value=""></option>';
 
@@ -202,7 +202,7 @@ class SlideshowManager
         ]);
 
         $out = [];
-        $out[] = '<select data-placeholder="Link to a post or page..." id="slideshow_page_selector" '
+        $out[] = '<select data-placeholder="Link to a post or page..." id="slideshow-page-selector" '
                  . 'name="slideshow_page_selector" class="slideshow-page-selector chzn-select">';
         $out[] = '<option value=""></option>';
 
