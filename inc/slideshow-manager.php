@@ -169,7 +169,7 @@ class SlideshowManager
         global $wpdb;
 
         $table_name = $wpdb->prefix . 'slideshows';
-        $res = $wpdb->get_results("SELECT * FROM `$table_name` ORDER BY `title`");
+        $res = $wpdb->get_results("SELECT * FROM `$table_name` WHERE `title` != '' ORDER BY `title`");
 
         $out = [];
 
@@ -179,7 +179,7 @@ class SlideshowManager
         $out[] = '<option value=""></option>';
 
         foreach ($res as $r) {
-            if ($r->is_active == "1") {
+            if ($r->is_active === '1') {
                 $out[] = '<option value="' . $r->id . '" selected="selected">' . $r->title . '</option>';
             } else {
                 $out[] = '<option value="' . $r->id . '" >' . $r->title . '</option>';
@@ -260,12 +260,9 @@ class SlideshowManager
             $captions = (int) sanitize_text_field($_POST['captions']);
         }
 
-        $is_active = (int) sanitize_text_field($_POST['is_active']);
-        if (empty($is_active) || $is_active == 'false' || $is_active == '0') {
-            // error_log( 'is_active setting to zero' );
-            $is_active = 0;
-        } else {
-            $is_active = 1;
+        $is_active = 0;
+        if (array_key_exists('is_active', $_POST)) {
+            $is_active = (int) sanitize_text_field($_POST['is_active']);
         }
 
         $layout = sanitize_text_field($_POST['layout']);
@@ -286,7 +283,7 @@ class SlideshowManager
 
         $table_name = $wpdb->prefix . 'slideshows';
 
-        if ($is_active == 1) {
+        if ($is_active === 1) {
             /* before we are set to the active record */
             /* unmark any currently marked as active */
             $wpdb->update(
@@ -457,17 +454,31 @@ class SlideshowManager
             $wpdb->prepare("SELECT * FROM `$table_name` WHERE `slideshow_id` = %d ORDER BY `ordering`", $slideshow_id)
         );
 
+        $image_size = 'medium';
         $slides = [];
 
         foreach ($slide_rows as $s) {
             if ($s->post_id) {
                 // Image Slide
+                $meta = [];
+
+                if ($raw_meta = self::fetchImageMeta($s->post_id)) {
+                    // Just the meta we need to keep the payload small
+                    $meta = [
+                        'title' => $raw_meta['title'],
+                        'src' => $raw_meta['folder'] . $raw_meta[$image_size]['file'],
+                        'width' => $raw_meta[$image_size]['width'],
+                        'height' => $raw_meta[$image_size]['height'],
+                    ];
+                }
+
                 $slides[] = [
                     'id' => $s->id,
                     'post_id' => $s->post_id,
                     'text_title' => $s->text_title,
                     'slide_link' => $s->slide_link,
                     'ordering' => $s->ordering,
+                    'meta' => $meta,
                 ];
             } else {
                 // Text Slide
