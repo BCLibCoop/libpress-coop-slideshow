@@ -22,7 +22,8 @@
         .chosen({disable_search_threshold: 10})
         .on('change', this.fetch_selected_slideshow.bind(this));
 
-      $('#slideshow-page-selector').chosen({disable_search_threshold: 10});
+      $('#slideshow-page-selector')
+        .chosen({disable_search_threshold: 10});
 
       $('.slideshow-save-collection-btn').on('click', this.save_collection.bind(this));
       $('.slideshow-delete-collection-btn').on('click', this.delete_this_collection.bind(this));
@@ -69,6 +70,15 @@
       var slideshow_collection_name = $('.slideshow-collection-name').val();
       var slideshow_id = $('#slideshow-select').val();
 
+      var $emptyRow = this.first_empty_row();
+
+      if ($emptyRow === null) {
+        alert('Please remove an existing slide before attempting to add a text slide.');
+        return false;
+      }
+
+      var nextRow = $('.slideshow-collection-row').index($emptyRow);
+
       if (slideshow_collection_name == '' && slideshow_id == null) {
         alert('Whoops! You need to name the slideshow first.');
         $('.slideshow-collection-name').trigger('focus');
@@ -76,8 +86,8 @@
         return false;
       }
 
-      var title = $('#slideshow-text-slide-heading').val();
-      var content = $('#slideshow-text-slide-content').val();
+      var title = $('#slideshow-text-slide-heading').val().trim();
+      var content = $('#slideshow-text-slide-content').val().trim();
 
       if (title == '' || content == '') {
         alert('You must enter a title and a message');
@@ -85,7 +95,8 @@
         return false;
       }
 
-      var slide_link = $('#slideshow_page_selector option:selected').val();
+      // TODO: Support ID or full link
+      var slide_link = $('#slideshow-page-selector option:selected').val().trim();
 
       var data = {
         action: 'slideshow-add-text-slide',
@@ -94,6 +105,7 @@
         title: title,
         content: content,
         slide_link: slide_link,
+        ordering: nextRow,
       };
 
       var self = this;
@@ -123,26 +135,38 @@
     },
 
     clear_drop_table_rows: function () {
-      var rows = $('.slideshow-collection-row');
-      var caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
-      var link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
+      var $rows = $('.slideshow-collection-row');
+      var $caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
+      var $link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
 
-      for (var i = 0; i < rows.length; i++) {
-        $('.thumbbox', rows[i]).empty();
-        $(rows[i]).data('slide-id', '');
-        $(rows[i]).children().last().empty().append($(caption).clone()).append($(link).clone());
-      }
+      $rows.each(function () {
+        var $row = $(this);
+
+        $row.find('.thumbbox').empty();
+        $row.data('slide-id', '');
+        $row.find('.slideshow-slide-title')
+          .empty()
+          .append($caption.clone())
+          .append($link.clone());
+      });
     },
 
     /**
     * Re-use rows after deleting an entry
     **/
     clear_and_reinsert_row: function (dragged) {
-      $('.thumbbox', dragged).empty();
-      $(dragged).data('slide-id', '');
-      $('div', dragged).empty();
+      var $row = $(dragged);
+      var $caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
+      var $link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
 
-      $('.slideshow-sortable-rows').append(dragged);
+      $row.find('.thumbbox').empty();
+      $row.data('slide-id', '');
+      $row.find('.slideshow-slide-title')
+        .empty()
+        .append($caption.clone())
+        .append($link.clone());
+
+      $('.slideshow-sortable-rows').append($row);
     },
 
     delete_this_collection: function () {
@@ -174,32 +198,35 @@
     },
 
     first_empty_row: function () {
-      var rows = $('.slideshow-collection-row');
-      for (var i = 0; i < rows.length; i++) {
+      var $rows = $('.slideshow-collection-row');
+      var $emptyRow = null;
 
-        var txt = $('.slideshow-slide-title', rows[i]).text();
-        if (txt.length == 0) {
-          return rows[i];
+      $rows.each(function () {
+        var $row = $(this);
+        if ($emptyRow === null && $row.find('.slideshow-slide-title .slide-title').contents().filter(function() {return this.nodeType === 3}).text().trim().length === 0) {
+          $emptyRow = $row;
         }
-      }
+      });
+
+      return $emptyRow;
     },
 
     fetch_selected_slideshow: function () {
       this.clear_drop_table_rows();
-      var opt = $('#slideshow-select option:selected');
+      var $opt = $('#slideshow-select option:selected');
 
-      $('.slideshow-collection-name').val($(opt).text());
+      $('.slideshow-collection-name').val($opt.text());
 
       var data = {
         action: 'slideshow-fetch-collection',
-        slideshow_id: opt.val()
+        slideshow_id: $opt.val()
       };
 
       var self = this;
 
       $.post(ajaxurl, data).done(function (res) {
         var slides = res.slides;
-        self.slideshow_id = opt.val();
+        self.slideshow_id = $opt.val();
 
         $('#slideshow-is-active-collection').prop('checked', (res.is_active === '1'));
         $('#slideshow-show-captions').prop('checked', (res.captions === '1'));
@@ -209,14 +236,14 @@
         $('input[value="' + res.transition + '"][name="slideshow-transition"]').prop('checked', true);
 
         for (var i = 0; i < slides.length; i++) {
-          var row = $('.slideshow-collection-row').eq(i);
+          var $row = $('.slideshow-collection-row').eq(i);
 
           if (slides[i].post_id == null) {
             // this is a text entry
-            self.place_slide_text(slides[i], row);
+            self.place_slide_text(slides[i], $row);
           } else {
             // image slide
-            self.place_slide_img(slides[i], row);
+            self.place_slide_img(slides[i], $row);
           }
         }
 
@@ -228,113 +255,115 @@
       var imgsrc = $('.slideshow-signals-preload img').attr('src');
       var $div = $('<div id="runtime-signal" class="slideshow-inline-edit-toggle slideshow-signals" />');
       var $img = $('<img class="signals-sprite pencil" src="' + imgsrc + '" />');
-      $div.append($img);
 
       if (opt) {
         $img.addClass('active')
       }
 
+      $div.append($img);
+
       return $div;
     },
 
     inline_form_toggle: function (event) {
-      // this is only the title
-      // top level element === TD.slideshow-slide-title
-      var target = event.target;
-      var content_edit;
-
-      if (target.id === 'inline-editor') {
-        target = $(target);
-      } else if (
-        $(target).parent().hasClass('slide-title')
-        || $(target).parent().hasClass('slide-title-wrap')
-      ) {
-        target = $(target).parent().parent();
-      } else {
-        target = $(target).parent();
-      }
+      // Get the parent TD
+      var $target = $(event.target).parents('.slideshow-slide-title');
 
       // guard - only one active inline-editor at one time
-      if (this.editing_node !== null && target.attr('id') === undefined) {
+      if (this.editing_node !== null && $target.attr('id') === undefined) {
         // restore the graphic for all targets to neutral
         // $('.slideshow-inline-edit-toggle img').removeClass('active');
         return;
       }
 
-      if (target.attr('id') === 'inline-editor') {  // state marker == active editor
+      if ($target.attr('id') === 'inline-editor') {
         // restore NON-EDIT view
-        var td = this.editing_node;
+        var $td = this.editing_node;
 
-        var title_edit = $('#slide-title-edit');
-        var link_edit = $('#slide-link-edit');
-        content_edit = $('#slide-content-edit');
+        var title_edit = $('#slide-title-edit').val().trim();
+        var link_edit = $('#slide-link-edit').val().trim();
+        var $content_edit = $('#slide-content-edit');
 
-        if (title_edit.val().trim() === '') {
+        if (title_edit.length === 0) {
           alert('Slide title cannot be empty');
-          title_edit.focus();
           return;
         }
 
-        var title_div = $('<div class="slide-title" />').append(title_edit.val());
+        var $title_div = $('<div class="slide-title" />').text(title_edit);
 
-        var a = $('<a/>').attr('href', link_edit.val()).attr('target', '_blank').text(link_edit.val());
-        var link_div = $('<div class="slide-link" />').append(a);
+        var $a = $('<a/>').attr('href', link_edit).attr('target', '_blank').text(link_edit);
+        var $link_div = $('<div class="slide-link" />').append($a);
 
-        td.empty().append(title_div).append(link_div);
+        $td
+          .empty()
+          .append($title_div)
+          .append($link_div);
 
-        if (content_edit !== undefined) {
-          var txt = content_edit.text().trim();
-          if (txt !== null && txt !== undefined && txt !== '') {
-            var content_div = $('<div class="slide-content" />').append(content_edit.val().trim());
-            td.append(content_div);
+        if ($content_edit.length) {
+          var txt = $content_edit.text().trim();
+
+          if (txt.length) {
+            var $content_div = $('<div class="slide-content" />').txt(txt);
+            $td.append($content_div);
           }
         }
 
         // restore click-to-edit functionality
-        title_div
+        $title_div
           .append(this.insert_inline_edit_toggle())
           .on('click', this.inline_form_toggle.bind(this));
 
-        target.replaceWith(td);
+        $target.replaceWith($td);
 
         // clear buffer for reuse (also, a null buffer is part of active-inline-editor detection)
         this.editing_node = null;
       } else {
         // convert to INLINE-EDITOR
-        var inline_editor = $('<td class="inline-editor slideshow-slide-title" id="inline-editor" />');
-        var title_edit = $('<input class="slide-title-edit" type="text" id="slide-title-edit" value="' + $('.slide-title', target).text() + '" placeholder="Caption/Title (required)" />');
-        var div_title = $('<div class="slide-title-wrap"/>').append(title_edit).append(this.insert_inline_edit_toggle(1));
-        var link_edit = $('<input class="slide-link-edit" type="text" id="slide-link-edit" value="' + $('.slide-link', target).text() + '" placeholder="/?page_id=123" />');
+        var $inline_editor = $('<td class="inline-editor slideshow-slide-title" id="inline-editor" />');
+        var $title_edit = $('<input class="slide-title-edit" type="text" id="slide-title-edit" placeholder="Caption/Title (required)" />')
+          .val($target.find('.slide-title').text());
+        var $div_title = $('<div class="slide-title-wrap" />')
+          .append($title_edit)
+          .append(this.insert_inline_edit_toggle(1));
+        var $link_edit = $('<input class="slide-link-edit" type="text" id="slide-link-edit" placeholder="/?page_id=123" />')
+          .val($target.find('.slide-link').text());
 
-        inline_editor.append(div_title).append(link_edit);
+        $inline_editor
+          .append($div_title)
+          .append($link_edit);
 
-        var text = $(target).children('.slide-content').first().text();
-        if (text !== undefined &&  text !== null && text.trim() !== '') {
-          content_edit = $('<textarea class="slide-content-edit" id="slide-content-edit" placeholder="text message">' + text + '</textarea>');
-          inline_editor.append(content_edit);
+        var $content = $target.find('.slide-content');
+
+        if ($content.length) {
+          var txt = $content.text().trim();
+
+          if (txt.length) {
+            var $content_edit = $('<textarea class="slide-content-edit" id="slide-content-edit" placeholder="text message" />')
+              .text(txt);
+            $inline_editor.append($content_edit);
+          }
         }
-        // else {
-        // console.log( 'No content for this slide content-text' );
-        // }
 
-        this.editing_node = target.replaceWith(inline_editor);
+        this.editing_node = $target.replaceWith($inline_editor);
         $('.slideshow-inline-edit-toggle').on('click', this.inline_form_toggle.bind(this));
-        title_edit.trigger('focus');
+        $title_edit.trigger('focus');
       }
     },
 
-    place_slide_img: function (slide, row) {
+    place_slide_img: function (slide, $row) {
       if (slide.meta.length === 0) {
-        console.log('no image metadata returned');
+        console.log('No image metadata returned');
         return;
       }
 
-      if (row == null) {
+      if ($row == null) {
         // get the first empty row ...
-        row = this.first_empty_row();
+        $row = this.first_empty_row();
       }
 
-      $(row).data('slide-id', slide.id);
+      $row.data('slide-id', slide.id);
+      var $thumbbox = $row.find('.thumbbox');
+      var $titletd = $row.find('.slideshow-slide-title');
 
       // Prefer the title of the slide rather than the image
       var this_title = slide.meta.title;
@@ -343,59 +372,80 @@
       }
 
       var img = $('<img data-img-id="' + slide.post_id + '" src="' + slide.meta.src + '" width="' + slide.meta.width + '" height="' + slide.meta.height + '">');
-      $(row).children().first().empty().append(img);
+      $thumbbox
+        .empty()
+        .append(img);
 
-      var title = $('<div class="slide-title" />')
-        .append(this_title)
+      var $title = $('<div class="slide-title" />')
+        .text(this_title)
         .append(this.insert_inline_edit_toggle())
         .on('click', this.inline_form_toggle.bind(this));
 
-      $(row).children().eq(1).empty().append(title);
+      $titletd
+        .empty()
+        .append($title);
 
-      if (slide.slide_link !== undefined && slide.slide_link !== null && slide.slide_link.trim() !== '') {
-        var anchor = $('<a class="slide-anchor" target="_blank"/>').text(slide.slide_link).attr('href', slide.slide_link);
-        var div = $('<div class="slide-link" />').append(anchor);
-        $(row).children().eq(1).append(div);
+      if (
+        slide.slide_link !== undefined
+        && slide.slide_link !== null
+        && slide.slide_link.trim() !== ''
+      ) {
+        // TODO: Support ID or full link
+        var $anchor = $('<a class="slide-anchor" target="_blank" />').text(slide.slide_link).attr('href', slide.slide_link);
+        $titletd
+          .append($('<div class="slide-link" />')
+          .append($anchor));
       }
     },
 
-    place_slide_text: function (slide, row) {
-      if (row == null) {
+    place_slide_text: function (slide, $row) {
+      if ($row == null) {
         // get the first empty row ...
-        row = this.first_empty_row();
+        $row = this.first_empty_row();
       }
 
-      $(row).data('slide-id', slide.id);
-      $(row).children().first().empty().append($('<span class="slideshow-big-t">T</span>'));
+      $row.data('slide-id', slide.id);
+      var $thumbbox = $row.find('.thumbbox');
+      var $titletd = $row.find('.slideshow-slide-title');
+
+      $thumbbox
+        .empty()
+        .append($('<span class="slideshow-big-t">T</span>'));
 
       var titlediv = $('<div class="slide-title" />')
-        .append(slide.text_title)
+        .text(slide.text_title)
         .append(this.insert_inline_edit_toggle())
         .on('click', this.inline_form_toggle.bind(this));
 
-      $(row).children().eq(1).empty().append(titlediv);
+      $titletd
+        .empty()
+        .append(titlediv);
 
-      if (slide.slide_link !== undefined && slide.slide_link !== null && slide.slide_link.trim() !== '') {
-        var anchor = $('<a class="slide-anchor" target="_blank"/>').text(slide.slide_link).attr('href', slide.slide_link);
-        var div = $('<div class="slide-link" />').append(anchor);
-        $(row).children().eq(1).append(div);
+      if (
+        slide.slide_link !== undefined
+        && slide.slide_link !== null
+        && slide.slide_link.trim() !== ''
+      ) {
+        // TODO: Support ID or full link
+        var anchor = $('<a class="slide-anchor" target="_blank" />').text(slide.slide_link).attr('href', slide.slide_link);
+        $titletd.append($('<div class="slide-link" />').append(anchor));
       }
 
-      $(row).children().eq(1).append($('<div class="slide-content" />').append(slide.text_content));
+      $titletd.append($('<div class="slide-content" />').text(slide.text_content));
     },
 
     runtime_calculate: function () {
-      var children = $('.thumbbox').children();
+      var $children = $('.thumbbox').children();
       var msg = 'There must be slides before calculating the runtime.';
+      var count = $children.length;
 
-      if (children !== undefined) {
-        var index = children.length;
+      if (count) {
         var dwell = parseInt(window.coop_slideshow_settings.current.pause, 10) / 1000;
         var transit = parseInt(window.coop_slideshow_settings.current.speed, 10) / 1000;
 
-        var net = index * (dwell + transit); // slideshow cycle in seconds
+        var net = count * (dwell + transit); // slideshow cycle in seconds
 
-        msg = "There are " + index + " slides in this slideshow. Each slide will show for " + dwell + " seconds. ";
+        msg = "There are " + count + " slides in this slideshow. Each slide will show for " + dwell + " seconds. ";
         msg += "Transition between slides will take " + transit + " seconds. ";
         msg += "The slideshow will take a total of " + net + " seconds to cycle completely.";
       }
@@ -405,7 +455,7 @@
 
     save_collection: function () {
       var slides = [];
-      var rows = $('.slideshow-collection-row');
+      var $rows = $('.slideshow-collection-row');
 
       /* add check for an open inline-editor
         if open, toggle it closed before proceeding here
@@ -415,9 +465,12 @@
         title.trigger('click');
       }
 
-      var the_title = $('.slideshow-collection-name').val();
+      /**
+       * Global Slideshow Settings
+       */
+      var the_title = $('.slideshow-collection-name').val().trim();
 
-      if (the_title.trim().length === 0) {
+      if (the_title.length === 0) {
         alert('Please ensure your slideshow has a name');
         return false;
       }
@@ -444,55 +497,45 @@
         use_captions = '1';
       }
 
-      for (var i = 0; i < rows.length; i++) {
+      /**
+       * Individual Slides
+       */
+      $rows.each(function (index) {
+        var $row = $(this);
+
         // remove the placeholder spans which are purely eyecandy
-        $('span.placeholder', rows[i]).remove();
+        $row.find('span.placeholder').remove();
 
-        // slide_id is set in the case of a collection having been reloaded into the editor
-        var type = 'none';  // bias inherent in the system :-)
-        var text_title = '';
-        var text_content = '';
-        var post_id = '';
-        var slide_id = '';
-        var slide_link = '';
+        var slide_data = {
+          type: 'none',
+          slide_id: $row.data('slide-id'),
+          text_title: $row.find('.slide-title').text(),
+          text_content: '',
+          // TODO: Support ID or full link
+          slide_link: $row.find('.slide-link a').attr('href'),
+          post_id: '',
+          ordering: index,
+        };
 
-        var img = $(rows[i]).children().first().children('img');
-        var img_id = $(img).data('img-id');
+        var img_id = $row.find('img').data('img-id');
 
-        // read the title from it's box
-        text_title = $(rows[i]).children().last().children('div.slide-title').first().text();
-
-        // TODO: Get page/post ID instead
-        // link? - read the link URL from the anchor
-        slide_link = $(rows[i]).children().last().children('div.slide-link').children('a').attr('href');  // slide link box
-
-        if (img_id === undefined || img_id === null || img_id === '') {
+        if (img_id === undefined || img_id.length === 0) {
           // read the content of the content div
-          text_content = $(rows[i]).children().last().children('div').last().text();
-          if (text_title.length > 0 && text_content.length > 0) {
-            type = 'text';
-          }
-        } else if (img_id > 0) {
-          type = 'image';
-          post_id = img_id;
-        }
+          slide_data.text_content = $row.find('.slide-content').text();
 
-        // if this slide has already been saved it has a slide_id index
-        slide_id = $(rows[i]).data('slide-id');
+          if (slide_data.text_title.length > 0 && slide_data.text_content.length > 0) {
+            slide_data.type = 'text';
+          }
+        } else if (img_id !== undefined && img_id > 0) {
+          slide_data.type = 'image';
+          slide_data.post_id = img_id;
+        }
 
         // Only add the slide if we detected a type correctly
-        if (type === 'image' || type === 'text') {
-          slides.push({
-            type: type,
-            slide_id: slide_id,
-            text_title: text_title,
-            text_content: text_content,
-            slide_link: slide_link,
-            post_id: post_id,
-            ordering: i
-          });
+        if (slide_data.type === 'image' || slide_data.type === 'text') {
+          slides.push(slide_data);
         }
-      }
+      });
 
       var data = {
         action: 'slideshow-save-slide-collection',
@@ -519,7 +562,7 @@
     },
 
     slide_remove: function (dragged) {
-      var img_id = $('img', dragged).data('img-id');
+      var img_id = $(dragged).find('img').data('img-id');
       $('#thumb' + img_id).removeClass('ghosted').parent().draggable('option', 'disabled', false);
 
       this.clear_and_reinsert_row(dragged);
@@ -542,7 +585,7 @@
     },
 
     drop_insert_row: function (row, ui) {
-      var $t = $(row); // this
+      var $t = $(row);
       var dragged = ui.draggable;
       var dropme = $(dragged).detach();
 
@@ -562,15 +605,15 @@
       var h = thumb.attr('height');
 
       // Add the thumbnail to the dropzone
-      var thumbbox = $('.thumbbox', target);
+      var thumbbox = $(target).find('.thumbbox');
       var img = $('<img data-img-id="' + id + '" src="' + src + '" class="selected" id="selected' + row + '" width="' + w + '" height="' + h + '">');
       thumbbox.empty().append(img);
 
       // Add text and link to the dropzone
       var textbox = thumbbox.next();
 
-      $('div', textbox).first().empty().text(cap);
-      var linkdiv = $('div', textbox).last();
+      $(textbox).find('div').first().empty().text(cap);
+      var linkdiv = $(textbox).find('div').last();
       var anchor = linkdiv.children('a').first().attr('href', link);
       linkdiv.empty().append(anchor);
 

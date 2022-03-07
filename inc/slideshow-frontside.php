@@ -56,7 +56,7 @@ class Slideshow
             wp_enqueue_style('coop-slideshow-theme', $theme_styles['uri'], [], filemtime($theme_styles['path']));
 
             /* Global Slideshow Styling */
-            wp_enqueue_style('coop-slideshow', plugins_url('/css/coop-slideshow.css', dirname(__FILE__)), [], null);
+            wp_enqueue_style('coop-slideshow', plugins_url('/assets/css/coop-slideshow.css', dirname(__FILE__)), [], null);
 
             /* Script to resize text slide based on screen and layout width */
             wp_enqueue_script(

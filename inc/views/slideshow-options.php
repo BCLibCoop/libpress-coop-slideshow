@@ -70,7 +70,7 @@ $control_sections = [
             <?php foreach ($control_section['options'] as $index => $control_option) : ?>
                 <div class="form-field slideshow-control">
                     <label for="slideshow-control-<?= $control_section_name ?>-<?= $index ?>">
-                        <img src="<?= plugins_url('/imgs/' . $control_option['image'], COOP_SLIDESHOW_PLUGIN) ?>" class="slideshow-control-img">
+                        <img src="<?= plugins_url('/assets/imgs/' . $control_option['image'], COOP_SLIDESHOW_PLUGIN) ?>" class="slideshow-control-img">
                     </label>
                     <label class="input-label">
                         <input type="radio" name="slideshow-<?= $control_section_name ?>" id="slideshow-control-<?= $control_section_name ?>-<?= $index ?>" value="<?= $control_option['value'] ?>">

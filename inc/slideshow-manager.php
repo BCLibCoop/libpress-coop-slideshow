@@ -23,7 +23,7 @@ class SlideshowManager
 
         self::$instance = $this;
 
-        $this->sprite = plugins_url('/imgs/signal-sprite.png', dirname(__FILE__));
+        $this->sprite = plugins_url('/assets/imgs/signal-sprite.png', dirname(__FILE__));
 
         $this->init();
         add_action('admin_enqueue_scripts', [&$this, 'adminEnqueueStylesScripts']);
@@ -42,27 +42,28 @@ class SlideshowManager
     public function adminEnqueueStylesScripts($hook)
     {
         if ('site-manager_page_top-slides' == $hook || 'site-manager_page_slides-manager' == $hook) {
-            wp_enqueue_style('coop-chosen', plugins_url('/css/chosen.min.css', dirname(__FILE__)));
+            wp_enqueue_style('coop-chosen', plugins_url('/assets/css/chosen.min.css', dirname(__FILE__)));
             wp_enqueue_style(
                 'coop-slideshow-manager-admin',
-                plugins_url('/css/slideshow-manager-admin.css', dirname(__FILE__))
+                plugins_url('/assets/css/slideshow-manager-admin.css', dirname(__FILE__))
             );
             wp_enqueue_style(
                 'coop-slideshow-defaults-admin',
-                plugins_url('/css/slideshow-defaults-admin.css', dirname(__FILE__))
+                plugins_url('/assets/css/slideshow-defaults-admin.css', dirname(__FILE__))
             );
-            wp_enqueue_style('coop-signals', plugins_url('/css/signals.css', dirname(__FILE__)));
+            wp_enqueue_style('coop-signals', plugins_url('/assets/css/signals.css', dirname(__FILE__)));
 
-            wp_register_script('coop-chosen-jq-min-js', plugins_url('/js/chosen.jquery.min.js', dirname(__FILE__)));
+            wp_register_script('coop-chosen-jq-min-js', plugins_url('/assets/js/chosen.jquery.min.js', dirname(__FILE__)));
             wp_register_script('coop-slideshow-defaults-js', plugins_url('/inc/default-settings.js', dirname(__FILE__)));
             wp_enqueue_script(
                 'coop-slideshow-admin-js',
-                plugins_url('/js/slideshow-admin.js', dirname(__FILE__)),
+                plugins_url('/assets/js/slideshow-admin.js', dirname(__FILE__)),
                 [
                     'jquery',
                     'jquery-ui-core',
                     'jquery-ui-draggable',
                     'jquery-ui-droppable',
+                    'jquery-ui-selectmenu',
                     'coop-chosen-jq-min-js',
                     'coop-slideshow-defaults-js',
                 ]
@@ -397,6 +398,7 @@ class SlideshowManager
             $data['slide_link'] = null;
             $formats[] = '%d';
 
+            // TODO: Still support full links
             if (array_key_exists('slide_link', $s) && is_numeric(sanitize_text_field($s['slide_link']))) {
                 $data['slide_link'] = (int) sanitize_text_field($s['slide_link']);
             }
@@ -635,6 +637,7 @@ class SlideshowManager
             ]);
         }
 
+        // If there's not an existing show, create one
         if ((empty($slideshow_id) || $slideshow_id == 'null')) {
             $slideshow_id = $this->createCollection($slideshow_name);
         }
@@ -651,8 +654,14 @@ class SlideshowManager
 
         $link = null;
 
+        // TODO: Still support full links
         if (array_key_exists('slide_link', $_POST) && !empty($_POST['slide_link'])) {
             $link = (int) sanitize_text_field($_POST['slide_link']);
+        }
+
+        $ordering = null;
+        if (array_key_exists('ordering', $_POST) && !empty($_POST['ordering'])) {
+            $ordering = (int) sanitize_text_field($_POST['ordering']);
         }
 
         if (!empty($slideshow_id)) {
@@ -665,11 +674,13 @@ class SlideshowManager
                     'text_title' => $title,
                     'text_content' => $content,
                     'slide_link' => $link,
+                    'ordering' => $ordering,
                 ],
                 [
                     '%d',
                     '%s',
                     '%s',
+                    '%d',
                     '%d',
                 ]
             );
