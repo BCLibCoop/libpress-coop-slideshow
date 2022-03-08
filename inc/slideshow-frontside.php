@@ -208,12 +208,15 @@ class Slideshow
             }
 
             foreach ($slides as $slide) {
-                // Try and clean up old links, only IDs are stored now
+                // Convert old-style querystring IDs to plain ID
                 $slide->slide_link = preg_replace('/^\/\?page=/', '', $slide->slide_link);
 
                 if (is_numeric($slide->slide_link)) {
                     $slide->slide_link = get_permalink($slide->slide_link);
                 }
+
+                // Sanitize link
+                $slide->slide_link = esc_url($slide->slide_link);
 
                 if ($slide->post_id != null) {
                     $meta = SlideShowManager::fetchImageMeta($slide->post_id);
@@ -245,7 +248,7 @@ class Slideshow
     {
         $slide_ml[] = '<div class="slide image">';
 
-        if ($slide->slide_link != null) {
+        if (!empty($slide->slide_link)) {
             $slide_ml[] = '<a href="' . $slide->slide_link . '">';
         }
 
@@ -254,7 +257,7 @@ class Slideshow
 
         $slide_ml[] = '<img src="' . $url . '"  alt="' . $title . '" title="' . $title . '" >';
 
-        if ($slide->slide_link != null) {
+        if (!empty($slide->slide_link)) {
             $slide_ml[] = '</a>';
         }
 
@@ -275,7 +278,7 @@ class Slideshow
     {
         $slide_ml[] = '<div class="slide text">';
 
-        if ($slide->slide_link != null) {
+        if (!empty($slide->slide_link)) {
             $slide_ml[] = '<a href="' . $slide->slide_link . '">';
         }
 
@@ -283,7 +286,7 @@ class Slideshow
         $content = stripslashes($slide->text_content);
         $slide_ml[] = '<h2>' . $title . '</h2><p>' . $content . '</p>';
 
-        if ($slide->slide_link != null) {
+        if (!empty($slide->slide_link)) {
             $slide_ml[] = '</a>';
         }
 

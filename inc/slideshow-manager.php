@@ -223,8 +223,9 @@ class SlideshowManager
         $out[] = '<option value=""></option>';
 
         foreach ($pages as $page) {
-            $out[] = '<option value="' . $page->ID . '" class="' . $page->post_type . '" data-guid="' . $page->guid
-                     . '">' . $page->post_title . '</option>';
+            $out[] = '<option value="' . $page->ID . '" class="' . $page->post_type . '">'
+                        . $page->post_title
+                        . '</option>';
         }
 
         $out[] = '</select>';
@@ -411,11 +412,14 @@ class SlideshowManager
 
             // slide_link may have been deleted - always set to empty if not present
             $data['slide_link'] = null;
-            $formats[] = '%d';
+            $formats[] = '%s';
 
-            // TODO: Still support full links
-            if (array_key_exists('slide_link', $s) && is_numeric(sanitize_text_field($s['slide_link']))) {
-                $data['slide_link'] = (int) sanitize_text_field($s['slide_link']);
+            if (array_key_exists('slide_link', $s)) {
+                if (is_numeric(sanitize_text_field($s['slide_link']))) {
+                    $data['slide_link'] = (int) sanitize_text_field($s['slide_link']);
+                } else {
+                    $data['slide_link'] = esc_url_raw($s['slide_link']);
+                }
             }
 
             $table_name = $wpdb->prefix . 'slideshow_slides';
@@ -669,9 +673,12 @@ class SlideshowManager
 
         $link = null;
 
-        // TODO: Still support full links
         if (array_key_exists('slide_link', $_POST) && !empty($_POST['slide_link'])) {
-            $link = (int) sanitize_text_field($_POST['slide_link']);
+            if (is_numeric(sanitize_text_field($_POST['slide_link']))) {
+                $link = (int) sanitize_text_field($_POST['slide_link']);
+            } else {
+                $link = esc_url_raw($_POST['slide_link']);
+            }
         }
 
         $ordering = null;
@@ -695,7 +702,7 @@ class SlideshowManager
                     '%d',
                     '%s',
                     '%s',
-                    '%d',
+                    '%s',
                     '%d',
                 ]
             );
