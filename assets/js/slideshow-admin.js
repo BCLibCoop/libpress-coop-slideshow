@@ -95,7 +95,7 @@
         return false;
       }
 
-      // TODO: Support ID or full link
+      // Save Post ID, full URL can be edited later if desired
       var slide_link = $('#slideshow-page-selector option:selected').val().trim();
 
       var data = {
@@ -274,7 +274,7 @@
         var $td = this.editing_node;
 
         var title_edit = $('#slide-title-edit').val().trim();
-        var link_edit = $('#slide-link-edit').val().trim();
+        var $link_edit = $('#slide-link-edit');
         var $content_edit = $('#slide-content-edit');
 
         if (title_edit.length === 0) {
@@ -284,7 +284,13 @@
 
         var $title_div = $('<div class="slide-title" />').text(title_edit);
 
-        var $a = $('<a/>').attr('href', link_edit).attr('target', '_blank').text(link_edit);
+        var $a = $('<a/>')
+          .attr('href', $link_edit.val().trim())
+          .attr('target', '_blank')
+          // Restore link data
+          .data('slide-link', $link_edit.data('slide-link'))
+          .data('slide-permalink', $link_edit.data('slide-permalink'))
+          .text($link_edit.val().trim());
         var $link_div = $('<div class="slide-link" />').append($a);
 
         $td
@@ -318,8 +324,12 @@
         var $div_title = $('<div class="slide-title-wrap" />')
           .append($title_edit)
           .append(this.insertInlineEditToggle(1));
-        var $link_edit = $('<input class="slide-link-edit" type="text" id="slide-link-edit" placeholder="/?page_id=123" />')
-          .val($target.find('.slide-link').text());
+        var $anchor = $target.find('.slide-link a');
+        var $link_edit = $('<input class="slide-link-edit" type="text" id="slide-link-edit" placeholder="/explore/" />')
+          .val($anchor.attr('href'))
+          // Keep link data
+          .data('slide-link', $anchor.data('slide-link'))
+          .data('slide-permalink', $anchor.data('slide-permalink'));
 
         $inline_editor
           .append($div_title)
@@ -383,14 +393,16 @@
         .append($title);
 
       if (
-        slide.slide_link !== undefined
-        && slide.slide_link !== null
-        && slide.slide_link.trim() !== ''
+        slide.slide_permalink !== undefined
+        && slide.slide_permalink !== null
+        && slide.slide_permalink.trim() !== ''
       ) {
-        // TODO: Support ID or full link
         var $anchor = $('<a class="slide-anchor" target="_blank" />')
-          .attr('href', slide.slide_link)
-          .text(slide.slide_link);
+          .attr('href', slide.slide_permalink)
+          // Store original link values for later checks
+          .data('slide-link', slide.slide_link)
+          .data('slide-permalink', slide.slide_permalink)
+          .text(slide.slide_permalink);
 
         $titletd
           .append($('<div class="slide-link" />')
@@ -474,13 +486,23 @@
         // remove the placeholder spans which are purely eyecandy
         $row.find('span.placeholder').remove();
 
+        // If the link hasn't been changed and the original value is
+        // an ID, pass that along
+        var $anchor = $row.find('.slide-link a');
+        var slide_link = $anchor.attr('href');
+        if (
+          $anchor.data('slide-permalink') === slide_link
+          && parseInt($anchor.data('slide-link')) > 0
+        ) {
+          slide_link = $anchor.data('slide-link');
+        }
+
         var slide_data = {
           type: 'none',
           slide_id: $row.data('slide-id'),
           text_title: $row.find('.slide-title').text(),
           text_content: '',
-          // TODO: Support ID or full link
-          slide_link: $row.find('.slide-link a').attr('href'),
+          slide_link: slide_link,
           post_id: '',
           ordering: index,
         };

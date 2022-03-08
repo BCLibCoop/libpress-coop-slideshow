@@ -479,38 +479,43 @@ class SlideshowManager
         $slides = [];
 
         foreach ($slide_rows as $s) {
+            $slide = [
+                'id' => $s->id, // Slide ID
+                'slide_link' => $s->slide_link,
+                'slide_permalink' => $s->slide_link,
+                'text_title' => $s->text_title,
+                'ordering' => $s->ordering,
+            ];
+
+            // Convert old-style querystring IDs to plain ID
+            if (!empty($slide['slide_link'])) {
+                $slide['slide_link'] = preg_replace('/^\/\?page=/', '', $slide['slide_link']);
+            }
+
+            if (is_numeric($slide['slide_link'])) {
+                $slide['slide_permalink'] = get_permalink($slide['slide_link']);
+            }
+
             if ($s->post_id) {
                 // Image Slide
-                $meta = [];
+                $slide['post_id'] = $s->post_id; // Image attachment ID
+                $slide['meta'] = [];
 
                 if ($raw_meta = self::fetchImageMeta($s->post_id)) {
                     // Just the meta we need to keep the payload small
-                    $meta = [
+                    $slide['meta'] = [
                         'title' => $raw_meta['title'],
                         'src' => $raw_meta['folder'] . $raw_meta[$image_size]['file'],
                         'width' => $raw_meta[$image_size]['width'],
                         'height' => $raw_meta[$image_size]['height'],
                     ];
                 }
-
-                $slides[] = [
-                    'id' => $s->id,
-                    'post_id' => $s->post_id,
-                    'text_title' => $s->text_title,
-                    'slide_link' => $s->slide_link,
-                    'ordering' => $s->ordering,
-                    'meta' => $meta,
-                ];
             } else {
                 // Text Slide
-                $slides[] = [
-                    'id' => $s->id,
-                    'slide_link' => $s->slide_link,
-                    'text_title' => $s->text_title,
-                    'text_content' => $s->text_content,
-                    'ordering' => $s->ordering,
-                ];
+                $slide['text_content'] = $s->text_content;
             }
+
+            $slides[] = $slide;
         }
 
         wp_send_json([
@@ -681,7 +686,8 @@ class SlideshowManager
             }
         }
 
-        $ordering = null;
+        $ordering = 0;
+
         if (array_key_exists('ordering', $_POST) && !empty($_POST['ordering'])) {
             $ordering = (int) sanitize_text_field($_POST['ordering']);
         }
