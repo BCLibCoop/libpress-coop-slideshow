@@ -20,7 +20,7 @@ span.placeholder {
   z-index: 1000 !important;
   width: 32px;
   height: 32px;
-  margin-top: 10px;
+  /* margin-top: 10px; */
   overflow: hidden;
   position: relative;
   float: right;
@@ -42,7 +42,7 @@ span.placeholder {
 
 input.slideshow-collection-name {
   font-size: 1.4em;
-  width: 84%;
+  /* width: 84%; */
   margin: 0;
   float: right;
   display: none;
@@ -117,6 +117,7 @@ th span.slideshow-slide-link-header {
   border: thin solid #ccc;
   background-color: rgba(255, 255, 255, 0.5);
   font-weight: bold;
+  word-break: break-all;
 }
 
 p.slide-preview {
@@ -131,7 +132,6 @@ p.slide-preview {
 
 /**
 * Inline edit function
-*
 **/
 div.slide-title {
   margin-top: 5px;
@@ -147,7 +147,7 @@ div.slide-link {
 
 div.slideshow-inline-edit-toggle {
   position: relative;
-  top: -20px;
+  top: -10px;
   float: right;
 }
 
@@ -202,7 +202,7 @@ span.slideshow-slide-link {
 
 div.slideshow-runtime-information {
   height: 4.5em;
-  width: 96%;
+  /* width: 96%; */
   margin: 10px auto;
   padding: 6px;
 }

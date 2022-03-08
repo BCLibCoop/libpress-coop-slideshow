@@ -15,7 +15,8 @@
     <div id="col-container" class="wp-clearfix">
         <div id="col-left">
             <div class="col-wrap">
-                <button class="button add-new">Add new</button>&nbsp;
+                <button class="button add-new">Add New</button>&nbsp;
+
                 <input type="text" class="slideshow-collection-name" name="slideshow-collection-name"
                     value="" placeholder="Enter a name for a new slideshow">
 
@@ -53,11 +54,6 @@
                     <?php endfor; ?>
                 </table><!-- .slideshow-sortable-rows -->
 
-                <p class="submit">
-                    <button class="button button-primary slideshow-save-collection-btn">Save Current Slideshow</button>
-                    <button class="button slideshow-delete-collection-btn">Delete Current Slideshow</button>
-                </p>
-
                 <!-- Runtime Information -->
                 <div id="runtime-signal" class="slideshow-signals">
                     <img src="<?= $this->sprite ?>" class="signals-sprite reload" alt="" title="recalculate runtime">
@@ -73,6 +69,11 @@
 
         <div id="col-right">
             <div class="col-wrap">
+                <p class="submit">
+                    <button class="button button-primary slideshow-save-collection-btn">Save Collection</button>
+                    <button class="button slideshow-delete-collection-btn">Delete the Loaded Slideshow</button>
+                </p>
+
                 <?php foreach (self::$media_sources as $region_id => $region_name) : ?>
                     <div class="wp-clearfix">
                         <h3><?= $region_name ?></h3>
