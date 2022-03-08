@@ -153,8 +153,7 @@
     /**
     * Re-use rows after deleting an entry
     **/
-    clearAndReinsertRow: function (dragged) {
-      var $row = $(dragged);
+    clearAndReinsertRow: function ($row) {
       var $caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
       var $link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
 
@@ -202,7 +201,10 @@
 
       $rows.each(function () {
         var $row = $(this);
-        if ($emptyRow === null && $row.find('.slideshow-slide-title .slide-title').contents().filter(function() {return this.nodeType === 3}).text().trim().length === 0) {
+        if (
+          $emptyRow === null
+          && $row.find('.slideshow-slide-title .slide-title').contents().filter(function() {return this.nodeType === 3}).text().trim().length === 0
+        ) {
           $emptyRow = $row;
         }
       });
@@ -551,77 +553,84 @@
       });
     },
 
-    removeSlide: function (dragged) {
-      var img_id = $(dragged).find('img').data('img-id');
-      $('#thumb' + img_id).removeClass('ghosted').parent().draggable('option', 'disabled', false);
+    removeSlide: function ($dragged) {
+      var img_id = $dragged.find('img').data('img-id');
+      $('#thumb' + img_id).parent().removeClass('ghosted').draggable('option', 'disabled', false);
 
-      this.clearAndReinsertRow(dragged);
+      this.clearAndReinsertRow($dragged);
     },
 
     /**
      * Drag/Drop Functions
      */
     dropOnRow: function (event, ui) {
-      var row = this.id;
-      var dragged = ui.draggable;
+      var $row = $(event.target);
+      var $dragged = $(ui.draggable);
 
-      if ($(dragged).hasClass('slideshow-collection-row')) {
+      if ($dragged.hasClass('slideshow-collection-row')) {
         // Existing slide, reorder
-        this.dropInsertRow(event.target, ui);
+        this.dropInsertRow($row, $dragged);
       } else {
         // New slide, insert/replace
-        this.dropInsertThumbnail(row, dragged, event.target);
+        this.dropInsertThumbnail($row, $dragged);
       }
     },
 
-    dropInsertRow: function (row, ui) {
-      var $t = $(row);
-      var dragged = ui.draggable;
-      var dropme = $(dragged).detach();
+    dropInsertRow: function ($row, $dragged) {
+      var $dropme = $dragged.detach();
 
-      $($t).before(dropme);
+      $row.before($dropme);
 
       this.calculateRuntime();
     },
 
-    dropInsertThumbnail: function (row, dragged, target) {
-      var id = dragged.data('img-id');
-      var cap = dragged.data('img-caption');
-      var link = dragged.data('img-link');
+    dropInsertThumbnail: function ($row, $dragged) {
+      var id = $dragged.data('img-id');
+      var cap = $dragged.data('img-caption');
 
-      var thumb = $('#thumb' + id);
-      var src = thumb.attr('src');
-      var w = thumb.attr('width');
-      var h = thumb.attr('height');
+      var $thumb = $dragged.find('img');
+      var src = $thumb.attr('src');
+      var w = $thumb.attr('width');
+      var h = $thumb.attr('height');
 
       // Add the thumbnail to the dropzone
-      var thumbbox = $(target).find('.thumbbox');
-      var img = $('<img data-img-id="' + id + '" src="' + src + '" class="selected" id="selected' + row + '" width="' + w + '" height="' + h + '">');
-      thumbbox.empty().append(img);
+      var $thumbbox = $row.find('.thumbbox');
+      var $img = $('<img />')
+        .attr('src',src)
+        .attr('width', w)
+        .attr('height', h)
+        .data('img-id', id);
 
-      // Add text and link to the dropzone
-      var textbox = thumbbox.next();
+      $thumbbox
+        .empty()
+        .append($img);
 
-      $(textbox).find('div').first().empty().text(cap);
-      var linkdiv = $(textbox).find('div').last();
-      var anchor = linkdiv.children('a').first().attr('href', link);
-      linkdiv.empty().append(anchor);
+      // Add text to the dropzone
+      var $textbox = $row.find('.slideshow-slide-title');
+
+      $textbox
+        .empty()
+        .append($('<div class="slide-title" />').text(cap))
+        .append(this.insertInlineEditToggle())
+        .on('click', this.toggleInlineForm.bind(this));
 
       // Ghost out source image and make undraggable
-      $(thumb).addClass('ghosted').parent().draggable('option', 'disabled', true);
+      // TODO: Should this even happen? Is it fine if someone wants to add the
+      // same image multiple times?
+      $dragged.addClass('ghosted').draggable('option', 'disabled', true);
 
       this.calculateRuntime();
     },
 
-    returnToSource: function (row, ui) {
-      var dragged = ui.draggable;
+    returnToSource: function (event, ui) {
+      var $dragged = (ui.draggable);
 
       // Only continue if we're dragging an already placed slide
-      if (!dragged.hasClass('slideshow-collection-row')) {
+      if (!$dragged.hasClass('slideshow-collection-row')) {
         return;
       }
 
-      this.removeSlide(dragged);
+      this.removeSlide($dragged);
       this.calculateRuntime();
     },
   }
