@@ -112,10 +112,9 @@
 
       $.post(ajaxurl, data).done(function (res) {
         if (res.result === 'success') {
-          alert('Text slide saved');
           self.clear_text_slide_form();
           self.fetch_selected_slideshow();
-          // window.history.go(0);
+          alert('Text slide saved');
         } else {
           if (res.feedback !== undefined) {
             alert(res.feedback);
@@ -303,7 +302,7 @@
           var txt = $content_edit.text().trim();
 
           if (txt.length) {
-            var $content_div = $('<div class="slide-content" />').txt(txt);
+            var $content_div = $('<div class="slide-content" />').text(txt);
             $td.append($content_div);
           }
         }
@@ -548,13 +547,13 @@
         slides: slides
       };
 
+      var self = this;
+
       $.post(ajaxurl, data).done(function (res) {
         // do something in response to the save attempt feedback ...
         if (res.result === 'success') {
+          self.fetch_selected_slideshow();
           alert('Slide collection saved');
-          // Doing a full refresh for now to ensure we have a good state
-          // self.fetch_selected_slideshow();
-          window.history.go(0);
         } else {
           alert(res.feedback);
         }
