@@ -42,7 +42,14 @@ class SlideshowManager
     public function adminEnqueueStylesScripts($hook)
     {
         if ('site-manager_page_top-slides' == $hook || 'site-manager_page_slides-manager' == $hook) {
-            wp_enqueue_style('coop-chosen', plugins_url('/assets/css/chosen.min.css', dirname(__FILE__)));
+            $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
+
+            wp_enqueue_style(
+                'coop-chosen',
+                plugins_url('/assets/css/chosen' . $suffix . '.css', dirname(__FILE__)),
+                [],
+                '1.8.7'
+            );
             wp_enqueue_style(
                 'coop-slideshow-manager-admin',
                 plugins_url('/assets/css/slideshow-manager-admin.css', dirname(__FILE__))
@@ -53,8 +60,16 @@ class SlideshowManager
             );
             wp_enqueue_style('coop-signals', plugins_url('/assets/css/signals.css', dirname(__FILE__)));
 
-            wp_register_script('coop-chosen-jq-min-js', plugins_url('/assets/js/chosen.jquery.min.js', dirname(__FILE__)));
-            wp_register_script('coop-slideshow-defaults-js', plugins_url('/inc/default-settings.js', dirname(__FILE__)));
+            wp_register_script(
+                'jquery-chosen',
+                plugins_url('/assets/js/chosen.jquery' . $suffix . '.js', dirname(__FILE__)),
+                ['jquery'],
+                '1.8.7'
+            );
+            wp_register_script(
+                'coop-slideshow-defaults-js',
+                plugins_url('/inc/default-settings.js', dirname(__FILE__))
+            );
             wp_enqueue_script(
                 'coop-slideshow-admin-js',
                 plugins_url('/assets/js/slideshow-admin.js', dirname(__FILE__)),
@@ -64,7 +79,7 @@ class SlideshowManager
                     'jquery-ui-draggable',
                     'jquery-ui-droppable',
                     'jquery-ui-selectmenu',
-                    'coop-chosen-jq-min-js',
+                    'jquery-chosen',
                     'coop-slideshow-defaults-js',
                 ]
             );
@@ -175,7 +190,7 @@ class SlideshowManager
         $out = [];
 
         $out[] = '<select data-placeholder="... or choose a past slideshow to reload" name="slideshow_select" '
-                 . 'id="slideshow-select" class="slideshow-select chzn-select">';
+                 . 'id="slideshow-select" class="slideshow-select chosen-select">';
 
         $out[] = '<option value=""></option>';
 
@@ -204,7 +219,7 @@ class SlideshowManager
 
         $out = [];
         $out[] = '<select data-placeholder="Link to a post or page..." id="slideshow-page-selector" '
-                 . 'name="slideshow_page_selector" class="slideshow-page-selector chzn-select">';
+                 . 'name="slideshow_page_selector" class="slideshow-page-selector chosen-select">';
         $out[] = '<option value=""></option>';
 
         foreach ($pages as $page) {

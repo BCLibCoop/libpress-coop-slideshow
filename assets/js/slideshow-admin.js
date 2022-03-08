@@ -54,16 +54,16 @@
       });
     },
 
-    init_add_new_state: function () {
+    init_add_new_state: function (event) {
       $('#slideshow-select').remove();
-      $('#slideshow-select_chzn').remove();
+      $('#slideshow_select_chosen').remove();
       this.clear_drop_table_rows();
 
       // clear activated collection flag
       $('#slideshow-is-active-collection').prop('checked', false);
 
       // clear the input field, show and set focus
-      $('.slideshow-collection-name').show().val('').focus();
+      $('.slideshow-collection-name').show().val('').trigger('focus');
     },
 
     add_text_only_slide: function () {
@@ -123,7 +123,7 @@
             alert('Unable to save the text slide.');
           }
 
-          $('#slideshow-text-slide-heading').focus();
+          $('#slideshow-text-slide-heading').trigger('focus');
         }
       });
     },

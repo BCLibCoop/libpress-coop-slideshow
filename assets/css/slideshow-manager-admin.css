@@ -244,12 +244,12 @@ textarea.slideshow-text-slide-content {
   width: 100%;
 }
 
-#slideshow_page_selector_chzn li.post,
-#slideshow_page_selector_chzn option.post {
+#slideshow_page_selector_chosen li.post,
+#slideshow_page_selector_chosen option.post {
   color: blue;
 }
-#slideshow_page_selector_chzn li.page,
-#slideshow_page_selector_chzn option.page {
+#slideshow_page_selector_chosen li.page,
+#slideshow_page_selector_chosen option.page {
   color: green;
 }
 
