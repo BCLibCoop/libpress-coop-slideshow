@@ -83,6 +83,13 @@ class SlideshowDefaults
      */
     public function defaultsPageSave()
     {
+        if (check_ajax_referer(self::$slug, false, false) === false) {
+            wp_send_json([
+                'result' => 'failed',
+                'feedback' => 'Invalid security token, please reload and try again',
+            ]);
+        }
+
         foreach ($_POST['keys'] as $k) {
             $val = $_POST[$k];
             update_option('_' . self::$slug . '_' . $k, $val);

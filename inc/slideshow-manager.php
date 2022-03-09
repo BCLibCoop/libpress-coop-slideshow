@@ -79,6 +79,9 @@ class SlideshowManager
                     'coop-slideshow-defaults-js',
                 ]
             );
+
+            $ajax_nonce = wp_create_nonce($this->slug);
+            wp_localize_script('coop-slideshow-admin-js', 'coop_slideshow', ['nonce' => $ajax_nonce]);
         }
     }
 
@@ -261,6 +264,13 @@ class SlideshowManager
     public function saveCollectionHandler()
     {
         global $wpdb;
+
+        if (check_ajax_referer($this->slug, false, false) === false) {
+            wp_send_json([
+                'result' => 'failed',
+                'feedback' => 'Invalid security token, please reload and try again',
+            ]);
+        }
 
         $slideshow_title = sanitize_text_field($_POST['title']);
 
@@ -457,6 +467,13 @@ class SlideshowManager
     {
         global $wpdb;
 
+        if (check_ajax_referer($this->slug, false, false) === false) {
+            wp_send_json([
+                'result' => 'failed',
+                'feedback' => 'Invalid security token, please reload and try again',
+            ]);
+        }
+
         $slideshow_id = empty($_POST['slideshow_id']) ? '' : (int) sanitize_text_field($_POST['slideshow_id']);
 
         if (empty($slideshow_id)) {
@@ -526,6 +543,13 @@ class SlideshowManager
     public function deleteCollectionHandler()
     {
         global $wpdb;
+
+        if (check_ajax_referer($this->slug, false, false) === false) {
+            wp_send_json([
+                'result' => 'failed',
+                'feedback' => 'Invalid security token, please reload and try again',
+            ]);
+        }
 
         $slideshow_id = (int) sanitize_text_field($_POST['slideshow_id']);
 

@@ -147,7 +147,8 @@
 
         var data = {
           action: 'slideshow-delete-slide-collection',
-          slideshow_id: $('#slideshow-select').val()
+          slideshow_id: $('#slideshow-select').val(),
+          _ajax_nonce: coop_slideshow.nonce,
         };
 
         $.post(ajaxurl, data).done(function (res) {
@@ -194,7 +195,8 @@
 
       var data = {
         action: 'slideshow-fetch-collection',
-        slideshow_id: $opt.val()
+        slideshow_id: $opt.val(),
+        _ajax_nonce: coop_slideshow.nonce,
       };
 
       var self = this;
@@ -511,7 +513,8 @@
         transition: transition,
         is_active: is_active,
         captions: use_captions,
-        slides: slides
+        slides: slides,
+        _ajax_nonce: coop_slideshow.nonce,
       };
 
       var self = this;
@@ -721,6 +724,7 @@
       // otherwise continue to build data object to send server-side
       changed['action'] = 'coop-save-slideshow-change';
       changed['keys'] = keys;
+      changed['_ajax_nonce'] = coop_slideshow.nonce;
 
       if (this._debug) console.log('posting data');
 
