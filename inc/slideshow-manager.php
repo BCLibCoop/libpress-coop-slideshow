@@ -32,7 +32,6 @@ class SlideshowManager
 
     public function init()
     {
-        add_action('wp_ajax_slideshow-fetch-img-meta', [&$this, 'fetchImageMetaCallback']);
         add_action('wp_ajax_slideshow-fetch-collection', [&$this, 'fetchCollection']);
         add_action('wp_ajax_slideshow-save-slide-collection', [&$this, 'saveCollectionHandler']);
         add_action('wp_ajax_slideshow-delete-slide-collection', [&$this, 'deleteCollectionHandler']);
@@ -616,28 +615,5 @@ class SlideshowManager
         restore_current_blog();
 
         return $postmeta;
-    }
-
-    /**
-     * Fetch image meta callback
-     * wraps the call to get img meta data
-     * returns it as JSON
-     **/
-    public function fetchImageMetaCallback()
-    {
-        $post_id = (int) sanitize_text_field($_POST['post_id']);
-
-        $meta = self::fetchImageMeta($post_id);
-
-        if ($meta) {
-            wp_send_json([
-                'result' => 'success',
-                'meta' => $meta,
-            ]);
-        }
-
-        wp_send_json([
-            'result' => 'failed',
-        ]);
     }
 }
