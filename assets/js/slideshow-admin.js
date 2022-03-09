@@ -108,26 +108,18 @@
     },
 
     clearDropTableRows: function () {
+      var self = this;
       var $rows = $('.slideshow-collection-row');
-      var $caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
-      var $link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
 
       $rows.each(function () {
-        var $row = $(this);
-
-        $row.find('.thumbbox').empty();
-        $row.data('slide-id', '');
-        $row.find('.slideshow-slide-title')
-          .empty()
-          .append($caption.clone())
-          .append($link.clone());
+        self.clearAndReinsertRow($(this), true)
       });
     },
 
     /**
     * Re-use rows after deleting an entry
     **/
-    clearAndReinsertRow: function ($row) {
+    clearAndReinsertRow: function ($row, skipAppend) {
       var $caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
       var $link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
 
@@ -138,7 +130,9 @@
         .append($caption.clone())
         .append($link.clone());
 
-      $('.slideshow-sortable-rows').append($row);
+      if (!skipAppend) {
+        $('.slideshow-sortable-rows').append($row);
+      }
     },
 
     deleteCollection: function () {
@@ -249,6 +243,7 @@
 
       if ($target.attr('id') === 'inline-editor') {
         // restore NON-EDIT view
+        // TODO: Replace with call to placeSlide()
         var $td = this.editing_node;
 
         var title_edit = $('#slide-title-edit').val().trim();
