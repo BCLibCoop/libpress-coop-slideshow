@@ -32,7 +32,6 @@ class SlideshowManager
 
     public function init()
     {
-        add_action('wp_ajax_slideshow-add-text-slide', [&$this, 'addTextSlide']);
         add_action('wp_ajax_slideshow-fetch-img-meta', [&$this, 'fetchImageMetaCallback']);
         add_action('wp_ajax_slideshow-fetch-collection', [&$this, 'fetchCollection']);
         add_action('wp_ajax_slideshow-save-slide-collection', [&$this, 'saveCollectionHandler']);
@@ -75,10 +74,8 @@ class SlideshowManager
                 plugins_url('/assets/js/slideshow-admin.js', dirname(__FILE__)),
                 [
                     'jquery',
-                    'jquery-ui-core',
                     'jquery-ui-draggable',
                     'jquery-ui-droppable',
-                    'jquery-ui-selectmenu',
                     'jquery-chosen',
                     'coop-slideshow-defaults-js',
                 ]
@@ -223,7 +220,7 @@ class SlideshowManager
         $out[] = '<option value=""></option>';
 
         foreach ($pages as $page) {
-            $out[] = '<option value="' . $page->ID . '" class="' . $page->post_type . '">'
+            $out[] = '<option value="' . $page->ID . '" class="' . $page->post_type . '" data-permalink="' . get_permalink($page) . '">'
                         . $page->post_title
                         . '</option>';
         }
@@ -637,91 +634,6 @@ class SlideshowManager
                 'result' => 'success',
                 'meta' => $meta,
             ]);
-        }
-
-        wp_send_json([
-            'result' => 'failed',
-        ]);
-    }
-
-    /**
-     * Store the content of the Add Text-only slide subform
-     **/
-    public function addTextSlide()
-    {
-        global $wpdb;
-
-        $slideshow_id = !empty($_POST['slideshow_id']) ? (int) sanitize_text_field($_POST['slideshow_id']) : null;
-        $slideshow_name = sanitize_text_field($_POST['slideshow_name']);
-
-        if (empty($slideshow_name)) {
-            wp_send_json([
-                'result' => 'failed',
-                'feedback' => 'Please name the slideshow before adding any slides.',
-            ]);
-        }
-
-        // If there's not an existing show, create one
-        if ((empty($slideshow_id) || $slideshow_id == 'null')) {
-            $slideshow_id = $this->createCollection($slideshow_name);
-        }
-
-        if ($slideshow_id === false) {
-            wp_send_json([
-                'result' => 'failed',
-                'feedback' => 'Unable to save new slideshow. Make sure it has a unique name.',
-            ]);
-        }
-
-        $title = sanitize_text_field($_POST['title']);
-        $content = sanitize_textarea_field($_POST['content']);
-
-        $link = null;
-
-        if (array_key_exists('slide_link', $_POST) && !empty($_POST['slide_link'])) {
-            if (is_numeric(sanitize_text_field($_POST['slide_link']))) {
-                $link = (int) sanitize_text_field($_POST['slide_link']);
-            } else {
-                $link = esc_url_raw($_POST['slide_link']);
-            }
-        }
-
-        $ordering = 0;
-
-        if (array_key_exists('ordering', $_POST) && !empty($_POST['ordering'])) {
-            $ordering = (int) sanitize_text_field($_POST['ordering']);
-        }
-
-        if (!empty($slideshow_id)) {
-            $table_name = $wpdb->prefix . 'slideshow_slides';
-
-            $wpdb->insert(
-                $table_name,
-                [
-                    'slideshow_id' => $slideshow_id,
-                    'text_title' => $title,
-                    'text_content' => $content,
-                    'slide_link' => $link,
-                    'ordering' => $ordering,
-                ],
-                [
-                    '%d',
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%d',
-                ]
-            );
-
-            $slide_id = $wpdb->insert_id;
-
-            if ($slide_id) {
-                wp_send_json([
-                    'result' => 'success',
-                    'slide_id' => $slide_id,
-                    'slideshow_id' => $slideshow_id,
-                ]);
-            }
         }
 
         wp_send_json([

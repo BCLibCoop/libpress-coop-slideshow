@@ -67,9 +67,6 @@
     },
 
     addTextOnlySlide: function () {
-      var slideshow_collection_name = $('.slideshow-collection-name').val();
-      var slideshow_id = $('#slideshow-select').val();
-
       var $emptyRow = this.getFirstEmptyRow();
 
       if ($emptyRow === null) {
@@ -77,54 +74,31 @@
         return false;
       }
 
-      var nextRow = $('.slideshow-collection-row').index($emptyRow);
-
-      if (slideshow_collection_name == '' && slideshow_id == null) {
-        alert('Whoops! You need to name the slideshow first.');
-        $('.slideshow-collection-name').trigger('focus');
-
-        return false;
-      }
-
       var title = $('#slideshow-text-slide-heading').val().trim();
       var content = $('#slideshow-text-slide-content').val().trim();
 
-      if (title == '' || content == '') {
+      if (title === '' || content === '') {
         alert('You must enter a title and a message');
 
         return false;
       }
 
-      // Save Post ID, full URL can be edited later if desired
-      var slide_link = $('#slideshow-page-selector option:selected').val().trim();
+      // Get post ID and permalink
+      var $selectedLink = $('#slideshow-page-selector option:selected')
+      var slide_link = $selectedLink.val().trim();
+      var slide_permalink = $selectedLink.data('permalink');
 
-      var data = {
-        action: 'slideshow-add-text-slide',
-        slideshow_name: slideshow_collection_name,
-        slideshow_id: slideshow_id,
-        title: title,
-        content: content,
+      var slide = {
+        id: '',
+        post_id: null,
         slide_link: slide_link,
-        ordering: nextRow,
+        slide_permalink: slide_permalink,
+        text_title: title,
+        text_content: content,
       };
 
-      var self = this;
-
-      $.post(ajaxurl, data).done(function (res) {
-        if (res.result === 'success') {
-          self.clearTextSlideForm();
-          self.fetchSelectedSlideshow();
-          alert('Text slide saved');
-        } else {
-          if (res.feedback !== undefined) {
-            alert(res.feedback);
-          } else {
-            alert('Unable to save the text slide.');
-          }
-
-          $('#slideshow-text-slide-heading').trigger('focus');
-        }
-      });
+      this.placeSlide(slide, $emptyRow);
+      this.clearTextSlideForm();
     },
 
     clearTextSlideForm: function () {
