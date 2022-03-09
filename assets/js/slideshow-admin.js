@@ -4,10 +4,7 @@
    * @copyright BC Libraries Coop 2013
    **/
   var SlideShowSetup = function () {
-    this._configured = {}; // passed in options
     this.editing_node = null;
-    this.opts = {}; // opts == current at start up (diverges as user changes settings)
-    this.slideshow_id = 0;
 
     this.init();
   }
@@ -18,12 +15,10 @@
       // init hook-ups listed more-or-less in page order
       $('button.add-new').on('click', this.addNewShow.bind(this));
 
-      $('#slideshow-select')
-        .chosen({disable_search_threshold: 10})
+      $('#slideshow-select').chosen({disable_search_threshold: 10})
         .on('change', this.fetchSelectedSlideshow.bind(this));
 
-      $('#slideshow-page-selector')
-        .chosen({disable_search_threshold: 10});
+      $('#slideshow-page-selector').chosen({disable_search_threshold: 10});
 
       $('.slideshow-save-collection-btn').on('click', this.saveCollection.bind(this));
       $('.slideshow-delete-collection-btn').on('click', this.deleteCollection.bind(this));
@@ -55,8 +50,8 @@
     },
 
     addNewShow: function (event) {
-      $('#slideshow-select').remove();
-      $('#slideshow_select_chosen').remove();
+      $('#slideshow_select_chosen').hide();
+      $('button.add-new').parent().hide();
       this.clearDropTableRows();
 
       // clear activated collection flag
@@ -104,7 +99,7 @@
     clearTextSlideForm: function () {
       $('#slideshow-text-slide-heading').empty().val('');
       $('#slideshow-text-slide-content').empty().val('');
-      $('.slideshow-text-slide-link-input').empty().val('');
+      $('#slideshow-page-selector').val('').trigger('chosen:updated');
     },
 
     clearDropTableRows: function () {
@@ -120,11 +115,12 @@
     * Re-use rows after deleting an entry
     **/
     clearAndReinsertRow: function ($row, skipAppend) {
+      // TODO: Extend placeSlide to do placeholders and replace this?
       var $caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
       var $link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
 
-      $row.find('.thumbbox').empty();
       $row.data('slide-id', '');
+      $row.find('.thumbbox').empty();
       $row.find('.slideshow-slide-title')
         .empty()
         .append($caption.clone())
@@ -137,18 +133,21 @@
 
     deleteCollection: function () {
       if (confirm("This is a destructive operation.\nAre you sure you want to\nremove this slideshow from the database?")) {
-        // var is_active = $('#slideshow-is-active-collection').is(':checked');
+        var $slideshowSelect = $('#slideshow-select');
+        var showId = $slideshowSelect.val();
 
         var data = {
           action: 'slideshow-delete-slide-collection',
-          slideshow_id: $('#slideshow-select').val(),
+          slideshow_id: showId,
           _ajax_nonce: coop_slideshow.nonce,
         };
 
         $.post(ajaxurl, data).done(function (res) {
           if (res.result == 'success') {
             alert(res.feedback);
-            window.history.go(0);
+            $slideshowSelect.find('option[value="' + showId + '"').remove();
+            $slideshowSelect.val('').trigger('chosen:updated');
+            this.clearDropTableRows();
           } else {
             if (res.feedback !== undefined) {
               alert(res.feedback);
@@ -185,6 +184,11 @@
       this.clearDropTableRows();
       var $opt = $('#slideshow-select option:selected');
 
+      // If we got the placeholder (aka no active show), don't continue
+      if ($opt.val() === '') {
+        return;
+      }
+
       $('.slideshow-collection-name').val($opt.text());
 
       var data = {
@@ -217,6 +221,7 @@
     },
 
     insertInlineEditToggle: function (opt) {
+      // TODO: If everything gets moved into placeSlide, this can probably go along with it
       var imgsrc = $('.slideshow-signals-preload img').attr('src');
       var $div = $('<div id="runtime-signal" class="slideshow-inline-edit-toggle slideshow-signals" />');
       var $img = $('<img class="signals-sprite pencil" src="' + imgsrc + '" />');
@@ -236,10 +241,10 @@
 
       // guard - only one active inline-editor at one time
       if (this.editing_node !== null && $target.attr('id') === undefined) {
-        // restore the graphic for all targets to neutral
-        // $('.slideshow-inline-edit-toggle img').removeClass('active');
+        // TODO: Flip the active editor to the one clicked?
         return;
       }
+
 
       if ($target.attr('id') === 'inline-editor') {
         // restore NON-EDIT view
@@ -428,7 +433,11 @@
         return false;
       }
 
-      var slideshow_id = $('#slideshow-select').val();
+      var slideshow_id = '0';
+
+      if ($('#slideshow_select_chosen:visible').length) {
+        slideshow_id = $('#slideshow-select').val();
+      }
 
       var is_active = '0'
       if ($('#slideshow-is-active-collection:checked').length) {
@@ -517,7 +526,22 @@
       $.post(ajaxurl, data).done(function (res) {
         // do something in response to the save attempt feedback ...
         if (res.result === 'success') {
+          $slideshowSelect = $('#slideshow-select');
+
+          // Add to the dropdown if this is a new show
+          if ($slideshowSelect.find('option[value="' + res.slideshow_id + '"]').length === 0) {
+            $slideshowSelect.append($('<option>', {value: res.slideshow_id, text: the_title}));
+            $slideshowSelect.val(res.slideshow_id).trigger('chosen:updated');
+          }
+
+          // Restore the select dropdown
+          $('.slideshow-collection-name').hide();
+          $('#slideshow_select_chosen').show();
+
+          $('button.add-new').parent().show();
+
           self.fetchSelectedSlideshow();
+
           alert('Slide collection saved');
         } else {
           alert(res.feedback);
@@ -527,7 +551,9 @@
 
     removeSlide: function ($dragged) {
       var img_id = $dragged.find('img').data('img-id');
-      $('#thumb' + img_id).parent().removeClass('ghosted').draggable('option', 'disabled', false);
+      $('#thumb' + img_id).parent()
+        .removeClass('ghosted');
+        // .draggable('option', 'disabled', false);
 
       this.clearAndReinsertRow($dragged);
     },
@@ -549,14 +575,20 @@
     },
 
     dropInsertRow: function ($row, $dragged) {
+      var $rows = $('.slideshow-collection-row');
       var $dropme = $dragged.detach();
 
-      $row.before($dropme);
+      if ($rows.index($dragged) > $rows.index($row)) {
+        $row.before($dropme);
+      } else {
+        $row.after($dropme);
+      }
 
       this.calculateRuntime();
     },
 
     dropInsertThumbnail: function ($row, $dragged) {
+      // TODO: Replace most of this with placeSlide too?
       var id = $dragged.data('img-id');
       var cap = $dragged.data('img-caption');
 
@@ -587,9 +619,9 @@
         .on('click', this.toggleInlineForm.bind(this));
 
       // Ghost out source image and make undraggable
-      // TODO: Should this even happen? Is it fine if someone wants to add the
-      // same image multiple times?
-      $dragged.addClass('ghosted').draggable('option', 'disabled', true);
+      $dragged
+        .addClass('ghosted');
+        // .draggable('option', 'disabled', true); // Not making un-dragable
 
       this.calculateRuntime();
     },
@@ -629,7 +661,7 @@
       this._defaults = $.extend({}, this._defaults, window.coop_bx_defaults);
 
       // split out default from tuples (first in list)
-      this.clean_up_defaults();
+      this.cleanUpDefaults();
 
       // capture and save the configuration we were started up with (options as passed in)
       this._configured = $.extend({}, options);
@@ -643,11 +675,11 @@
       // bind the html form fields to this.current fields
       for (var p in this.current) {
         if (typeof p !== 'function') {
-          $('input[name="' + p + '"]').on('change', this.set_current_value.bind(this));
+          $('input[name="' + p + '"]').on('change', this.setCurrentValue.bind(this));
         }
       }
 
-      $('#coop-slideshow-settings-submit').on('click', this.save_changes.bind(this));
+      $('#coop-slideshow-settings-submit').on('click', this.saveChanges.bind(this));
 
       if (this._debug) {
         console.log('returning initialized coop_slideshow_settings object');
@@ -656,7 +688,7 @@
       return this;
     },
 
-    clean_up_defaults: function () {
+    cleanUpDefaults: function () {
       /**
       * Some of the defaults are spec'd as csv alternate string values
       * The first in the tuple is the default value. Find and set that.
@@ -664,10 +696,9 @@
       for (var p in this._defaults) {
         if (typeof p !== 'function') {
           var v = this._defaults[p];
-          var comma = ",";
 
           if (typeof v === 'string') {
-            var a = v.split(comma);
+            var a = v.split(",");
 
             if (a.length > 1) {
               this._defaults[p] = a[0];
@@ -677,7 +708,7 @@
       }
     },
 
-    save_changes: function () {
+    saveChanges: function () {
       // save button has been clicked
       if (this._debug) {
         console.log('save button has been clicked');
@@ -697,6 +728,7 @@
             for (var i in this._touched) {
               if (typeof i !== 'function') {
                 if (this._debug) console.log('_touched[i]: ' + this._touched[i] + ' <=> ' + p);
+
                 if (this._touched[i] == p) {
                   if (this._debug) console.log('_touched[i]: ' + this._touched[i] + ' == ' + p);
                   keys.push(p);
@@ -739,7 +771,7 @@
       if (this._debug) console.log(this._touched);
     },
 
-    set_current_value: function (event) {
+    setCurrentValue: function (event) {
       // update self.current to reflect the user's changes
       var id = event.target.getAttribute('name');
       var val = event.target.value;

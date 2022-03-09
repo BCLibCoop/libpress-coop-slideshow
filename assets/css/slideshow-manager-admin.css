@@ -6,6 +6,10 @@ span.placeholder {
   color: #ccc;
 }
 
+.slideshow-collection-controls {
+  margin-top: -1em;
+}
+
 .slideshow-signals-preload {
   position: relative;
   float: right;
@@ -42,9 +46,6 @@ span.placeholder {
 
 input.slideshow-collection-name {
   font-size: 1.4em;
-  width: 84%;
-  margin: 0;
-  float: right;
   display: none;
 }
 

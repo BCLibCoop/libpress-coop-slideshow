@@ -183,71 +183,44 @@ class SlideshowDefaults
                 $s = str_replace(['"', "'"], '', $s);
                 $pcs = explode(',', $s);
                 $default = $pcs[0];
-                $actual = ($_opt !== null ? $_opt : $default);
+                $selected = ($_opt !== null ? $_opt : $default);
 
                 for ($i = 0; $i < count($pcs); $i++) {
                     $id = $t . $i;
-                    $checked = '';
-                    if ($actual == $pcs[$i]) {
-                        $checked = ' checked="checked"';
-                    }
                     $widget[] = sprintf(
-                        '<input type="radio" id="%s" name="%s" value="%s"%s>',
+                        '<input class="slideshow-default" type="radio" id="%s" name="%s" value="%s"%s>',
                         $id,
                         $t,
                         $pcs[$i],
-                        $checked
+                        checked($selected, $pcs[$i], false)
                     );
                     $widget[] = sprintf('<label for="%s">%s</label>', $id, $pcs[$i]);
                 }
-            } elseif (false !== strpos($s, 'true')) {
-                // binary radio T/f
-                $default = 'true';
-                $actual = ($_opt !== null ? $_opt : $default);
+            } elseif (
+                false !== strpos($s, 'true')
+                || false !== strpos($s, 'false')
+            ) {
+                // binary radio t/f
+                $default = (false !== strpos($s, 'true')) ? 'true' : 'false';
+                $selected = ($_opt !== null ? $_opt : $default);
 
-                $checked = '';
-                if ($actual == 'true') {
-                    $checked = ' checked="checked"';
-                }
-                $widget[] = sprintf('<input type="radio" id="%s-t" name="%s" value="true"%s>', $t, $t, $checked);
+                $widget[] = sprintf('<input class="slideshow-default" type="radio" id="%s-t" name="%s" value="true"%s>', $t, $t, checked($selected, 'true', false));
                 $widget[] = sprintf('<label for="%s-t">true</label>', $t);
 
-                $checked = '';
-                if ($actual == 'false') {
-                    $checked = ' checked="checked"';
-                }
-                $widget[] = sprintf('<input type="radio" id="%s-f" name="%s" value="false"%s>', $t, $t, $checked);
-                $widget[] = sprintf('<label for="%s-f">false</label>', $t);
-            } elseif (false !== strpos($s, 'false')) {
-                // binary radio t/F
-                $default = 'false';
-                $actual = ($_opt !== null ? $_opt : $default);
-
-                $checked = '';
-                if ($actual == 'true') {
-                    $checked = ' checked="checked"';
-                }
-                $widget[] = sprintf('<input type="radio" id="%s-t" name="%s" value="true"%s>', $t, $t, $checked);
-                $widget[] = sprintf('<label for="%s-t">true</label>', $t);
-
-                $checked = '';
-                if ($actual == 'false') {
-                    $checked = ' checked="checked"';
-                }
-                $widget[] = sprintf('<input type="radio" id="%s-f" name="%s" value="false"%s>', $t, $t, $checked);
+                $widget[] = sprintf('<input class="slideshow-default" type="radio" id="%s-f" name="%s" value="false"%s>', $t, $t, checked($selected, 'false', false));
                 $widget[] = sprintf('<label for="%s-f">false</label>', $t);
             } elseif (false !== strpos($s, "'")) {
                 // quoted string value - strip quotes
                 $default = str_replace(['"', "'"], '', $s);
-                $actual = ($_opt !== null ? $_opt : $default);
+                $selected = ($_opt !== null ? $_opt : $default);
 
-                $widget[] = sprintf('<input type="text" id="%s" name="%s" value="%s">', $t, $t, $actual);
+                $widget[] = sprintf('<input class="slideshow-default" type="text" id="%s" name="%s" value="%s">', $t, $t, $selected);
             } else {
                 // text field
                 $default = $s;
-                $actual = ($_opt !== null ? $_opt : $default);
+                $selected = ($_opt !== null ? $_opt : $default);
 
-                $widget[] = sprintf('<input type="text" id="%s" name="%s" value="%s">', $t, $t, $actual);
+                $widget[] = sprintf('<input class="slideshow-default" type="text" id="%s" name="%s" value="%s">', $t, $t, $selected);
             }
 
             $all_defaults[$t] = $default;
@@ -259,6 +232,7 @@ class SlideshowDefaults
             foreach ($all_defaults as $term => $val) {
                 update_option('_' . self::$slug . '_' . $term, $val);
             }
+
             update_option('_' . self::$slug . '_db_init', true);
         }
 

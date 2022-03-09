@@ -496,7 +496,7 @@ class SlideshowManager
                 'id' => $s->id, // Slide ID
                 'slide_link' => $s->slide_link,
                 'slide_permalink' => $s->slide_link,
-                'text_title' => $s->text_title,
+                'text_title' => stripslashes($s->text_title),
                 'ordering' => $s->ordering,
             ];
 
@@ -525,7 +525,7 @@ class SlideshowManager
                 }
             } else {
                 // Text Slide
-                $slide['text_content'] = $s->text_content;
+                $slide['text_content'] =  stripslashes($s->text_content);
             }
 
             $slides[] = $slide;

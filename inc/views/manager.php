@@ -15,12 +15,15 @@
     <div id="col-container" class="wp-clearfix">
         <div id="col-left">
             <div class="col-wrap">
-                <button class="button add-new">Add New</button>&nbsp;
+                <p class="submit">
+                    <button class="button add-new">Add New</button>
+                </p>
 
-                <input type="text" class="slideshow-collection-name" name="slideshow-collection-name"
-                    value="" placeholder="Enter a name for a new slideshow">
-
-                <div class="form-wrap">
+                <div class="form-wrap slideshow-collection-controls">
+                    <div class="form-field">
+                        <input type="text" class="slideshow-collection-name" name="slideshow-collection-name"
+                        value="" placeholder="Enter a name for a new slideshow">
+                    </div>
                     <div class="form-field">
                         <?php echo $this->slideshowCollectionSelector(); ?>
                     </div>
