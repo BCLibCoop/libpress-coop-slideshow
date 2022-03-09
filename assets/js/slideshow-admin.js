@@ -117,7 +117,7 @@
     clearAndReinsertRow: function ($row, skipAppend) {
       // TODO: Extend placeSlide to do placeholders and replace this?
       var $caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
-      var $link = $('<div class="slide-link"><span class="placeholder">Link URL</span></div>');
+      var $link = $('<div class="slide-link"><span class="placeholder">Slide Link</span></div>');
 
       $row.data('slide-id', '');
       $row.find('.thumbbox').empty();
@@ -791,6 +791,7 @@
    * Ready
    */
   $(function() {
+    // SlideshowSettings is used by SlideShowSetup, so always load it
     window.coop_slideshow_settings = new SlideShowSettings();
 
     if (window.pagenow === 'site-manager_page_top-slides') {

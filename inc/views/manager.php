@@ -51,7 +51,7 @@
                             <td class="thumbbox">&nbsp;</td>
                             <td class="slideshow-slide-title">
                                 <div class="slide-title"><span class="placeholder">Caption/Title</span></div>
-                                <div class="slide-link"><span class="placeholder">Link URL</span></div>
+                                <div class="slide-link"><span class="placeholder">Slide Link</span></div>
                             </td>
                         </tr>
                     <?php endfor; ?>
