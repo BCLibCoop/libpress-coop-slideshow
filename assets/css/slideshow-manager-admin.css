@@ -219,12 +219,8 @@ div.slideshow-runtime-information {
 .slideshow-draggable-items div {
   float: left;
   margin: 6px;
-  width: 180px;
-  height: 85px; /* Fixed height so float works nicely */
-}
-
-img.slotview {
-  display: none;
+  width: 162px;
+  height: 69px; /* Fixed height so float works nicely */
 }
 
 /**

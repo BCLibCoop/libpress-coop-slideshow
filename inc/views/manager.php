@@ -81,7 +81,7 @@
                     <div class="wp-clearfix">
                         <h3><?= $region_name ?></h3>
                         <div class="slideshow-draggable-items returnable local">
-                            <?php echo implode("\n", self::fetchSlides($region_id)); ?>
+                            <?php echo implode("\n", self::fetchSlideImages($region_id)); ?>
                         </div>
                     </div>
                 <?php endforeach; ?>

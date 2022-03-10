@@ -247,7 +247,13 @@ class SlideshowDefaults
     public function addRegionField($form_fields, $post)
     {
         if (get_current_blog_id() === 1) {
+            $provinces = array_merge(['' => ''], SlideshowManager::$media_sources);
+            unset($provinces['local'], $provinces['shared']);
+
+            $selected = get_post_meta($post->ID, 'slide_region', true);
+
             $inputname = "attachments[{$post->ID}][slide_region]";
+
             $form_fields['slide_region'] = [
                 'label' => 'Slide Region',
                 'input' => 'html',
@@ -255,16 +261,16 @@ class SlideshowDefaults
                 'helps' => 'Which province is this slide from?',
             ];
 
-            $selected = get_post_meta($post->ID, 'slide_region', true);
+            foreach ($provinces as $slug => $province) {
+                $form_fields['slide_region']['html'] .= sprintf(
+                    '<option value="%s"%s>%s</option>',
+                    $slug,
+                    selected($selected, $slug, false),
+                    $province
+                );
+            }
 
-            $form_fields['slide_region']['html'] .= "<option value='' " . selected($selected, '', false)
-                                                    . "></option>";
-            $form_fields['slide_region']['html'] .= "<option value='BC' " . selected($selected, 'BC', false)
-                                                    . ">British Columbia</option>";
-            $form_fields['slide_region']['html'] .= "<option value='MB' " . selected($selected, 'MB', false)
-                                                    . ">Manitoba</option>";
-
-            return $form_fields;
+            $form_fields['slide_region']['html'] .= '</select>';
         }
 
         return $form_fields;

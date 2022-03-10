@@ -29,8 +29,11 @@ class Slideshow
         global $wpdb;
 
         $table_name = $wpdb->prefix . 'slideshows';
+
+        // Get the most recent active show by default
         $this->show = $wpdb->get_row("SELECT * FROM `$table_name` WHERE `is_active` = 1 ORDER BY `date` DESC");
 
+        // Fall back to the most recent show even if not active
         if ($this->show == null) {
             $this->show = $wpdb->get_row("SELECT * FROM `$table_name` ORDER BY `date` DESC");
         }
@@ -56,14 +59,19 @@ class Slideshow
             wp_enqueue_style('coop-slideshow-theme', $theme_styles['uri'], [], filemtime($theme_styles['path']));
 
             /* Global Slideshow Styling */
-            wp_enqueue_style('coop-slideshow', plugins_url('/assets/css/coop-slideshow.css', dirname(__FILE__)), [], null);
+            wp_enqueue_style(
+                'coop-slideshow',
+                plugins_url('/assets/css/coop-slideshow.css', dirname(__FILE__)),
+                [],
+                filemtime(dirname(__FILE__) . '/../assets/css/coop-slideshow.css')
+            );
 
             /* Script to resize text slide based on screen and layout width */
             wp_enqueue_script(
                 'bxslider-text-shim',
                 plugins_url('/bxslider/plugins/text-slide-shim.js', dirname(__FILE__)),
                 ['jquery'],
-                '1.0',
+                '1.1',
                 true
             );
 
@@ -186,118 +194,17 @@ class Slideshow
     {
         global $wpdb;
 
-        $out = [];
-        $slide_ml = [];
-        $pager_ml = [];
+        $slides = [];
+        $pager_class = str_replace('.', '', get_option('_slideshow_pagerCustom', ''));
 
         if ($this->show) {
-            $id = $this->show->id;
-            $table_name =  $wpdb->prefix . 'slideshow_slides';
-
-            $slides = $wpdb->get_results(
-                $wpdb->prepare("SELECT * FROM `$table_name` WHERE `slideshow_id` = %d ORDER BY `ordering`", $id)
-            );
-
-            $out[] = '<div class="hero row ' . $this->show->layout . '" role="banner">';
-            $out[] = '<div id="slider" class="slider">';
-
-            if ($this->show->layout !== 'no-thumb') {
-                $pager_class = get_option('_slideshow_pagerCustom');
-                $pager_class = str_replace('.', '', $pager_class);
-                $pager_ml[] = '<div class="row ' . $pager_class . ' ' . $this->show->layout . '">';
-            }
-
-            foreach ($slides as $slide) {
-                // Convert old-style querystring IDs to plain ID
-                $slide->slide_link = preg_replace('/^\/\?page=/', '', $slide->slide_link);
-
-                if (is_numeric($slide->slide_link)) {
-                    $slide->slide_link = get_permalink($slide->slide_link);
-                }
-
-                // Sanitize link
-                $slide->slide_link = esc_url($slide->slide_link);
-
-                if ($slide->post_id != null) {
-                    $meta = SlideShowManager::fetchImageMeta($slide->post_id);
-
-                    if ($meta) {
-                        $this->buildImageSlide($this->show, $slide, $meta, $slide_ml, $pager_ml);
-                    }
-                } else {
-                    $this->buildTextSlide($this->show, $slide, $slide_ml, $pager_ml);
-                }
-            }
-
-            if ($this->show->layout !== 'no-thumb') {
-                $pager_ml[] = '</div><!-- end of pager -->';
-            }
-
-            $slide_ml[] = '</div><!-- #slider.row.slider -->';
-
-            $out = array_merge($out, $slide_ml, $pager_ml);
-            $out[] = '</div><!-- .hero.row -->';
-        } else {
-            $out[] = '<!-- No Slideshow Found -->';
+            $slides = SlideshowManager::fetchSlides($this->show->id);
         }
 
-        return implode("\n", $out);
-    }
+        ob_start();
 
-    private function buildImageSlide($show, $slide, $meta, &$slide_ml, &$pager_ml)
-    {
-        $slide_ml[] = '<div class="slide image">';
+        require 'views/shortcode.php';
 
-        if (!empty($slide->slide_link)) {
-            $slide_ml[] = '<a href="' . $slide->slide_link . '">';
-        }
-
-        $url = $meta['folder'] . $meta['large']['file'];
-        $title = htmlspecialchars(stripslashes($slide->text_title));
-
-        $slide_ml[] = '<img src="' . $url . '"  alt="' . $title . '" title="' . $title . '" >';
-
-        if (!empty($slide->slide_link)) {
-            $slide_ml[] = '</a>';
-        }
-
-        $slide_ml[] = '</div><!-- .slide.image -->';
-
-        if ($show->layout !== 'no-thumb') {
-            $url = $meta['folder'] . $meta['thumb']['file'];
-
-            $pager_ml[] = '<div class="pager-box slide-index-' . $slide->ordering . '">';
-            $pager_ml[] = '<a href="" data-slide-index="' . $slide->ordering . '">';
-            $pager_ml[] = '<div class="thumb image">';
-            $pager_ml[] = '<img class="pager-thumb" src="' . $url . '" alt="' . $title . '" >';
-            $pager_ml[] = '</div></a></div><!-- .pager-box -->';
-        }
-    }
-
-    private function buildTextSlide($show, $slide, &$slide_ml, &$pager_ml)
-    {
-        $slide_ml[] = '<div class="slide text">';
-
-        if (!empty($slide->slide_link)) {
-            $slide_ml[] = '<a href="' . $slide->slide_link . '">';
-        }
-
-        $title = stripslashes($slide->text_title);
-        $content = stripslashes($slide->text_content);
-        $slide_ml[] = '<h2>' . $title . '</h2><p>' . $content . '</p>';
-
-        if (!empty($slide->slide_link)) {
-            $slide_ml[] = '</a>';
-        }
-
-        $slide_ml[] = '</div><!-- .slide.text -->';
-
-        if ($show->layout !== 'no-thumb') {
-            $pager_ml[] = '<div class="pager-box slide-index-' . $slide->ordering . '">';
-            $pager_ml[] = '<a href="" data-slide-index="' . $slide->ordering . '">';
-            $pager_ml[] = '<div class="thumb text">';
-            $pager_ml[] = '<div class="pager-thumb text-thumb">T</div>';
-            $pager_ml[] = '</div></a></div><!-- .pager-box -->';
-        }
+        return ob_get_clean();
     }
 }

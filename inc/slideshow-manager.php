@@ -8,7 +8,7 @@ class SlideshowManager
     protected $slug = 'slideshow';
     protected $sprite = '';
 
-    private static $media_sources = [
+    public static $media_sources = [
         'local' => 'Your Slide Images',
         'shared' => 'Shared Slide Images',
         'BC' => 'British Columbia',
@@ -102,7 +102,7 @@ class SlideshowManager
         require 'views/manager.php';
     }
 
-    public static function fetchSlides($region = 'shared')
+    public static function fetchSlideImages($region = 'shared')
     {
         /**
          * Fetch images with Media Tag: 'slide'
@@ -148,28 +148,19 @@ class SlideshowManager
             $slides[] = '<div class="slide-no-results"><p>No slides</p></div>'; // we got nothing with the post meta
         } else {
             foreach ($get_slides as $r) {
-                $title = $r->post_title;
-
+                $title = get_the_title($r);
                 $medium = wp_get_attachment_image_src($r->ID, 'medium');
-                $dragslide = wp_get_attachment_image_src($r->ID, 'drag-slide');
 
                 $slides[] = sprintf(
                     '<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s" '
-                    . 'width="%d" height="%d" class="thumb"><p class="caption">%s</p>',
+                    . 'width="%d" height="%d" class="thumb"><p class="caption">%s</p></div>',
                     $r->ID,
-                    $title,
+                    esc_attr($title),
                     $r->ID,
                     $medium[0],
                     $medium[1],
                     $medium[2],
                     $title
-                );
-                $slides[] = sprintf(
-                    '<img id="slotview%d" src="%s" width="%d" height="%d" class="slotview"></div>',
-                    $r->ID,
-                    $dragslide[0],
-                    $dragslide[1],
-                    $dragslide[2]
                 );
             }
         }
@@ -184,6 +175,8 @@ class SlideshowManager
         global $wpdb;
 
         $table_name = $wpdb->prefix . 'slideshows';
+
+        // Skip possible old shows without a title
         $res = $wpdb->get_results("SELECT * FROM `$table_name` WHERE `title` != '' ORDER BY `title`");
 
         $out = [];
@@ -194,11 +187,12 @@ class SlideshowManager
         $out[] = '<option value=""></option>';
 
         foreach ($res as $r) {
-            if ($r->is_active === '1') {
-                $out[] = '<option value="' . $r->id . '" selected="selected">' . $r->title . '</option>';
-            } else {
-                $out[] = '<option value="' . $r->id . '" >' . $r->title . '</option>';
-            }
+            $out[] = sprintf(
+                '<option value="%d"%s>%s</option>',
+                $r->id,
+                selected($r->is_active, '1', false),
+                $r->title
+            );
         }
 
         $out[] = '</select>';
@@ -222,9 +216,13 @@ class SlideshowManager
         $out[] = '<option value=""></option>';
 
         foreach ($pages as $page) {
-            $out[] = '<option value="' . $page->ID . '" class="' . $page->post_type . '" data-permalink="' . get_permalink($page) . '">'
-                        . $page->post_title
-                        . '</option>';
+            $out[] = sprintf(
+                '<option value="%s" class="%s" data-permalink="%s">%s</option>',
+                $page->ID,
+                $page->post_type,
+                get_permalink($page),
+                get_the_title($page)
+            );
         }
 
         $out[] = '</select>';
@@ -463,32 +461,15 @@ class SlideshowManager
         ]);
     }
 
-    public function fetchCollection()
+    public static function fetchSlides($slideshow_id, $image_size = null)
     {
         global $wpdb;
-
-        if (check_ajax_referer($this->slug, false, false) === false) {
-            wp_send_json([
-                'result' => 'failed',
-                'feedback' => 'Invalid security token, please reload and try again',
-            ]);
-        }
-
-        $slideshow_id = empty($_POST['slideshow_id']) ? '' : (int) sanitize_text_field($_POST['slideshow_id']);
-
-        if (empty($slideshow_id)) {
-            wp_send_json(['result' => 'none']);
-        }
-
-        $table_name = $wpdb->prefix . 'slideshows';
-        $show = $wpdb->get_row($wpdb->prepare("SELECT * FROM `$table_name` WHERE `id` = %d", $slideshow_id));
 
         $table_name = $wpdb->prefix . 'slideshow_slides';
         $slide_rows = $wpdb->get_results(
             $wpdb->prepare("SELECT * FROM `$table_name` WHERE `slideshow_id` = %d ORDER BY `ordering`", $slideshow_id)
         );
 
-        $image_size = 'medium';
         $slides = [];
 
         foreach ($slide_rows as $s) {
@@ -509,27 +490,60 @@ class SlideshowManager
                 $slide['slide_permalink'] = get_permalink($slide['slide_link']);
             }
 
+            $slide['slide_permalink'] = esc_url($slide['slide_permalink']);
+
             if ($s->post_id) {
                 // Image Slide
+                $slide['type'] = 'image';
                 $slide['post_id'] = $s->post_id; // Image attachment ID
                 $slide['meta'] = [];
 
                 if ($raw_meta = self::fetchImageMeta($s->post_id)) {
                     // Just the meta we need to keep the payload small
-                    $slide['meta'] = [
-                        'title' => $raw_meta['title'],
-                        'src' => $raw_meta['folder'] . $raw_meta[$image_size]['file'],
-                        'width' => $raw_meta[$image_size]['width'],
-                        'height' => $raw_meta[$image_size]['height'],
-                    ];
+                    if ($image_size) {
+                        $slide['meta'] = [
+                            'title' => $raw_meta['title'],
+                            'src' => $raw_meta['sizes'][$image_size]['src'],
+                            'width' => $raw_meta['sizes'][$image_size]['width'],
+                            'height' => $raw_meta['sizes'][$image_size]['height'],
+                        ];
+                    } else {
+                        $slide['meta'] = $raw_meta;
+                    }
                 }
             } else {
                 // Text Slide
+                $slide['type'] = 'text';
                 $slide['text_content'] =  stripslashes($s->text_content);
             }
 
             $slides[] = $slide;
         }
+
+        return $slides;
+    }
+
+    public function fetchCollection()
+    {
+        global $wpdb;
+
+        if (check_ajax_referer($this->slug, false, false) === false) {
+            wp_send_json([
+                'result' => 'failed',
+                'feedback' => 'Invalid security token, please reload and try again',
+            ]);
+        }
+
+        $slideshow_id = empty($_POST['slideshow_id']) ? 0 : (int) sanitize_text_field($_POST['slideshow_id']);
+
+        $table_name = $wpdb->prefix . 'slideshows';
+        $show = $wpdb->get_row($wpdb->prepare("SELECT * FROM `$table_name` WHERE `id` = %d", $slideshow_id));
+
+        if (empty($show)) {
+            wp_send_json(['result' => 'none']);
+        }
+
+        $slides = self::fetchSlides($slideshow_id, 'medium');
 
         wp_send_json([
             'slides' => $slides,
@@ -570,15 +584,22 @@ class SlideshowManager
      *
      * This returns as a nested array
      **/
-    public static function fetchImageMeta($post_id = null, $source = 'local')
+    public static function fetchImageMeta($post_id = 0, $library = 'local')
     {
-        if ($post_id === null) {
-            $post_id = sanitize_text_field($_POST['post_id']);
-        }
+        $image_sizes = [
+            'thumbnail',
+            'medium',
+            'drag-slide',
+            'full',
+        ];
 
         $post_id = (int) $post_id;
 
-        if ($source === 'network') {
+        if (empty($post_id)) {
+            return;
+        }
+
+        if ($library === 'network') {
             switch_to_blog(1);
         }
 
@@ -587,7 +608,7 @@ class SlideshowManager
         // If we didn't find the image in the current blog, try the shared media blog
         if ((!$attachment || $attachment->post_type !== 'attachment') && !ms_is_switched()) {
             switch_to_blog(1);
-            $source = 'network';
+            $library = 'network';
             $attachment = get_post($post_id);
         }
 
@@ -597,43 +618,21 @@ class SlideshowManager
             return [];
         }
 
-        $meta = wp_get_attachment_metadata($attachment->ID);
-        $img_url = wp_get_attachment_url($attachment->ID);
-        $img_url_basename = wp_basename($img_url);
-        $folder = trailingslashit(str_replace($img_url_basename, '', $img_url));
-
         $postmeta = [
-            'title' => $attachment->post_title,
-            'source' => $source,
-            'folder' => $folder,
-            'file' => $img_url_basename,
-            'width' => $meta['width'],
-            'height' => $meta['height'],
+            'title' => get_the_title($attachment),
+            'library' => $library,
+            'sizes' => [],
         ];
 
-        $postmeta['thumb'] = [
-            'file' => $meta['sizes']['thumbnail']['file'],
-            'width' => $meta['sizes']['thumbnail']['width'],
-            'height' => $meta['sizes']['thumbnail']['height'],
-        ];
+        foreach ($image_sizes as $image_size) {
+            $img_meta = wp_get_attachment_image_src($attachment->ID, $image_size);
 
-        $postmeta['medium'] = [
-            'file' => $meta['sizes']['medium']['file'],
-            'width' => $meta['sizes']['medium']['width'],
-            'height' => $meta['sizes']['medium']['height'],
-        ];
-
-        $postmeta['large'] = [
-            'file' => $img_url_basename,
-            'width' => $meta['width'],
-            'height' => $meta['height'],
-        ];
-
-        $postmeta['drag-slide'] = [
-            'file' => $meta['sizes']['drag-slide']['file'],
-            'width' => $meta['sizes']['drag-slide']['width'],
-            'height' => $meta['sizes']['drag-slide']['height'],
-        ];
+            $postmeta['sizes'][$image_size] = [
+                'src' => $img_meta[0],
+                'width' => $img_meta[1],
+                'height' => $img_meta[2],
+            ];
+        }
 
         // Always try and restore, does no harm if we never switched
         restore_current_blog();
