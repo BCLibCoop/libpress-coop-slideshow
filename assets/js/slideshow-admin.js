@@ -64,7 +64,7 @@
           collision: 'fit',
         },
         show: {
-          delay: 900,
+          delay: 700,
         },
       });
     },
@@ -164,7 +164,7 @@
 
         $.post(ajaxurl, data).done(function (res) {
           if (res.result == 'success') {
-            alert(res.feedback);
+            // alert(res.feedback);
             $slideshowSelect.find('option[value="' + showId + '"').remove();
             $slideshowSelect.val('').trigger('chosen:updated');
             this.clearDropTableRows();
@@ -177,7 +177,7 @@
           }
         });
       } else {
-        alert('Operation cancelled');
+        // alert('Operation cancelled');
       }
 
       return false;
@@ -554,7 +554,7 @@
             $slideshowSelect.val(res.slideshow_id).trigger('chosen:updated');
           }
 
-          // Restore the select dropdown
+          // Restore the select dropdown and add new button if they were hidden
           $('.slideshow-collection-name').hide();
           $('#slideshow_select_chosen').show();
 
