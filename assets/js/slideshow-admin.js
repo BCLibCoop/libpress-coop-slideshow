@@ -47,6 +47,26 @@
         drop: this.returnToSource.bind(this),
         hoverClass: 'return-highlight'
       });
+
+      // Thumbnail Hover
+      $('.slideshow-draggable-items').tooltip({
+        items: '.draggable',
+        content: function () {
+          return $('<img />')
+            .attr('src', $(this).data('tooltip-src'))
+            .attr('width', $(this).data('tooltip-w'))
+            .attr('height', $(this).data('tooltip-h'))
+            .css('display', 'block');
+        },
+        position: {
+          my: 'center bottom',
+          at: 'center top',
+          collision: 'fit',
+        },
+        show: {
+          delay: 900,
+        },
+      });
     },
 
     addNewShow: function (event) {

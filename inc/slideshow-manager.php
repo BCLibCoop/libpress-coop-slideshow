@@ -42,6 +42,16 @@ class SlideshowManager
         if ('site-manager_page_top-slides' == $hook || 'site-manager_page_slides-manager' == $hook) {
             $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 
+            // Get WP included jquery-ui version to match with stylesheet
+            $jquery_ui = wp_scripts()->query('jquery-ui-core');
+
+            wp_enqueue_style(
+                'jquery-ui-theme',
+                'https://ajax.googleapis.com/ajax/libs/jqueryui/' . $jquery_ui->ver . '/themes/smoothness/jquery-ui.css',
+                [],
+                $jquery_ui->ver
+            );
+
             wp_enqueue_style(
                 'coop-chosen',
                 plugins_url('/assets/css/chosen' . $suffix . '.css', dirname(__FILE__)),
@@ -75,6 +85,7 @@ class SlideshowManager
                     'jquery',
                     'jquery-ui-draggable',
                     'jquery-ui-droppable',
+                    'jquery-ui-tooltip',
                     'jquery-chosen',
                     'coop-slideshow-defaults-js',
                 ]
@@ -150,12 +161,18 @@ class SlideshowManager
             foreach ($get_slides as $r) {
                 $title = get_the_title($r);
                 $medium = wp_get_attachment_image_src($r->ID, 'medium');
+                $large = wp_get_attachment_image_src($r->ID, 'large');
 
                 $slides[] = sprintf(
-                    '<div class="draggable" data-img-id="%d" data-img-caption="%s"><img id="thumb%d" src="%s" '
-                    . 'width="%d" height="%d" class="thumb"><p class="caption">%s</p></div>',
+                    '<div class="draggable" data-img-id="%d" data-img-caption="%s" '
+                    . 'data-tooltip-src="%s" data-tooltip-w="%d" data-tooltip-h="%d">'
+                    . '<img id="thumb%d" src="%s" width="%d" height="%d" class="thumb">'
+                    . '<p class="caption">%s</p></div>',
                     $r->ID,
                     esc_attr($title),
+                    $large[0],
+                    $large[1],
+                    $large[2],
                     $r->ID,
                     $medium[0],
                     $medium[1],

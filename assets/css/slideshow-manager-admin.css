@@ -223,6 +223,11 @@ div.slideshow-runtime-information {
   height: 69px; /* Fixed height so float works nicely */
 }
 
+// Allow slide previews to make a large tooltip
+.ui-tooltip {
+  max-width: unset !important;
+}
+
 /**
 *
 * text slide section

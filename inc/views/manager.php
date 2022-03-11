@@ -80,7 +80,7 @@
                 <?php foreach (self::$media_sources as $region_id => $region_name) : ?>
                     <div class="wp-clearfix">
                         <h3><?= $region_name ?></h3>
-                        <div class="slideshow-draggable-items returnable local">
+                        <div class="slideshow-draggable-items returnable <?= $region_id ?>">
                             <?php echo implode("\n", self::fetchSlideImages($region_id)); ?>
                         </div>
                     </div>
