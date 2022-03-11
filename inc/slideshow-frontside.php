@@ -54,6 +54,8 @@ class Slideshow
     public function enqueueAssets()
     {
         if ($this->shouldEnqueueAssets()) {
+            $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
+
             /* Get theme-specific CSS from plugin */
             $theme_styles = $this->fetchStylesUri();
             wp_enqueue_style('coop-slideshow-theme', $theme_styles['uri'], [], filemtime($theme_styles['path']));
@@ -67,34 +69,39 @@ class Slideshow
             );
 
             /* Script to resize text slide based on screen and layout width */
-            wp_enqueue_script(
+            wp_register_script(
                 'bxslider-text-shim',
-                plugins_url('/bxslider/plugins/text-slide-shim.js', dirname(__FILE__)),
+                plugins_url('/bxslider/plugins/text-slide-shim' . $suffix . '.js', dirname(__FILE__)),
                 ['jquery'],
                 '1.1',
                 true
             );
 
-            wp_enqueue_script(
-                'bxslider-jquery-easing',
-                plugins_url('/bxslider/plugins/jquery.easing.1.3.js', dirname(__FILE__)),
-                ['jquery'],
-                '1.3',
-                true
-            );
+            // wp_register_script(
+            //     'jquery-easing',
+            //     plugins_url('/bxslider/plugins/jquery.easing.1.3.js', dirname(__FILE__)),
+            //     ['jquery'],
+            //     '1.3',
+            //     true
+            // );
 
-            wp_enqueue_script(
-                'bxslider-jquery-fitvids',
-                plugins_url('/bxslider/plugins/jquery.fitvids.js', dirname(__FILE__)),
-                ['jquery'],
-                '1.0',
-                true
-            );
+            // wp_register_script(
+            //     'jquery-fitvids',
+            //     plugins_url('/bxslider/plugins/jquery.fitvids.js', dirname(__FILE__)),
+            //     ['jquery'],
+            //     '1.1',
+            //     true
+            // );
 
             wp_enqueue_script(
                 'bxslider',
-                plugins_url('/bxslider/jquery.bxslider.min.js', dirname(__FILE__)),
-                ['jquery', 'bxslider-text-shim', 'bxslider-jquery-easing', 'bxslider-jquery-fitvids'],
+                plugins_url('/bxslider/jquery.bxslider' . $suffix . '.js', dirname(__FILE__)),
+                [
+                    'jquery',
+                    'bxslider-text-shim',
+                    // 'jquery-easing', // For options not used
+                    // 'jquery-fitvids', // For options not used
+                ],
                 '4.1.1',
                 true
             );
