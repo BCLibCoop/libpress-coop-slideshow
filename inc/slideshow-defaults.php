@@ -164,7 +164,7 @@ class SlideshowDefaults
         return implode("\n", $out);
     }
 
-    private function parseDefaults()
+    public static function parseDefaults()
     {
         $lines = file(dirname(__FILE__) . '/default-settings.js');
 
@@ -207,23 +207,12 @@ class SlideshowDefaults
             }
         }
 
-        if (empty($this->db_init) || $this->db_init == false) {
-            foreach ($all_settings as $section => $settings) {
-                foreach ($settings as $setting => $value) {
-                    $value = is_array($value) ? $value[0] : $value;
-                    update_option('_' . self::$slug . '_' . $setting, $value);
-                }
-            }
-
-            update_option('_' . self::$slug . '_db_init', true);
-        }
-
         return $all_settings;
     }
 
     private function printOptions()
     {
-        $all_settings = $this->parseDefaults();
+        $all_settings = self::parseDefaults();
         $out = [];
 
         $_fmt = '<tr class="%s"><th>%s</th><td>%s</td><td>%s</td></tr>';
@@ -297,6 +286,18 @@ class SlideshowDefaults
                     $printable_default
                 );
             }
+        }
+
+        // Insert defaults if not previously done
+        if (empty($this->db_init) || $this->db_init == false) {
+            foreach ($all_settings as $section => $settings) {
+                foreach ($settings as $setting => $value) {
+                    $value = is_array($value) ? $value[0] : $value;
+                    update_option('_' . self::$slug . '_' . $setting, $value);
+                }
+            }
+
+            update_option('_' . self::$slug . '_db_init', true);
         }
 
         return implode("\n", $out);
