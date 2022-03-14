@@ -39,7 +39,7 @@ class SlideshowManager
 
     public function adminEnqueueStylesScripts($hook)
     {
-        if ('site-manager_page_top-slides' == $hook || 'site-manager_page_slides-manager' == $hook) {
+        if ($hook ==='site-manager_page_top-slides') {
             $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 
             // Get WP included jquery-ui version to match with stylesheet
@@ -61,10 +61,6 @@ class SlideshowManager
             wp_enqueue_style(
                 'coop-slideshow-manager-admin',
                 plugins_url('/assets/css/slideshow-manager-admin.css', dirname(__FILE__))
-            );
-            wp_enqueue_style(
-                'coop-slideshow-defaults-admin',
-                plugins_url('/assets/css/slideshow-defaults-admin.css', dirname(__FILE__))
             );
             wp_enqueue_style('coop-signals', plugins_url('/assets/css/signals.css', dirname(__FILE__)));
 

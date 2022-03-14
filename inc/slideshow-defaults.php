@@ -33,6 +33,19 @@ class SlideshowDefaults
         add_filter('attachment_fields_to_save', [&$this, 'regionFieldSave'], 10, 2);
 
         add_action('admin_menu', [&$this, 'addSlideshowMenu']);
+        add_action('admin_enqueue_scripts', [&$this, 'adminEnqueueStylesScripts']);
+    }
+
+    public function adminEnqueueStylesScripts($hook)
+    {
+        if ($hook === 'site-manager_page_slides-manager') {
+            $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
+
+            wp_enqueue_style(
+                'coop-slideshow-defaults-admin',
+                plugins_url('/assets/css/slideshow-defaults-admin.css', dirname(__FILE__))
+            );
+        }
     }
 
     public function addSlideshowMenu()
@@ -64,7 +77,7 @@ class SlideshowDefaults
 
         $out[] = '<table class="form-table">';
 
-        $out[] = $this->parseDefaults();
+        $out[] = $this->printOptions();
 
         $out[] = '</table>';
 
@@ -123,7 +136,11 @@ class SlideshowDefaults
             // get the variable name by stripping the slug off the stored option_name
             $k = str_replace($tag, '', $name);
 
-            if (is_numeric($val) || $val == 'true' || $val == 'false' || $val == 'undefined' || $val == 'null') {
+            if (
+                is_numeric($val)
+                || $val == 'true' || $val == 'false'
+                || $val == 'undefined' || $val == 'null'
+            ) {
                 $v = $val;
             } else {
                 // pass function defs thru unquoted
@@ -151,89 +168,135 @@ class SlideshowDefaults
     {
         $lines = file(dirname(__FILE__) . '/default-settings.js');
 
-        $all_defaults = [];
-        $out = [];
+        $all_settings = [];
+        $section = null;
 
-        $_fmt = '<tr><th>%s</th><td>%s</td><td>%s</td></tr>';
-
-        foreach ($lines as $l) {
-            /// skip lines
-            if (false !== strpos($l, '/*')) {
-                continue;
-            }
-            if (false !== (strpos($l, ' ') == 0)) {
-                continue;
-            }
-
-            // Headers
-            if (false !== strpos($l, '//')) {
-                list($j, $h) = explode('//', $l);
-                $out[] = '<tr><th><h3>' . $h . '</h3></th><td>Current value</td><td>Default</td></tr>';
+        foreach ($lines as $line) {
+            // Skip blank lines or comments
+            if (
+                (false !== strpos($line, '/*'))
+                || (false !== (strpos($line, ' ') == 0))
+            ) {
                 continue;
             }
 
-            list($t, $s) = explode(": ", rtrim($l, ",\n "));
-
-            $widget = [];
-            $_opt = get_option('_' . self::$slug . '_' . $t, null);
-            $default = '';
-
-            if (false !== strpos($s, ',')) {
-                // multiple term radio
-                $s = str_replace(['"', "'"], '', $s);
-                $pcs = explode(',', $s);
-                $default = $pcs[0];
-                $selected = ($_opt !== null ? $_opt : $default);
-
-                for ($i = 0; $i < count($pcs); $i++) {
-                    $id = $t . $i;
-                    $widget[] = sprintf(
-                        '<input class="slideshow-default" type="radio" id="%s" name="%s" value="%s"%s>',
-                        $id,
-                        $t,
-                        $pcs[$i],
-                        checked($selected, $pcs[$i], false)
-                    );
-                    $widget[] = sprintf('<label for="%s">%s</label>', $id, $pcs[$i]);
+            // Section Headers
+            if (false !== strpos($line, '//')) {
+                $section = strtolower(trim(explode('//', $line)[1]));
+                if (!isset($all_settings[$section])) {
+                    $all_settings[$section] = [];
                 }
+                continue;
+            }
+
+            list($setting, $raw_default) = explode(": ", rtrim($line, ",\n "));
+
+            if (false !== strpos($raw_default, ',')) {
+                // multiple term radio
+                $raw_default = str_replace(['"', "'"], '', $raw_default);
+                $all_settings[$section][$setting] = explode(',', $raw_default);
             } elseif (
-                false !== strpos($s, 'true')
-                || false !== strpos($s, 'false')
+                false !== strpos($raw_default, 'true')
+                || false !== strpos($raw_default, 'false')
             ) {
                 // binary radio t/f
-                $default = (false !== strpos($s, 'true')) ? 'true' : 'false';
-                $selected = ($_opt !== null ? $_opt : $default);
-
-                $widget[] = sprintf('<input class="slideshow-default" type="radio" id="%s-t" name="%s" value="true"%s>', $t, $t, checked($selected, 'true', false));
-                $widget[] = sprintf('<label for="%s-t">true</label>', $t);
-
-                $widget[] = sprintf('<input class="slideshow-default" type="radio" id="%s-f" name="%s" value="false"%s>', $t, $t, checked($selected, 'false', false));
-                $widget[] = sprintf('<label for="%s-f">false</label>', $t);
-            } elseif (false !== strpos($s, "'")) {
-                // quoted string value - strip quotes
-                $default = str_replace(['"', "'"], '', $s);
-                $selected = ($_opt !== null ? $_opt : $default);
-
-                $widget[] = sprintf('<input class="slideshow-default" type="text" id="%s" name="%s" value="%s">', $t, $t, $selected);
+                $all_settings[$section][$setting] = (false !== strpos($raw_default, 'true')) ? true : false;
             } else {
-                // text field
-                $default = $s;
-                $selected = ($_opt !== null ? $_opt : $default);
-
-                $widget[] = sprintf('<input class="slideshow-default" type="text" id="%s" name="%s" value="%s">', $t, $t, $selected);
+                // possibly quoted string value - strip quotes
+                $all_settings[$section][$setting] = str_replace(['"', "'"], '', $raw_default);
             }
-
-            $all_defaults[$t] = $default;
-
-            $out[] = sprintf($_fmt, $t, implode("&nbsp;&nbsp;", $widget), $default);
         }
 
         if (empty($this->db_init) || $this->db_init == false) {
-            foreach ($all_defaults as $term => $val) {
-                update_option('_' . self::$slug . '_' . $term, $val);
+            foreach ($all_settings as $section => $settings) {
+                foreach ($settings as $setting => $value) {
+                    $value = is_array($value) ? $value[0] : $value;
+                    update_option('_' . self::$slug . '_' . $setting, $value);
+                }
             }
 
             update_option('_' . self::$slug . '_db_init', true);
+        }
+
+        return $all_settings;
+    }
+
+    private function printOptions()
+    {
+        $all_settings = $this->parseDefaults();
+        $out = [];
+
+        $_fmt = '<tr class="%s"><th>%s</th><td>%s</td><td>%s</td></tr>';
+
+        foreach ($all_settings as $section => $settings) {
+            $out[] = sprintf(
+                $_fmt,
+                '',
+                '<h3>' . ucwords($section) . '</h3>',
+                'Current Value',
+                'Default Value'
+            );
+
+            foreach ($settings as $setting => $value) {
+                $widget = [];
+                $_opt = get_option('_' . self::$slug . '_' . $setting, null);
+
+                if (is_array($value)) {
+                    $selected = ($_opt !== null ? $_opt : $value[0]);
+
+                    foreach ($value as $index => $radio) {
+                        $id = $setting . $index;
+                        $widget[] = sprintf(
+                            '<input class="slideshow-default" type="radio" id="%s" name="%s" value="%s"%s>',
+                            $id,
+                            $setting,
+                            $radio,
+                            checked($selected, $radio, false)
+                        );
+                        $widget[] = sprintf('<label for="%s">%s</label>', $id, $radio);
+                    }
+                } elseif (is_bool($value)) {
+                    $selected = ($_opt !== null ? filter_var($_opt, FILTER_VALIDATE_BOOLEAN) : $value);
+
+                    $widget[] = sprintf(
+                        '<input class="slideshow-default" type="radio" id="%s-t" name="%s" value="true"%s>',
+                        $setting,
+                        $setting,
+                        checked($selected, true, false)
+                    );
+                    $widget[] = sprintf('<label for="%s-t">true</label>', $setting);
+
+                    $widget[] = sprintf(
+                        '<input class="slideshow-default" type="radio" id="%s-f" name="%s" value="false"%s>',
+                        $setting,
+                        $setting,
+                        checked($selected, false, false)
+                    );
+                    $widget[] = sprintf('<label for="%s-f">false</label>', $setting);
+                } else {
+                    $widget[] = sprintf(
+                        '<input class="slideshow-default" type="text" id="%s" name="%s" value="%s">',
+                        $setting,
+                        $setting,
+                        ($_opt !== null ? $_opt : $value)
+                    );
+                }
+
+                // Format boolean values for output
+                $printable_default = is_array($value) ? $value[0] : $value;
+
+                if (is_bool($printable_default)) {
+                    $printable_default = ($printable_default ? 'true' : 'false');
+                }
+
+                $out[] = sprintf(
+                    $_fmt,
+                    $_opt != $printable_default ? 'value-changed' : '',
+                    $setting,
+                    implode("&nbsp;&nbsp;", $widget),
+                    $printable_default
+                );
+            }
         }
 
         return implode("\n", $out);
