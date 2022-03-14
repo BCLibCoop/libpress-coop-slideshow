@@ -39,7 +39,7 @@ class SlideshowManager
 
     public function adminEnqueueStylesScripts($hook)
     {
-        if ($hook ==='site-manager_page_top-slides') {
+        if ($hook === 'site-manager_page_top-slides') {
             $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 
             // Get WP included jquery-ui version to match with stylesheet
