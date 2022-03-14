@@ -104,7 +104,7 @@ class SlideshowDefaults
         }
 
         foreach ($_POST['keys'] as $k) {
-            $val = $_POST[$k];
+            $val = wp_unslash($_POST[$k]);
             update_option('_' . self::$slug . '_' . $k, $val);
         }
 
@@ -145,7 +145,7 @@ class SlideshowDefaults
             } else {
                 // pass function defs thru unquoted
                 if (false !== stripos($k, 'onSlide', 0)) {
-                    $v = stripslashes($val);
+                    $v = wp_unslash($val);
                 } else {
                     $v = sprintf("'%s'", $val);
                 }

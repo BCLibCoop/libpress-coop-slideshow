@@ -204,7 +204,7 @@ class SlideshowManager
                 '<option value="%d"%s>%s</option>',
                 $r->id,
                 selected($r->is_active, '1', false),
-                $r->title
+                wp_unslash($r->title)
             );
         }
 
@@ -283,7 +283,7 @@ class SlideshowManager
             ]);
         }
 
-        $slideshow_title = sanitize_text_field($_POST['title']);
+        $slideshow_title = sanitize_text_field(wp_unslash($_POST['title']));
 
         if (array_key_exists('slideshow_id', $_POST)) {
             $slideshow_id = (int) sanitize_text_field($_POST['slideshow_id']);
@@ -403,22 +403,18 @@ class SlideshowManager
 
             $data = [
                 'slideshow_id' => $slideshow_id,
+                'text_title' => sanitize_text_field(wp_unslash($s['text_title']))
             ];
             $formats = [
-                '%d'
+                '%d',
+                '%s',
             ];
 
             if ('image' === $type) {
                 $data['post_id'] = (int) sanitize_text_field($s['post_id']);
                 $formats[] = '%d';
-
-                $data['text_title'] = sanitize_text_field($s['text_title']);
-                $formats[] = '%s';
             } else {  // 'text' === $type
-                $data['text_title'] = sanitize_text_field($s['text_title']);
-                $formats[] = '%s';
-
-                $data['text_content'] = sanitize_textarea_field($s['text_content']);
+                $data['text_content'] = sanitize_textarea_field(wp_unslash($s['text_content']));
                 $formats[] = '%s';
             }
 
@@ -435,7 +431,7 @@ class SlideshowManager
                 if (is_numeric(sanitize_text_field($s['slide_link']))) {
                     $data['slide_link'] = (int) sanitize_text_field($s['slide_link']);
                 } else {
-                    $data['slide_link'] = esc_url_raw($s['slide_link']);
+                    $data['slide_link'] = esc_url_raw(wp_unslash($s['slide_link']));
                 }
             }
 
@@ -490,7 +486,7 @@ class SlideshowManager
                 'id' => $s->id, // Slide ID
                 'slide_link' => $s->slide_link,
                 'slide_permalink' => $s->slide_link,
-                'text_title' => stripslashes($s->text_title),
+                'text_title' => wp_unslash($s->text_title),
                 'ordering' => $s->ordering,
             ];
 
@@ -527,7 +523,7 @@ class SlideshowManager
             } else {
                 // Text Slide
                 $slide['type'] = 'text';
-                $slide['text_content'] =  stripslashes($s->text_content);
+                $slide['text_content'] =  wp_unslash($s->text_content);
             }
 
             $slides[] = $slide;
