@@ -12,13 +12,13 @@
  * @author            Ben Holt <ben.holt@bc.libraries.coop>
  * @author            Jonathan Schatz <jonathan.schatz@bc.libraries.coop>
  * @author            Sam Edwards <sam.edwards@bc.libraries.coop>
- * @copyright         2013-2021 BC Libraries Cooperative
+ * @copyright         2013-2022 BC Libraries Cooperative
  * @license           GPL-2.0-or-later
  *
  * @wordpress-plugin
  * Plugin Name:       Coop Slideshow Admin
  * Description:       Slideshow setup configurator
- * Version:           1.2.0
+ * Version:           2.0.0
  * Network:           true
  * Requires at least: 5.2
  * Requires PHP:      7.0
