@@ -165,36 +165,36 @@ class Slideshow
 
     public function fetchStylesUri()
     {
-        $theme = get_option('_' . $this->slug . '_horizontalThumbsCSSFile');
+        $theme = get_option('_' . $this->slug . '_horizontalThumbsCSSFile', 'h-theme.css');
 
-        if (!empty($theme) && $this->show) {
+        if ($this->show) {
             if ($this->show->layout == 'no-thumb') {
-                $theme = get_option('_' . $this->slug . '_prevNextCSSFile');
+                $theme = get_option('_' . $this->slug . '_prevNextCSSFile', 'pn-theme.css');
             } elseif ($this->show->layout == 'vertical') {
-                $theme = get_option('_' . $this->slug . '_verticalThumbsCSSFile');
+                $theme = get_option('_' . $this->slug . '_verticalThumbsCSSFile', 'v-theme.css');
             }
+        }
 
-            $dir = str_replace('.css', '', $theme);
-            $file_path = '/bxslider/themes/' . $dir . '/' . $theme;
+        $dir = str_replace('.css', '', $theme);
+        $file_path = '/bxslider/themes/' . $dir . '/' . $theme;
 
-            // Check if there's an override in the theme or the parent theme
-            if (file_exists(get_stylesheet_directory() . $file_path)) {
-                return [
-                    'path' => get_stylesheet_directory() . $file_path,
-                    'uri' => get_stylesheet_directory_uri() . $file_path,
-                ];
-            } elseif (file_exists(get_template_directory() . $file_path)) {
-                return [
-                    'path' => get_template_directory() . $file_path,
-                    'uri' => get_template_directory_uri() . $file_path,
-                ];
-            }
-
+        // Check if there's an override in the theme or the parent theme
+        if (file_exists(get_stylesheet_directory() . $file_path)) {
             return [
-                'path' => dirname(__FILE__) . $file_path,
-                'uri' => plugins_url($file_path, dirname(__FILE__)),
+                'path' => get_stylesheet_directory() . $file_path,
+                'uri' => get_stylesheet_directory_uri() . $file_path,
+            ];
+        } elseif (file_exists(get_template_directory() . $file_path)) {
+            return [
+                'path' => get_template_directory() . $file_path,
+                'uri' => get_template_directory_uri() . $file_path,
             ];
         }
+
+        return [
+            'path' => dirname(COOP_SLIDESHOW_PLUGIN) . $file_path,
+            'uri' => plugins_url($file_path, COOP_SLIDESHOW_PLUGIN),
+        ];
     }
 
     public function slideshowShortcode()
@@ -202,7 +202,7 @@ class Slideshow
         global $wpdb;
 
         $slides = [];
-        $pager_class = str_replace('.', '', get_option('_slideshow_pagerCustom', ''));
+        $pager_class = str_replace('.', '', get_option('_slideshow_pagerCustom', '.alpha-pager'));
 
         if ($this->show) {
             $slides = SlideshowManager::fetchSlides($this->show->id);

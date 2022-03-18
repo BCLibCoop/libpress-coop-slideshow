@@ -1,1 +1,87 @@
-/* h-theme */
+.hero.row.horizontal .bx-wrapper .bx-viewport .slider .slide.image .bx-caption {
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  background: #6669;
+  background: rgba(0, 0, 0, 0.75);
+  width: 100%;
+}
+.hero.row.horizontal .bx-wrapper .bx-viewport .slider .slide.image .bx-caption span {
+  color: #fff;
+  display: block;
+  font-size: 0.85em;
+  padding: 10px;
+}
+.hero.row.horizontal .bx-wrapper .bx-viewport .slider .slide.text {
+  background: #eee;
+}
+.hero.row.horizontal .bx-wrapper .bx-viewport .slider .slide.text h2 {
+  font-size: 3em;
+  margin-top: 1.75em;
+  margin-left: 1.75em;
+  margin-right: 1.75em;
+  margin-bottom: 0;
+  text-shadow: 0px 2px 7px #999;
+}
+.hero.row.horizontal .bx-wrapper .bx-viewport .slider .slide.text p {
+  margin-left: 6em;
+  margin-right: 6em;
+  text-shadow: 0px 2px 7px #999;
+}
+.hero.row.horizontal .bx-wrapper .bx-viewport .slider .slide.text .bx-caption {
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  background: #666 \9;
+  background: rgba(0, 0, 0, 0.75);
+  width: 100%;
+}
+.hero.row.horizontal .bx-wrapper .bx-viewport .slider .slide.text .bx-caption span {
+  color: #fff;
+  display: block;
+  font-size: 0.85em;
+  padding: 10px;
+}
+.hero.row.horizontal .row.alpha-pager.horizontal {
+  text-align: center;
+  line-height: 0;
+  background-color: #ccc;
+}
+.hero.row.horizontal .row.alpha-pager.horizontal .pager-box {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+}
+.hero.row.horizontal .row.alpha-pager.horizontal .pager-box a {
+  border: 2px solid transparent;
+  display: table-cell;
+  margin: 0;
+  vertical-align: middle;
+  text-align: center;
+}
+.hero.row.horizontal .row.alpha-pager.horizontal .pager-box a.active {
+  border: 2px solid black;
+}
+.hero.row.horizontal .row.alpha-pager.horizontal .pager-box a .thumb {
+  height: 50px;
+  width: 50px;
+}
+.hero.row.horizontal .row.alpha-pager.horizontal .pager-box a .thumb.text {
+  background-color: #ccc;
+  background-image: url("../images/info-thumb.png");
+  display: table-cell;
+  line-height: 0;
+  text-indent: -9999px;
+  vertical-align: middle;
+  width: 50px;
+  height: 50px;
+}
+.hero.row.horizontal .row.alpha-pager.horizontal .pager-box a .thumb.img {
+  margin: 0;
+  padding: 0;
+}
+.hero.row.horizontal .row.alpha-pager.horizontal .pager-box a .thumb.img img.pager-thumb {
+  height: 50px;
+  margin: 0;
+  padding: 0;
+}

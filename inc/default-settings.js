@@ -3,7 +3,7 @@
 /* disguised as a comment */  window.coop_bx_defaults = {
 // GENERAL
 mode: 'horizontal,vertical,fade',
-slideSelector: '',
+slideSelector: '.slide',
 infiniteLoop: true,
 hideControlOnEnd: false,
 speed: 500,
@@ -34,20 +34,20 @@ pagerType: 'full,short',
 pagerShortSeparator: ' / ',
 pagerSelector: null,
 buildPager: null,
-pagerCustom: null,
+pagerCustom: '.alpha-pager',
 
 // PAGER-LAYOUT (custom attributes)
-prevNextCSSFile: '',
-verticalThumbsCSSFile: '',
-horizontalThumbsCSSFile: '',
+prevNextCSSFile: 'pn-theme.css',
+verticalThumbsCSSFile: 'v-theme.css',
+horizontalThumbsCSSFile: 'h-theme.css',
 currentLayout: 'vertical',
 
 // CONTROLS
 controls: true,
 nextText: 'Next',
 prevText: 'Prev',
-nextSelector: null,
-prevSelector: null,
+nextSelector: '.next',
+prevSelector: '.prev',
 autoControls: false,
 startText: 'Start',
 stopText: 'Stop',
