@@ -56,6 +56,12 @@ class Slideshow
         if ($this->shouldEnqueueAssets()) {
             $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 
+            /**
+             * All Coop plugins will include their own copy of flickity, but
+             * only the first one actually enqued should be needed/registered.
+             * Assuming we keep versions in sync, this shouldn't be an issue.
+             */
+
             /* flickity */
             wp_enqueue_script(
                 'flickity',
@@ -122,6 +128,9 @@ class Slideshow
             'wrapAround' => true,
             'pageDots' => false,
             'fade' => $this->show->transition === 'fade' ? true : false,
+            'imagesLoaded' => true,
+            // 'groupCells' => 1,
+            // 'setGallerySize' => false,
         ];
         $flickity_options = json_encode($flickity_options);
 

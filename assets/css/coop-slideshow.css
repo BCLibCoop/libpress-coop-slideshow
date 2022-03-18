@@ -10,3 +10,12 @@
 .hero-carousel.flickity-enabled .slide {
   display: block;
 }
+
+.slide img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* TODO: .flickity-prev-next-button smaller on mobile? Or maybe just opacity? */
+
+/* TODO: size text slides correctly */
