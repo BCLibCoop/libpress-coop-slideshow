@@ -1,6 +1,6 @@
 <?php if (!empty($slides)) : ?>
-    <div class="hero row <?= $this->show->layout ?>" role="banner">
-        <div id="slider" class="slider">
+    <!-- <div class="hero row <?= $this->show->layout ?>" role="banner"> -->
+        <div class="hero-carousel carousel-<?= $this->show->layout ?>" data-flickity='<?= $flickity_options ?>'>
             <?php foreach ($slides as $slide) : ?>
                 <div class="slide <?= $slide['type'] ?>">
                     <?php if (!empty($slide['slide_permalink'])) : ?>
@@ -25,7 +25,7 @@
         </div><!-- #slider.row.slider -->
 
         <?php if ($this->show->layout !== 'no-thumb') : ?>
-            <div class="row <?= $pager_class ?> <?= $this->show->layout ?>">
+            <div class="row hero-carousel-pager carousel-pager-<?= $this->show->layout ?>">
                 <?php foreach ($slides as $slide) : ?>
                     <div class="pager-box slide-index-<?= $slide['ordering'] ?>">
                         <a href="" data-slide-index="<?= $slide['ordering'] ?>">
@@ -44,7 +44,7 @@
                 <?php endforeach; ?>
             </div><!-- end of pager -->
         <?php endif; ?>
-    </div><!-- .hero.row -->
+    <!-- </div> .hero.row -->
 <?php else : ?>
     <!-- No Slides/Slideshow Found -->
 <?php endif;
