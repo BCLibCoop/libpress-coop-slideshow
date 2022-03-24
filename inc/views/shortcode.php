@@ -25,21 +25,17 @@
         </div><!-- #slider.row.slider -->
 
         <?php if ($this->show->layout !== 'no-thumb') : ?>
-            <div class="row hero-carousel-pager carousel-pager-<?= $this->show->layout ?>">
+            <div class="row hero-carousel-pager carousel-pager-<?= $this->show->layout ?>" data-flickity='<?= $flickity_pager_options ?>'>
                 <?php foreach ($slides as $slide) : ?>
                     <div class="pager-box slide-index-<?= $slide['ordering'] ?>">
-                        <a href="" data-slide-index="<?= $slide['ordering'] ?>">
-                            <div class="thumb <?= $slide['type'] ?>">
-                                <?php if ($slide['type'] === 'image') : ?>
-                                    <img class="pager-thumb"
-                                        alt="<?= esc_attr($slide['text_title']) ?>"
-                                        src="<?= $slide['meta']['sizes']['thumbnail']['src'] ?>"
-                                    >
-                                <?php elseif ($slide['type'] === 'text') : ?>
-                                    <div class="pager-thumb text-thumb">T</div>
-                                <?php endif; ?>
-                            </div>
-                        </a>
+                        <div class="thumb <?= $slide['type'] ?>">
+                            <img class="pager-thumb"
+                                alt="<?= esc_attr($slide['text_title']) ?>"
+                                src="<?= $slide['meta']['sizes']['thumbnail']['src'] ?? $text_thumb ?>"
+                                width="50"
+                                height="50"
+                            >
+                        </div>
                     </div><!-- .pager-box -->
                 <?php endforeach; ?>
             </div><!-- end of pager -->

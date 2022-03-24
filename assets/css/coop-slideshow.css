@@ -11,11 +11,51 @@
   display: block;
 }
 
-.slide img {
+.hero-carousel .slide.image img {
   max-width: 100%;
   height: auto;
 }
 
-/* TODO: .flickity-prev-next-button smaller on mobile? Or maybe just opacity? */
+.hero-carousel .slide.text {
+  /* height: 288px; */
+  height: 100%;
+  width: 100%;
+  padding: 5%;
+  overflow: hidden;
 
-/* TODO: size text slides correctly */
+  background-image: radial-gradient(ellipse farthest-corner at center top, #ffffff 0%, #cccccc 100%);
+  background-color: #eee;
+}
+
+.hero-carousel .slide.text h2 {
+  font-size: 3em;
+  margin: 0;
+  text-shadow: 0px 2px 7px #999;
+}
+
+.hero-carousel .slide.text p {
+  margin: 0;
+  text-shadow: 0px 2px 7px #999;
+}
+
+.hero-carousel-pager {
+  background-color: #ccc;
+  text-align: center;
+}
+
+.hero-carousel-pager .pager-box {
+  display: inline-block;
+  border: 2px solid transparent;
+  margin: 0;
+}
+
+.hero-carousel-pager .pager-box.is-selected {
+  border: 2px solid black;
+}
+
+.hero-carousel-pager .pager-box .thumb {
+  width: 50px;
+  height: 50px;
+  margin: 0;
+  padding: 0;
+}

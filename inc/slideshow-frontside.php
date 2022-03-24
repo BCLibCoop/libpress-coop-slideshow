@@ -112,32 +112,31 @@ class Slideshow
 
     public function slideshowShortcode()
     {
-        global $wpdb;
-
         $slides = [];
+        $text_thumb = plugins_url('/assets/imgs/info-thumb.png', dirname(__FILE__));
 
         if ($this->show) {
             $slides = SlideshowManager::fetchSlides($this->show->id);
         }
 
-        // $this->show->layout
-        // $this->show->transition
-        // $this->show->captions
-        $flickity_options = [
+        $flickity_options = json_encode([
             'autoPlay' => (int) get_option('_slideshow_pause', '4000'),
             'wrapAround' => true,
             'pageDots' => false,
             'fade' => $this->show->transition === 'fade' ? true : false,
-            'imagesLoaded' => true,
-            // 'groupCells' => 1,
-            // 'setGallerySize' => false,
-        ];
-        $flickity_options = json_encode($flickity_options);
+            // 'watchCSS' => true,
+        ]);
+
+        $flickity_pager_options = json_encode([
+            'asNavFor' => '.hero-carousel',
+            'contain' => true,
+            'pageDots' => false,
+            'prevNextButtons' => false,
+            'draggable' => false,
+        ]);
 
         ob_start();
-
         require 'views/shortcode.php';
-
         return ob_get_clean();
     }
 }
