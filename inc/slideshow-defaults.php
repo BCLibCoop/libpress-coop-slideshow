@@ -45,6 +45,23 @@ class SlideshowDefaults
                 'coop-slideshow-defaults-admin',
                 plugins_url('/assets/css/slideshow-defaults-admin.css', dirname(__FILE__))
             );
+
+            wp_register_script(
+                'coop-slideshow-defaults-js',
+                plugins_url('/inc/default-settings.js', dirname(__FILE__))
+            );
+
+            wp_enqueue_script(
+                'coop-slideshow-admin-js',
+                plugins_url('/assets/js/slideshow-admin.js', dirname(__FILE__)),
+                [
+                    'jquery',
+                    'coop-slideshow-defaults-js',
+                ]
+            );
+
+            $ajax_nonce = wp_create_nonce(self::$slug);
+            wp_localize_script('coop-slideshow-admin-js', 'coop_slideshow', ['nonce' => $ajax_nonce]);
         }
     }
 

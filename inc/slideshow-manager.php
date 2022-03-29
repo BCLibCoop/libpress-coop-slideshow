@@ -190,7 +190,7 @@ class SlideshowManager
         $table_name = $wpdb->prefix . 'slideshows';
 
         // Skip possible old shows without a title
-        $res = $wpdb->get_results("SELECT * FROM `$table_name` WHERE `title` != '' ORDER BY `title`");
+        $res = $wpdb->get_results("SELECT * FROM `$table_name` ORDER BY `title`");
 
         $out = [];
 
@@ -200,6 +200,8 @@ class SlideshowManager
         $out[] = '<option value=""></option>';
 
         foreach ($res as $r) {
+            $r->title = empty($r->title) ? "Unnamed Slideshow {$r->id}" : $r->title;
+
             $out[] = sprintf(
                 '<option value="%d"%s>%s</option>',
                 $r->id,
