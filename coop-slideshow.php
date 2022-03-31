@@ -36,15 +36,17 @@ defined('ABSPATH') || die(-1);
 
 define('COOP_SLIDESHOW_PLUGIN', __FILE__);
 
-require_once 'inc/slideshow-admin.php';
-require_once 'inc/slideshow-defaults.php';
-require_once 'inc/slideshow-manager.php';
-require_once 'inc/slideshow-frontside.php';
+/**
+ * Require Composer autoloader if installed on it's own
+ */
+if (file_exists($composer = __DIR__ . '/vendor/autoload.php')) {
+    require_once $composer;
+}
 
 /**
  * Check for DB updates on activation
  */
-register_activation_hook(__FILE__, ['BCLibCoop\SlideshowAdmin', 'activate']);
+register_activation_hook(__FILE__, [__NAMESPACE__ . '\SlideshowAdmin', 'activate']);
 
 /**
  * Hook on plugins_loaded for friendlier priorities
