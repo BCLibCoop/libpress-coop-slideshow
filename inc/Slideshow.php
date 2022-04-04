@@ -119,11 +119,14 @@ class Slideshow
             $slides = SlideshowManager::fetchSlides($this->show->id);
         }
 
+        // TODO: Figure out if we're going to keep any "default options" around
+        // or if we should just move pause/delay/autoplay to a per-show option
+
         $flickity_options = json_encode([
             'autoPlay' => (int) get_option('_slideshow_pause', '4000'),
             'wrapAround' => true,
-            'pageDots' => false,
-            'fade' => $this->show->transition === 'fade' ? true : false,
+            'pageDots' => ($this->show->layout !== 'no-thumb'),
+            'fade' => ($this->show->transition === 'fade' ? true : false),
             // 'watchCSS' => true,
         ]);
 

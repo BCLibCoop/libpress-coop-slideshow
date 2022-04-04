@@ -1,5 +1,5 @@
 <?php if (!empty($slides)) : ?>
-    <!-- <div class="hero row <?= $this->show->layout ?>" role="banner"> -->
+    <div class="hero row <?= $this->show->layout ?>" role="banner">
         <div class="hero-carousel carousel-<?= $this->show->layout ?>" data-flickity='<?= $flickity_options ?>'>
             <?php foreach ($slides as $slide) : ?>
                 <div class="slide <?= $slide['type'] ?>">
@@ -40,7 +40,7 @@
                 <?php endforeach; ?>
             </div><!-- end of pager -->
         <?php endif; ?>
-    <!-- </div> .hero.row -->
+    </div><!-- .hero.row -->
 <?php else : ?>
     <!-- No Slides/Slideshow Found -->
 <?php endif;
