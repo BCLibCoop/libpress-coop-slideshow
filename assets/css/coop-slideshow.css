@@ -1,19 +1,14 @@
-/* Only show first slide while loading */
+.hero-carousel.flickity-enabled .slide {
+  /* Only show first slide while loading */
+  display: block;
+}
+
 .hero-carousel .slide {
   display: none;
 }
 
 .hero-carousel .slide:first-child {
   display: block;
-}
-
-.hero-carousel.flickity-enabled .slide {
-  display: block;
-}
-
-.hero-carousel .flickity-prev-next-button {
-  width: 33px;
-  height: 33px;
 }
 
 .hero-carousel .slide.image img {
@@ -25,16 +20,15 @@
   /* height: 288px; */
   height: 100%;
   width: 100%;
-  padding: 5% calc(1.525rem + 3.3vw);
+  padding: calc(1.525rem + 3.3vw);
   overflow: hidden;
-
   background-image: radial-gradient(ellipse farthest-corner at center top, #ffffff 0%, #cccccc 100%);
   background-color: #eee;
 }
 
 @media (min-width: 1200px) {
   .hero-carousel .slide.text {
-    padding: 5% 4rem;
+    padding: 4rem;
   }
 }
 
@@ -46,13 +40,18 @@
 
 @media (min-width: 1200px) {
   .hero-carousel .slide.text h2 {
-    font-size: 4em;
+    font-size: 4rem;
   }
 }
 
 .hero-carousel .slide.text p {
   margin: 0;
   text-shadow: 0px 2px 7px #999;
+}
+
+.hero-carousel .flickity-prev-next-button {
+  width: 33px;
+  height: 33px;
 }
 
 .hero-carousel-pager {
