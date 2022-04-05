@@ -125,7 +125,7 @@ class Slideshow
         $flickity_options = json_encode([
             'autoPlay' => (int) get_option('_slideshow_pause', '4000'),
             'wrapAround' => true,
-            'pageDots' => ($this->show->layout !== 'no-thumb'),
+            'pageDots' => ($this->show->layout === 'no-thumb'),
             'fade' => ($this->show->transition === 'fade' ? true : false),
             // 'watchCSS' => true,
         ]);
