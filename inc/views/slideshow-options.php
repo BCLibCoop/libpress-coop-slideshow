@@ -10,12 +10,6 @@ $control_sections = [
                 'annotation' => 'Previous/Next arrows',
                 'image' => 'NoThumbnails.png',
             ],
-            // [
-            //     'value' => 'vertical',
-            //     'label' => 'Vertical Thumbnails',
-            //     'annotation' => 'Clickable thumbnails displayed vertically on the left-hand side',
-            //     'image' => 'VerticalThumbnails.png',
-            // ],
             [
                 'value' => 'horizontal',
                 'label' => 'Horizontal Thumbnails',
@@ -33,12 +27,6 @@ $control_sections = [
                 'annotation' => 'Slides enter from the right and exit to the left',
                 'image' => 'HorizontalSlide.png',
             ],
-            // [
-            //     'value' => 'vertical',
-            //     'label' => 'Slide Vertical',
-            //     'annotation' => 'Slides enter below and exit above',
-            //     'image' => 'VerticalSlide.png',
-            // ],
             [
                 'value' => 'fade',
                 'label' => 'Cross-fade',

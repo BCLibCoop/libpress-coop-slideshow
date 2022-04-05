@@ -70,10 +70,6 @@ class SlideshowManager
                 ['jquery'],
                 '1.8.7'
             );
-            wp_register_script(
-                'coop-slideshow-defaults-js',
-                plugins_url('/inc/default-settings.js', dirname(__FILE__))
-            );
             wp_enqueue_script(
                 'coop-slideshow-admin-js',
                 plugins_url('/assets/js/slideshow-admin.js', dirname(__FILE__)),
@@ -83,7 +79,6 @@ class SlideshowManager
                     'jquery-ui-droppable',
                     'jquery-ui-tooltip',
                     'jquery-chosen',
-                    'coop-slideshow-defaults-js',
                 ]
             );
 
@@ -304,7 +299,7 @@ class SlideshowManager
         $layout = sanitize_text_field($_POST['layout']);
         $transition = sanitize_text_field($_POST['transition']);
 
-        // error_log( 'layout: '.$layout .', transition: '.$transition);
+        // TODO: Time
 
         if (empty($slideshow_id)) {
             $slideshow_id = $this->createCollection($slideshow_title);
@@ -564,6 +559,7 @@ class SlideshowManager
             'captions' => $show->captions,
             'layout' => $show->layout,
             'transition' => $show->transition,
+            'time' => $show->time,
         ]);
     }
 

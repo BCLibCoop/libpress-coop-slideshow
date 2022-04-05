@@ -4,6 +4,8 @@ namespace BCLibCoop;
 
 class SlideshowAdmin
 {
+    private static $dbVersion = '1.3';
+
     public static function activate()
     {
         self::createDbTable();
@@ -18,45 +20,41 @@ class SlideshowAdmin
     {
         global $wpdb;
 
-        /* MAINTENANCE utility
-        $del = "DELETE FROM $wpdb->options WHERE option_name='_slideshow_db_version'";
-        $wpdb->query($del);
-        */
-
         $slideshow_db_version = get_option('_slideshow_db_version');
 
-        if ('1.2' === $slideshow_db_version) {
-            // return or run an update ...
-            // error_log('_slideshow_db_version: ' . $slideshow_db_version);
-            return;
+        if ($slideshow_db_version !== self::$dbVersion) {
+            require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+            $charset_collate = $wpdb->get_charset_collate();
+
+            $table_name = $wpdb->prefix . 'slideshows';
+            $sql = "CREATE TABLE $table_name (
+                        `id` int(11) NOT NULL AUTO_INCREMENT,
+                        `title` varchar(60) NOT NULL,
+                        `layout` varchar(20) NOT NULL DEFAULT 'no-thumb',
+                        `transition` varchar(20) NOT NULL DEFAULT 'horizontal',
+                        `date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        `is_active` tinyint(4) NOT NULL DEFAULT '0',
+                        `captions` tinyint(4) NOT NULL DEFAULT '0',
+                        `time` int(5) NOT NULL DEFAULT '4500',
+                        PRIMARY KEY (`id`)
+                        ) $charset_collate;";
+            dbDelta($sql);
+
+            $table_name = $wpdb->prefix . 'slideshow_slides';
+            $sql = "CREATE TABLE $table_name (
+                        `id` int(11) NOT NULL AUTO_INCREMENT,
+                        `slideshow_id` int(11) NOT NULL,
+                        `post_id` int(11) DEFAULT NULL,
+                        `slide_link` varchar(250) DEFAULT NULL,
+                        `ordering` tinyint(4) NOT NULL DEFAULT '0',
+                        `text_title` varchar(250) DEFAULT NULL,
+                        `text_content` text DEFAULT NULL,
+                        PRIMARY KEY (`id`)
+                        ) $charset_collate;";
+            dbDelta($sql);
+
+            update_option('_slideshow_db_version', self::$dbVersion);
         }
-
-        // error_log( 'creating the slideshow table' );
-
-        $table_name = $wpdb->prefix . 'slideshows';
-        $sql = "CREATE TABLE $table_name ("
-            . " id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-            . " title varchar(60) NOT NULL, "
-            . " layout varchar(20) NOT NULL DEFAULT 'no-thumb', "
-            . " transition varchar(20) NOT NULL DEFAULT 'horizontal',"
-            . " date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL ,"
-            . " is_active tinyint NOT NULL DEFAULT 0, "
-            . " captions tinyint NOT NULL DEFAULT 0);";
-        $wpdb->query($sql);
-
-
-        $table_name = $wpdb->prefix . 'slideshow_slides';
-        $sql = "CREATE TABLE $table_name ("
-            . " id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-            . " slideshow_id int(11)  NOT NULL, "
-            . " post_id int(11), "
-            . " slide_link varchar(250), "
-            . " ordering tinyint DEFAULT 0 NOT NULL, "
-            . " text_title varchar(250), "
-            . " text_content text "
-            . " );";
-        $wpdb->query($sql);
-
-        update_option('_slideshow_db_version', '1.2');
     }
 }

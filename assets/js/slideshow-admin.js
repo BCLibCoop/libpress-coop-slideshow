@@ -225,6 +225,7 @@
 
         $('#slideshow-is-active-collection').prop('checked', (res.is_active === '1'));
         $('#slideshow-show-captions').prop('checked', (res.captions === '1'));
+        $('#slideshow-time').val(res.time);
 
         /* the layout and transition settings also need restoring */
         $('input[value="' + res.layout + '"][name="slideshow-layout"]').prop('checked', true);
@@ -418,13 +419,10 @@
       var count = $children.length;
 
       if (count) {
-        var dwell = parseInt(window.coop_slideshow_settings.current.pause, 10) / 1000;
-        var transit = parseInt(window.coop_slideshow_settings.current.speed, 10) / 1000;
+        var time = parseInt($('#slideshow-time').val(), 10) / 1000;
+        var net = count * time; // slideshow cycle in seconds
 
-        var net = count * (dwell + transit); // slideshow cycle in seconds
-
-        msg = "There are " + count + " slides in this slideshow. Each slide will show for " + dwell + " seconds. ";
-        msg += "Transition between slides will take " + transit + " seconds. ";
+        msg = "There are " + count + " slides in this slideshow. Each slide will show for " + time + " seconds. ";
         msg += "The slideshow will take a total of " + net + " seconds to cycle completely.";
       }
 
@@ -470,9 +468,6 @@
       }
 
       var transition = $('input[name="slideshow-transition"]:checked').val();
-      if (transition === undefined) {
-        transition = window.coop_slideshow_settings.current.mode;
-      }
 
       var use_captions = '0';
       if ($('#slideshow-show-captions:checked').length) {
@@ -811,11 +806,6 @@
    * Ready
    */
   $(function() {
-    // SlideshowSettings is used by SlideshowSetup, so always load it
-    window.coop_slideshow_settings = new SlideshowSettings();
-
-    if (window.pagenow === 'site-manager_page_top-slides') {
-      window.slideshow_manager = new SlideshowSetup();
-    }
+    window.slideshow_manager = new SlideshowSetup();
   });
 }(jQuery, window));

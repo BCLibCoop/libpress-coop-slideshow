@@ -51,14 +51,15 @@ register_activation_hook(__FILE__, [__NAMESPACE__ . '\SlideshowAdmin', 'activate
 /**
  * Hook on plugins_loaded for friendlier priorities
  */
-add_action('plugins_loaded', function () {
+add_action('wp_loaded', function () {
+    SlideshowAdmin::createDbTable();
+
     /**
      * Only load admin interfaces for an admin request
      */
     add_action('init', function () {
         if (is_admin()) {
             new SlideShowManager();
-            new SlideshowDefaults();
         }
     });
 
