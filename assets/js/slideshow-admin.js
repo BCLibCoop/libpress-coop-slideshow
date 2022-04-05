@@ -3,13 +3,13 @@
    * @package Slideshow Setup
    * @copyright BC Libraries Coop 2013
    **/
-  var SlideShowSetup = function () {
+  var SlideshowSetup = function () {
     this.editing_node = null;
 
     this.init();
   }
 
-  SlideShowSetup.prototype = {
+  SlideshowSetup.prototype = {
 
     init: function () {
       // init hook-ups listed more-or-less in page order
@@ -663,7 +663,7 @@
    * @package Slideshow Settings
    * @copyright BC Libraries Coop 2013
    **/
-  var SlideShowSettings = function (options) {
+  var SlideshowSettings = function (options) {
     this._debug = false;
     this._configured = {}; // passed in options
     this.current = {};  // _defaults + _configured
@@ -674,7 +674,7 @@
     this.init(options);
   }
 
-  SlideShowSettings.prototype = {
+  SlideshowSettings.prototype = {
 
     init: function (options) {
       // load the definitional default set by bxSlider
@@ -811,11 +811,11 @@
    * Ready
    */
   $(function() {
-    // SlideshowSettings is used by SlideShowSetup, so always load it
-    window.coop_slideshow_settings = new SlideShowSettings();
+    // SlideshowSettings is used by SlideshowSetup, so always load it
+    window.coop_slideshow_settings = new SlideshowSettings();
 
     if (window.pagenow === 'site-manager_page_top-slides') {
-      window.slideshow_manager = new SlideShowSetup();
+      window.slideshow_manager = new SlideshowSetup();
     }
   });
 }(jQuery, window));
