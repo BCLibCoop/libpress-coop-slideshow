@@ -34,6 +34,7 @@ class Slideshow
         $this->show = $wpdb->get_row("SELECT * FROM `$table_name` WHERE `is_active` = 1 ORDER BY `date` DESC");
 
         // Fall back to the most recent show even if not active
+        // TODO: check for sites with non-active shows, make them active, then remove this
         if ($this->show == null) {
             $this->show = $wpdb->get_row("SELECT * FROM `$table_name` ORDER BY `date` DESC");
         }
@@ -82,6 +83,15 @@ class Slideshow
                 '1.0.0',
                 true
             );
+
+            wp_enqueue_script(
+                'fitty',
+                plugins_url('/assets/js/fitty' . $suffix . '.js', dirname(__FILE__)),
+                [],
+                '2.3.6',
+                true
+            );
+            wp_add_inline_script('fitty', "fitty('.fit');");
 
             wp_register_style(
                 'flickity',
