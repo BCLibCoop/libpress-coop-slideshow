@@ -503,32 +503,34 @@ class SlideshowManager
 
             $slide['slide_permalink'] = esc_url($slide['slide_permalink']);
 
-            if ($s->post_id) {
+            if ($s->post_id && $raw_meta = self::fetchImageMeta($s->post_id)) {
                 // Image Slide
                 $slide['type'] = 'image';
                 $slide['post_id'] = $s->post_id; // Image attachment ID
                 $slide['meta'] = [];
 
-                if ($raw_meta = self::fetchImageMeta($s->post_id)) {
-                    // Just the meta we need to keep the payload small
-                    if ($image_size) {
-                        $slide['meta'] = [
-                            'title' => $raw_meta['title'],
-                            'src' => $raw_meta['sizes'][$image_size]['src'],
-                            'width' => $raw_meta['sizes'][$image_size]['width'],
-                            'height' => $raw_meta['sizes'][$image_size]['height'],
-                        ];
-                    } else {
-                        $slide['meta'] = $raw_meta;
-                    }
+                if ($image_size) {
+                    // Just the meta we need to keep the payload small if a size was specified
+                    $slide['meta'] = [
+                        'title' => $raw_meta['title'],
+                        'src' => $raw_meta['sizes'][$image_size]['src'],
+                        'width' => $raw_meta['sizes'][$image_size]['width'],
+                        'height' => $raw_meta['sizes'][$image_size]['height'],
+                    ];
+                } else {
+                    // All sizes
+                    $slide['meta'] = $raw_meta;
                 }
-            } else {
+            } elseif (!empty($s->text_content)) {
                 // Text Slide
                 $slide['type'] = 'text';
                 $slide['text_content'] =  wp_unslash($s->text_content);
             }
 
-            $slides[] = $slide;
+            // Only add the slide if we successfully determined the type
+            if (!empty($slide['type'])) {
+                $slides[] = $slide;
+            }
         }
 
         return $slides;
