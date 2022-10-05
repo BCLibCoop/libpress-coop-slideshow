@@ -18,7 +18,7 @@
  * @wordpress-plugin
  * Plugin Name:       Coop Slideshow Admin
  * Description:       Slideshow setup configurator
- * Version:           2.1.2
+ * Version:           2.1.3
  * Network:           true
  * Requires at least: 5.2
  * Requires PHP:      7.0
@@ -47,18 +47,23 @@ require_once 'inc/slideshow-frontside.php';
 register_activation_hook(__FILE__, ['BCLibCoop\SlideshowAdmin', 'activate']);
 
 /**
- * Only load admin interfaces for an admin request
+ * Hook on plugins_loaded for friendlier priorities
  */
-add_action('init', function () {
-    if (is_admin()) {
-        new SlideShowManager();
-        new SlideshowDefaults();
-    }
-});
+add_action('plugins_loaded', function () {
+    /**
+     * Only load admin interfaces for an admin request
+     */
+    add_action('init', function () {
+        if (is_admin()) {
+            new SlideShowManager();
+            new SlideshowDefaults();
+        }
+    });
 
-/**
- * Only load the frontend features for a frontend request
- */
-add_action('template_redirect', function () {
-    new Slideshow();
+    /**
+     * Only load the frontend features for a frontend request
+     */
+    add_action('template_redirect', function () {
+        new Slideshow();
+    });
 });
