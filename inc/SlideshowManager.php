@@ -26,15 +26,15 @@ class SlideshowManager
         $this->sprite = plugins_url('/assets/imgs/signal-sprite.png', dirname(__FILE__));
 
         $this->init();
-        add_action('admin_enqueue_scripts', [&$this, 'adminEnqueueStylesScripts']);
-        add_action('admin_menu', [&$this, 'addSlideshowMenu']);
+        add_action('admin_enqueue_scripts', [$this, 'adminEnqueueStylesScripts']);
+        add_action('admin_menu', [$this, 'addSlideshowMenu']);
     }
 
     public function init()
     {
-        add_action('wp_ajax_slideshow-fetch-collection', [&$this, 'fetchCollection']);
-        add_action('wp_ajax_slideshow-save-slide-collection', [&$this, 'saveCollectionHandler']);
-        add_action('wp_ajax_slideshow-delete-slide-collection', [&$this, 'deleteCollectionHandler']);
+        add_action('wp_ajax_slideshow-fetch-collection', [$this, 'fetchCollection']);
+        add_action('wp_ajax_slideshow-save-slide-collection', [$this, 'saveCollectionHandler']);
+        add_action('wp_ajax_slideshow-delete-slide-collection', [$this, 'deleteCollectionHandler']);
     }
 
     public function adminEnqueueStylesScripts($hook)
@@ -43,13 +43,13 @@ class SlideshowManager
             $suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 
             // Get WP included jquery-ui version to match with stylesheet
-            $jquery_ui = wp_scripts()->query('jquery-ui-core');
+            $jqui_ver = wp_scripts()->query('jquery-ui-core')->ver;
 
             wp_enqueue_style(
                 'jquery-ui-theme',
-                'https://ajax.googleapis.com/ajax/libs/jqueryui/' . $jquery_ui->ver . '/themes/smoothness/jquery-ui.css',
+                'https://ajax.googleapis.com/ajax/libs/jqueryui/' . $jqui_ver . '/themes/smoothness/jquery-ui.css',
                 [],
-                $jquery_ui->ver
+                null
             );
 
             wp_enqueue_style(
@@ -95,7 +95,7 @@ class SlideshowManager
             'Slideshow Manager',
             'manage_local_site',
             'top-slides',
-            [&$this, 'slideshowManagerPage']
+            [$this, 'slideshowManagerPage']
         );
     }
 
@@ -347,7 +347,7 @@ class SlideshowManager
                 '%s',
                 '%s',
                 '%d',
-                '%d'
+                '%d',
             ],
             [
                 '%d',
@@ -363,16 +363,16 @@ class SlideshowManager
         $ret = $wpdb->update(
             $table_name,
             [
-                'slideshow_id' => 0
+                'slideshow_id' => 0,
             ],
             [
-                'slideshow_id' => $slideshow_id
+                'slideshow_id' => $slideshow_id,
             ],
             [
-                '%d'
+                '%d',
             ],
             [
-                '%d'
+                '%d',
             ]
         );
         // error_log( 'Releasing slides: updated '.$ret .' where slideshow_id = '.$slideshow_id);
@@ -400,7 +400,7 @@ class SlideshowManager
 
             $data = [
                 'slideshow_id' => $slideshow_id,
-                'text_title' => sanitize_text_field(wp_unslash($s['text_title']))
+                'text_title' => sanitize_text_field(wp_unslash($s['text_title'])),
             ];
             $formats = [
                 '%d',

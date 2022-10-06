@@ -39,8 +39,8 @@ class Slideshow
             $this->show = $wpdb->get_row("SELECT * FROM `$table_name` ORDER BY `date` DESC");
         }
 
-        add_shortcode('coop-slideshow', [&$this, 'slideshowShortcode']);
-        add_action('wp_enqueue_scripts', [&$this, 'enqueueAssets']);
+        add_shortcode('coop-slideshow', [$this, 'slideshowShortcode']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueueAssets']);
     }
 
     /**

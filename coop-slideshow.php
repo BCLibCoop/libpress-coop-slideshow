@@ -46,12 +46,12 @@ if (file_exists($composer = __DIR__ . '/vendor/autoload.php')) {
 /**
  * Check for DB updates on activation
  */
-register_activation_hook(__FILE__, [__NAMESPACE__ . '\SlideshowAdmin', 'activate']);
+register_activation_hook(__FILE__, [SlideshowAdmin::class, 'activate']);
 
 /**
  * Hook on plugins_loaded for friendlier priorities
  */
-add_action('wp_loaded', function () {
+add_action('plugins_loaded', function () {
     SlideshowAdmin::createDbTable();
 
     /**
