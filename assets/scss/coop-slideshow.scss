@@ -22,7 +22,7 @@
       /* height: 288px; */
       height: 100%;
       width: 100%;
-      @include padding(4rem);
+      @include padding(3.5rem);
       overflow: hidden;
 
       background-image: radial-gradient(
@@ -48,6 +48,12 @@
   .flickity-prev-next-button {
     width: 33px;
     height: 33px;
+
+    opacity: 0.4;
+
+    @media screen and (min-width: 768px) {
+      opacity: 1;
+    }
   }
 }
 

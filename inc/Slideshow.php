@@ -91,7 +91,17 @@ class Slideshow
                 '2.3.6',
                 true
             );
-            wp_add_inline_script('fitty', "fitty('.fit');");
+
+            wp_enqueue_script(
+                'coop-slideshow',
+                plugins_url('/assets/js/coop-slideshow.js', dirname(__FILE__)),
+                [
+                    'flickity',
+                    'fitty',
+                ],
+                filemtime(dirname(__FILE__) . '/../assets/js/coop-slideshow.js'),
+                true
+            );
 
             wp_register_style(
                 'flickity',
@@ -129,20 +139,14 @@ class Slideshow
             $slides = SlideshowManager::fetchSlides($this->show->id);
         }
 
-        $flickity_options = json_encode([
+        $flickity_options = [
             'autoPlay' => $this->show->time,
             'wrapAround' => true,
             'pageDots' => ($this->show->layout === 'no-thumb'),
             'fade' => ($this->show->transition === 'fade' ? true : false),
-        ]);
+        ];
 
-        $flickity_pager_options = json_encode([
-            'asNavFor' => '.hero-carousel',
-            'contain' => true,
-            'pageDots' => false,
-            'prevNextButtons' => false,
-            'draggable' => false,
-        ]);
+        wp_localize_script('coop-slideshow', 'coopSlideshowOptions', $flickity_options);
 
         ob_start();
         require 'views/shortcode.php';

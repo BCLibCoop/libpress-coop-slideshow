@@ -20,7 +20,7 @@
   /* height: 288px; */
   height: 100%;
   width: 100%;
-  padding: calc(1.525rem + 3.3vw);
+  padding: calc(1.475rem + 2.7vw);
   overflow: hidden;
   background-image: radial-gradient(ellipse farthest-corner at center top, #ffffff 0%, #cccccc 100%);
   background-color: #eee;
@@ -28,7 +28,7 @@
 
 @media (min-width: 1200px) {
   .hero-carousel .slide.text {
-    padding: 4rem;
+    padding: 3.5rem;
   }
 }
 
@@ -52,6 +52,13 @@
 .hero-carousel .flickity-prev-next-button {
   width: 33px;
   height: 33px;
+  opacity: 0.4;
+}
+
+@media screen and (min-width: 768px) {
+  .hero-carousel .flickity-prev-next-button {
+    opacity: 1;
+  }
 }
 
 .hero-carousel-pager {

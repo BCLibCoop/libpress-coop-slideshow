@@ -1,6 +1,6 @@
 <?php if (!empty($slides)) : ?>
     <div class="hero row <?= $this->show->layout ?>" role="banner">
-        <div class="hero-carousel carousel-<?= $this->show->layout ?>" data-flickity='<?= $flickity_options ?>'>
+        <div class="hero-carousel carousel-<?= $this->show->layout ?>">
             <?php foreach ($slides as $slide) : ?>
                 <div class="slide <?= $slide['type'] ?>">
                     <div class="slide-inner">
@@ -27,7 +27,7 @@
         </div><!-- #slider.row.slider -->
 
         <?php if ($this->show->layout !== 'no-thumb') : ?>
-            <div class="row hero-carousel-pager carousel-pager-<?= $this->show->layout ?>" data-flickity='<?= $flickity_pager_options ?>'>
+            <div class="row hero-carousel-pager carousel-pager-<?= $this->show->layout ?>">
                 <?php foreach ($slides as $slide) : ?>
                     <div class="pager-box slide-index-<?= $slide['ordering'] ?>">
                         <div class="thumb <?= $slide['type'] ?>">
