@@ -28,6 +28,7 @@ class SlideshowAdmin
             $charset_collate = $wpdb->get_charset_collate();
 
             $table_name = $wpdb->prefix . 'slideshows';
+            // TODO: Time, both stay and
             $sql = "CREATE TABLE $table_name (
                         `id` int(11) NOT NULL AUTO_INCREMENT,
                         `title` varchar(60) NOT NULL,

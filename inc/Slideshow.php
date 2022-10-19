@@ -137,16 +137,16 @@ class Slideshow
 
         if ($this->show) {
             $slides = SlideshowManager::fetchSlides($this->show->id);
+
+            $flickity_options = [
+                'autoPlay' => $this->show->time, // TODO: Time, both stay and
+                'wrapAround' => true,
+                'pageDots' => ($this->show->layout === 'no-thumb'),
+                'fade' => ($this->show->transition === 'fade' ? true : false),
+            ];
+
+            wp_localize_script('coop-slideshow', 'coopSlideshowOptions', $flickity_options);
         }
-
-        $flickity_options = [
-            'autoPlay' => $this->show->time,
-            'wrapAround' => true,
-            'pageDots' => ($this->show->layout === 'no-thumb'),
-            'fade' => ($this->show->transition === 'fade' ? true : false),
-        ];
-
-        wp_localize_script('coop-slideshow', 'coopSlideshowOptions', $flickity_options);
 
         ob_start();
         require 'views/shortcode.php';

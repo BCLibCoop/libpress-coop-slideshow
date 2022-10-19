@@ -299,7 +299,7 @@ class SlideshowManager
         $layout = sanitize_text_field($_POST['layout']);
         $transition = sanitize_text_field($_POST['transition']);
 
-        // TODO: Time
+        // TODO: Time, both stay and transition
 
         if (empty($slideshow_id)) {
             $slideshow_id = $this->createCollection($slideshow_title);
