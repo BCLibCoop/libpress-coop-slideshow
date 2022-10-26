@@ -5,7 +5,8 @@
                 <div class="slide <?= $slide['type'] ?>">
                     <div class="slide-inner">
                         <?php if (!empty($slide['slide_permalink'])) : ?>
-                            <a href="<?= $slide['slide_permalink'] ?>">
+                            <a href="<?= $slide['slide_permalink'] ?>"
+                                class="<?= $slide['type'] === 'text' ? 'fit' : '' ?>">
                         <?php endif; ?>
 
                         <?php if ($slide['type'] === 'image') : ?>
@@ -14,7 +15,9 @@
                                 title="<?= esc_attr($slide['text_title']) ?>"
                             >
                         <?php elseif ($slide['type'] === 'text') : ?>
-                            <h2 class="fit"><?= htmlspecialchars($slide['text_title']) ?></h2>
+                            <h2 class="<?= empty($slide['slide_permalink']) ? 'fit' : '' ?>">
+                                <?= htmlspecialchars($slide['text_title']) ?>
+                            </h2>
                             <p><?= htmlspecialchars($slide['text_content']) ?></p>
                         <?php endif; ?>
 
