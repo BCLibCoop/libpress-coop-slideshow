@@ -1,7 +1,7 @@
-<?php if (!empty($slides)) : ?>
+<?php if (!empty($this->show->slides)) : ?>
     <div class="hero row <?= $this->show->layout ?>" role="banner">
         <div class="hero-carousel carousel-<?= $this->show->layout ?>">
-            <?php foreach ($slides as $slide) : ?>
+            <?php foreach ($this->show->slides as $slide) : ?>
                 <div class="slide <?= $slide['type'] ?>">
                     <div class="slide-inner">
                         <?php if (!empty($slide['slide_permalink'])) : ?>
@@ -31,7 +31,7 @@
 
         <?php if ($this->show->layout !== 'no-thumb') : ?>
             <div class="row hero-carousel-pager carousel-pager-<?= $this->show->layout ?>">
-                <?php foreach ($slides as $slide) : ?>
+                <?php foreach ($this->show->slides as $slide) : ?>
                     <div class="pager-box slide-index-<?= $slide['ordering'] ?>">
                         <div class="thumb <?= $slide['type'] ?>">
                             <img class="pager-thumb"

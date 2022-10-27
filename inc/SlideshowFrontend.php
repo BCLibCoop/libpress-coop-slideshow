@@ -12,7 +12,7 @@
 
 namespace BCLibCoop;
 
-class Slideshow
+class SlideshowFrontend
 {
     private static $instance;
     private $slug = 'slideshow';
@@ -31,12 +31,10 @@ class Slideshow
         $table_name = $wpdb->prefix . 'slideshows';
 
         // Get the most recent active show by default
-        $this->show = $wpdb->get_row("SELECT * FROM `$table_name` WHERE `is_active` = 1 ORDER BY `date` DESC");
+        $slideshow_id = $wpdb->get_var("SELECT `id` FROM $table_name ORDER BY `is_active` DESC, `date` DESC LIMIT 1");
 
-        // Fall back to the most recent show even if not active
-        // TODO: check for sites with non-active shows, make them active, then remove this
-        if ($this->show == null) {
-            $this->show = $wpdb->get_row("SELECT * FROM `$table_name` ORDER BY `date` DESC");
+        if ($slideshow_id) {
+            $this->show = (object) SlideshowAdmin::fetchShow((int) $slideshow_id, null);
         }
 
         add_shortcode('coop-slideshow', [$this, 'slideshowShortcode']);
@@ -132,17 +130,16 @@ class Slideshow
 
     public function slideshowShortcode()
     {
-        $slides = [];
         $text_thumb = plugins_url('/assets/imgs/info-thumb.png', dirname(__FILE__));
 
         if ($this->show) {
-            $slides = SlideshowManager::fetchSlides($this->show->id);
-
             $flickity_options = [
                 'autoPlay' => $this->show->time, // TODO: Time, both stay and
                 'wrapAround' => true,
                 'pageDots' => ($this->show->layout === 'no-thumb'),
                 'fade' => ($this->show->transition === 'fade' ? true : false),
+                // 'selectedAttraction' => 0.01,
+                // 'friction' => 0.15,
             ];
 
             wp_localize_script('coop-slideshow', 'coopSlideshowOptions', $flickity_options);

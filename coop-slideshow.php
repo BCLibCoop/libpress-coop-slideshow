@@ -46,20 +46,20 @@ if (file_exists($composer = __DIR__ . '/vendor/autoload.php')) {
 /**
  * Check for DB updates on activation
  */
-register_activation_hook(__FILE__, [SlideshowAdmin::class, 'activate']);
+register_activation_hook(__FILE__, [SlideshowDatabase::class, 'activate']);
 
 /**
  * Hook on plugins_loaded for friendlier priorities
  */
 add_action('plugins_loaded', function () {
-    SlideshowAdmin::createDbTable();
+    SlideshowDatabase::createDbTable();
 
     /**
      * Only load admin interfaces for an admin request
      */
     add_action('init', function () {
         if (is_admin()) {
-            new SlideShowManager();
+            new SlideshowAdmin();
         }
     });
 
@@ -67,6 +67,6 @@ add_action('plugins_loaded', function () {
      * Only load the frontend features for a frontend request
      */
     add_action('template_redirect', function () {
-        new Slideshow();
+        new SlideshowFrontend();
     });
 });
