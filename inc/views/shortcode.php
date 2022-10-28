@@ -1,8 +1,8 @@
 <?php if (!empty($this->show->slides)) : ?>
-    <div class="hero row <?= $this->show->layout ?>" role="banner">
-        <div class="hero-carousel carousel-<?= $this->show->layout ?>">
+    <div class="hero row <?= esc_attr($this->show->layout) ?>" role="banner">
+        <div class="hero-carousel carousel-<?= esc_attr($this->show->layout) ?>">
             <?php foreach ($this->show->slides as $slide) : ?>
-                <div class="slide <?= $slide['type'] ?>">
+                <div class="slide <?= esc_attr($slide['type']) ?>">
                     <div class="slide-inner">
                         <?php if (!empty($slide['slide_permalink'])) : ?>
                             <a href="<?= $slide['slide_permalink'] ?>"
@@ -25,15 +25,15 @@
                             </a>
                         <?php endif; ?>
                     </div>
-                </div><!-- .slide.<?= $slide['type'] ?> -->
+                </div><!-- .slide.<?= esc_attr($slide['type']) ?> -->
             <?php endforeach; ?>
         </div><!-- #slider.row.slider -->
 
         <?php if ($this->show->layout !== 'no-thumb') : ?>
-            <div class="row hero-carousel-pager carousel-pager-<?= $this->show->layout ?>">
+            <div class="row hero-carousel-pager carousel-pager-<?= esc_attr($this->show->layout) ?>">
                 <?php foreach ($this->show->slides as $slide) : ?>
-                    <div class="pager-box slide-index-<?= $slide['ordering'] ?>">
-                        <div class="thumb <?= $slide['type'] ?>">
+                    <div class="pager-box slide-index-<?= esc_attr($slide['ordering']) ?>">
+                        <div class="thumb <?= esc_attr($slide['type']) ?>">
                             <img class="pager-thumb"
                                 alt="<?= esc_attr($slide['text_title']) ?>"
                                 src="<?= $slide['meta']['sizes']['thumbnail']['src'] ?? $text_thumb ?>"
