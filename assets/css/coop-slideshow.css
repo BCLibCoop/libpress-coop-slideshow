@@ -20,28 +20,16 @@
   /* height: 288px; */
   height: 100%;
   width: 100%;
-  padding: calc(1.475rem + 2.7vw);
+  padding: 3.5rem;
   overflow: hidden;
   background-image: radial-gradient(ellipse farthest-corner at center top, #ffffff 0%, #cccccc 100%);
   background-color: #eee;
 }
 
-@media (min-width: 1200px) {
-  .hero-carousel .slide.text {
-    padding: 3.5rem;
-  }
-}
-
 .hero-carousel .slide.text h2 {
-  font-size: calc(1.525rem + 3.3vw);
+  font-size: 4rem;
   margin: 0;
   text-shadow: 0px 2px 7px #999;
-}
-
-@media (min-width: 1200px) {
-  .hero-carousel .slide.text h2 {
-    font-size: 4rem;
-  }
 }
 
 .hero-carousel .slide.text p {
