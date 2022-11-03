@@ -1,4 +1,4 @@
-<?php if (!empty($this->show->slides)) : ?>
+<?php if (!empty($this->show) && !empty($this->show->slides)) : ?>
     <div class="hero row <?= esc_attr($this->show->layout) ?>" role="banner">
         <div class="hero-carousel carousel-<?= esc_attr($this->show->layout) ?>">
             <?php foreach ($this->show->slides as $slide) : ?>
@@ -36,7 +36,8 @@
                         <div class="thumb <?= esc_attr($slide['type']) ?>">
                             <img class="pager-thumb"
                                 alt="<?= esc_attr($slide['text_title']) ?>"
-                                src="<?= $slide['meta']['sizes']['thumbnail']['src'] ?? $text_thumb ?>"
+                                src="<?= $slide['meta']['sizes']['thumbnail']['src'] ??
+                                    plugins_url('/assets/imgs/info-thumb.png', COOP_SLIDESHOW_PLUGIN); ?>"
                                 width="50"
                                 height="50"
                             >

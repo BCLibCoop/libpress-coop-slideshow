@@ -3,13 +3,13 @@
    * @package Slideshow Setup
    * @copyright BC Libraries Coop 2013
    **/
-  var SlideshowSetup = function () {
+  var SlideshowAdmin = function () {
     this.editing_node = null;
 
     this.init();
   }
 
-  SlideshowSetup.prototype = {
+  SlideshowAdmin.prototype = {
 
     init: function () {
       // init hook-ups listed more-or-less in page order
@@ -219,23 +219,29 @@
 
       var self = this;
 
-      $.post(ajaxurl, data).done(function (res) {
-        var slides = res.slides;
-        self.slideshow_id = $opt.val();
+      $.post(ajaxurl, data).done(function (show) {
+        self.slideshow_id = show.id;
 
-        $('#slideshow-is-active-collection').prop('checked', (res.is_active === '1'));
-        $('#slideshow-show-captions').prop('checked', (res.captions === '1'));
-        $('#slideshow-time').val(res.time);
+        $('#slideshow-is-active-collection').prop('checked', show.is_active);
+        $('#slideshow-time').val(show.time); // TODO: New timing info
 
-        /* the layout and transition settings also need restoring */
-        $('input[value="' + res.layout + '"][name="slideshow-layout"]').prop('checked', true);
-        $('input[value="' + res.transition + '"][name="slideshow-transition"]').prop('checked', true);
+        $('input[name="slideshow-captions"]').prop('checked', show.captions);
 
-        for (var i = 0; i < slides.length; i++) {
-          var $row = $('.slideshow-collection-row').eq(i);
+        // Make bespoke options part of array
+        show.options['layout'] = show.layout;
+        show.options['transition'] = show.transition;
 
-          self.placeSlide(slides[i], $row);
+        // Restore all options
+        for (var option in show.options) {
+          $('input[name="slideshow-' + option + '"][value="' + show.options[option] + '"]').prop('checked', true);
         }
+
+        // Populate slides
+        show.slides.forEach(function(slide, index) {
+          var $row = $('.slideshow-collection-row').eq(index);
+
+          self.placeSlide(slide, $row);
+        });
 
         self.calculateRuntime();
       });
@@ -430,8 +436,16 @@
     },
 
     saveCollection: function () {
-      var slides = [];
       var $rows = $('.slideshow-collection-row');
+
+      var data = {
+        action: 'slideshow-save-slide-collection',
+        slideshow_id: 0,
+        title: '',
+        is_active: 0,
+        slides: [],
+        _ajax_nonce: coop_slideshow.nonce,
+      };
 
       /* add check for an open inline-editor
         if open, toggle it closed before proceeding here
@@ -444,35 +458,33 @@
       /**
        * Global Slideshow Settings
        */
+
+      if ($('#slideshow_select_chosen:visible').length) {
+        data.slideshow_id = parseInt($('#slideshow-select').val());
+      }
+
       var the_title = $('.slideshow-collection-name').val().trim();
 
       if (the_title.length === 0) {
         alert('Please ensure your slideshow has a name');
         return false;
+      } else {
+        data.title = the_title;
       }
 
-      var slideshow_id = '0';
-
-      if ($('#slideshow_select_chosen:visible').length) {
-        slideshow_id = $('#slideshow-select').val();
+      if ($('#slideshow-is-active-collection').is(':checked')) {
+        data.is_active = 1;
       }
 
-      var is_active = '0'
-      if ($('#slideshow-is-active-collection:checked').length) {
-        is_active = '1';
-      }
+      // Collect all settings
+      $('.slideshow-controls input').each(function(index) {
+        var $setting = $(this);
+        var settingName = $setting.attr('name').replace('slideshow-', '');
 
-      var layout = $('input[name="slideshow-layout"]:checked').val();
-      if (layout === undefined) {
-        layout = 'no-thumb';
-      }
-
-      var transition = $('input[name="slideshow-transition"]:checked').val();
-
-      var use_captions = '0';
-      if ($('#slideshow-show-captions:checked').length) {
-        use_captions = '1';
-      }
+        if ($setting.is(':checked')) {
+          data[settingName] = $setting.val();
+        }
+      });
 
       /**
        * Individual Slides
@@ -520,21 +532,9 @@
 
         // Only add the slide if we detected a type correctly
         if (slide_data.type === 'image' || slide_data.type === 'text') {
-          slides.push(slide_data);
+          data.slides.push(slide_data);
         }
       });
-
-      var data = {
-        action: 'slideshow-save-slide-collection',
-        title: the_title,
-        slideshow_id: slideshow_id,
-        layout: layout,
-        transition: transition,
-        is_active: is_active,
-        captions: use_captions,
-        slides: slides,
-        _ajax_nonce: coop_slideshow.nonce,
-      };
 
       var self = this;
 
@@ -655,157 +655,9 @@
   }
 
   /**
-   * @package Slideshow Settings
-   * @copyright BC Libraries Coop 2013
-   **/
-  var SlideshowSettings = function (options) {
-    this._debug = false;
-    this._configured = {}; // passed in options
-    this.current = {};  // _defaults + _configured
-    this._defaults = {};  // bxSlider factory settings
-    this._touched = [];   // record keys of fields altered until a save
-    this.opts = {};   // opts == current at start up (diverges as user changes settings)
-
-    this.init(options);
-  }
-
-  SlideshowSettings.prototype = {
-
-    init: function (options) {
-      // load the definitional default set by bxSlider
-      this._defaults = $.extend({}, this._defaults, window.coop_bx_defaults);
-
-      // split out default from tuples (first in list)
-      this.cleanUpDefaults();
-
-      // capture and save the configuration we were started up with (options as passed in)
-      this._configured = $.extend({}, options);
-
-      // now load our current values as set by Slideshow settings controls
-      this.opts = $.extend({}, this._defaults, options);
-
-      // duplicate starting config as current config - this gets changes by user
-      this.current = $.extend({}, this._defaults, options);
-
-      // bind the html form fields to this.current fields
-      for (var p in this.current) {
-        if (typeof p !== 'function') {
-          $('input[name="' + p + '"]').on('change', this.setCurrentValue.bind(this));
-        }
-      }
-
-      $('#coop-slideshow-settings-submit').on('click', this.saveChanges.bind(this));
-
-      if (this._debug) {
-        console.log('returning initialized coop_slideshow_settings object');
-      }
-
-      return this;
-    },
-
-    cleanUpDefaults: function () {
-      /**
-      * Some of the defaults are spec'd as csv alternate string values
-      * The first in the tuple is the default value. Find and set that.
-      **/
-      for (var p in this._defaults) {
-        if (typeof p !== 'function') {
-          var v = this._defaults[p];
-
-          if (typeof v === 'string') {
-            var a = v.split(",");
-
-            if (a.length > 1) {
-              this._defaults[p] = a[0];
-            }
-          }
-        }
-      }
-    },
-
-    saveChanges: function () {
-      // save button has been clicked
-      if (this._debug) {
-        console.log('save button has been clicked');
-      }
-
-      // determine which settings are now different (
-      var changed = {};
-      var keys = [];
-
-      for (var p in this.opts) {
-        if (typeof p !== 'function') {
-          if (this.opts[p] !== this.current[p]) {
-            keys.push(p);
-            changed[p] = this.current[p];
-            if (this._debug) console.log('changed: ' + p);
-          } else {
-            for (var i in this._touched) {
-              if (typeof i !== 'function') {
-                if (this._debug) console.log('_touched[i]: ' + this._touched[i] + ' <=> ' + p);
-
-                if (this._touched[i] == p) {
-                  if (this._debug) console.log('_touched[i]: ' + this._touched[i] + ' == ' + p);
-                  keys.push(p);
-                  changed[p] = this.current[p];
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // if changed is still an empty object ...
-      if (changed === {} || keys.length === 0) {
-        alert('No changes found, not updating settings');
-
-        return false;
-      }
-
-      // otherwise continue to build data object to send server-side
-      changed['action'] = 'coop-save-slideshow-change';
-      changed['keys'] = keys;
-      changed['_ajax_nonce'] = coop_slideshow.nonce;
-
-      if (this._debug) console.log('posting data');
-
-      var self = this;
-
-      $.post(ajaxurl, changed).done(function (res) {
-        if (self._debug) console.log('response returned');
-
-        alert(res.feedback);
-
-        self._touched = [];
-      });
-    },
-
-    touched: function (id) {
-      this._touched.push(id);
-      if (this._debug) console.log(this._touched);
-    },
-
-    setCurrentValue: function (event) {
-      // update self.current to reflect the user's changes
-      var id = event.target.getAttribute('name');
-      var val = event.target.value;
-
-      if (val == '') {
-        val = 'empty';
-      }
-
-      if (this._debug) console.log(id + ': ' + val);
-
-      this.current[id] = val;
-      this.touched(id);
-    }
-  }
-
-  /**
    * Ready
    */
   $(function() {
-    window.slideshow_manager = new SlideshowSetup();
+    window.slideshow_admin = new SlideshowAdmin();
   });
 }(jQuery, window));

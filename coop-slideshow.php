@@ -44,15 +44,10 @@ if (file_exists($composer = __DIR__ . '/vendor/autoload.php')) {
 }
 
 /**
- * Check for DB updates on activation
- */
-register_activation_hook(__FILE__, [SlideshowDatabase::class, 'activate']);
-
-/**
  * Hook on plugins_loaded for friendlier priorities
  */
 add_action('plugins_loaded', function () {
-    SlideshowDatabase::createDbTable();
+    SlideshowDatabase::activate();
 
     /**
      * Only load admin interfaces for an admin request

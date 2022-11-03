@@ -130,21 +130,55 @@ class SlideshowFrontend
 
     public function slideshowShortcode()
     {
-        $text_thumb = plugins_url('/assets/imgs/info-thumb.png', dirname(__FILE__));
-
         if ($this->show) {
-            $flickity_options = [
-                'autoPlay' => $this->show->time, // TODO: Time, both stay and
+            $show_options = [
                 'wrapAround' => true,
                 'pageDots' => ($this->show->layout === 'no-thumb'),
-                'fade' => ($this->show->transition === 'fade' ? true : false),
-                // 'selectedAttraction' => 0.01,
-                // 'friction' => 0.15,
+                'fade' => ($this->show->transition === 'fade'),
             ];
 
-            wp_localize_script('coop-slideshow', 'coopSlideshowOptions', $flickity_options);
-        }
+            switch ($this->show->options['coop_pause'] ?? '') {
+                case 'short':
+                    $show_options['autoPlay'] = 1500;
+                    break;
+                case 'long':
+                    $show_options['autoPlay'] = 9000;
+                    break;
+                case 'medium':
+                default:
+                    $show_options['autoPlay'] = 4000;
+            }
 
+            switch ($this->show->options['coop_transition_time'] ?? '') {
+                case 'short':
+                    $show_options['selectedAttraction'] = 0.2;
+                    $show_options['friction'] = 0.8;
+                    break;
+                case 'long':
+                    $show_options['selectedAttraction'] = 0.01;
+                    $show_options['friction'] = 0.28;
+                    break;
+                case 'medium':
+                default:
+                    $show_options['selectedAttraction'] = 0.025;
+                    $show_options['friction'] = 0.28;
+            }
+
+            // Strip out an `coop_` keys from the extended options
+            $db_options = array_filter($this->show->options, function ($option) {
+                return strpos($option, 'coop_') !== 0;
+            }, ARRAY_FILTER_USE_KEY);
+
+            // Merge defaults with anything still in the db
+            $flickity_options = wp_parse_args($db_options, $show_options);
+
+            // Not using wp_localize_script, as it casts everything to a string
+            wp_add_inline_script(
+                'coop-slideshow',
+                'var coopSlideshowOptions = ' . json_encode($flickity_options),
+                'before'
+            );
+        }
         ob_start();
         require 'views/shortcode.php';
         return ob_get_clean();

@@ -15,6 +15,124 @@ class SlideshowAdmin
         'MB' => 'Manitoba',
     ];
 
+    public static $show_options = [
+        'is_active' => [
+            'label' => 'This is the active slideshow',
+            'options' => [
+                [
+                    'value' => true,
+                    'label' => 'This is the active slideshow',
+                ],
+            ],
+            'extended' => false,
+            'hide' => true,
+        ],
+        'captions' => [
+            'label' => 'Display Captions',
+            'options' => [
+                [
+                    'value' => true,
+                    'label' => 'Enable caption display for slideshow',
+                ],
+            ],
+            'extended' => false,
+        ],
+        'layout' => [
+            'label' => 'Slideshow Layout',
+            'options' => [
+                [
+                    'value' => 'no-thumb',
+                    'label' => 'No Thumbnails',
+                    'description' => 'Previous/Next arrows',
+                    'image' => 'NoThumbnails.png',
+                    'default' => true,
+                ],
+                [
+                    'value' => 'horizontal',
+                    'label' => 'Horizontal Thumbnails',
+                    'description' => 'Clickable thumbnails displayed horizontally below the slideshow',
+                    'image' => 'HorizontalThumbnails.png',
+                ],
+            ],
+            'extended' => false,
+        ],
+        'transition' => [
+            'label' => 'Transitions',
+            'options' => [
+                [
+                    'value' => 'horizontal',
+                    'label' => 'Slide Horizontal',
+                    'description' => 'Slides enter from the right and exit to the left',
+                    'image' => 'HorizontalSlide.png',
+                    'default' => true,
+                ],
+                [
+                    'value' => 'fade',
+                    'label' => 'Cross-fade',
+                    'description' => 'One slide dissolves into the next',
+                    'image' => 'Fade.png',
+                ],
+            ],
+            'extended' => false,
+        ],
+        'coop_pause' => [
+            'label' => 'Pause Time',
+            'description' => 'How long long should the show pause on each slide',
+            'options' => [
+                [
+                    'value' => 'short',
+                    'label' => 'Short',
+                    'description' => '',
+                    'image' => '',
+                    'default' => false,
+                ],
+                [
+                    'value' => 'medium',
+                    'label' => 'Medium',
+                    'description' => '',
+                    'image' => '',
+                    'default' => true,
+                ],
+                [
+                    'value' => 'long',
+                    'label' => 'Long',
+                    'description' => '',
+                    'image' => '',
+                    'default' => false,
+                ],
+            ],
+            'extended' => true,
+        ],
+        'coop_transition_time' => [
+            'label' => 'Transition Time',
+            'description' => 'How quickly should slides transition from one to the next',
+            'options' => [
+                [
+                    'value' => 'short',
+                    'label' => 'Short',
+                    'description' => '',
+                    'image' => '',
+                    'default' => false,
+                ],
+                [
+                    'value' => 'medium',
+                    'label' => 'Medium',
+                    'description' => '',
+                    'image' => '',
+                    'default' => true,
+                ],
+                [
+                    'value' => 'long',
+                    'label' => 'Long',
+                    'description' => '',
+                    'image' => '',
+                    'default' => false,
+                ],
+            ],
+            'extended' => true,
+        ],
+    ];
+
     public function __construct()
     {
         if (isset(self::$instance)) {
@@ -182,10 +300,8 @@ class SlideshowAdmin
     {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'slideshows';
-
         // Skip possible old shows without a title
-        $res = $wpdb->get_results("SELECT * FROM `$table_name` ORDER BY `title`");
+        $res = $wpdb->get_results("SELECT * FROM `{$wpdb->prefix}slideshows` ORDER BY `title`");
 
         $out = [];
 
@@ -200,7 +316,7 @@ class SlideshowAdmin
             $out[] = sprintf(
                 '<option value="%d"%s>%s</option>',
                 $r->id,
-                selected($r->is_active, '1', false),
+                selected($r->is_active, 1, false),
                 wp_unslash($r->title)
             );
         }
@@ -244,10 +360,8 @@ class SlideshowAdmin
     {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'slideshows';
-
         $existing_show = (int) $wpdb->get_var(
-            $wpdb->prepare("SELECT COUNT(*) FROM `$table_name` WHERE `title` = %s", $slideshow_name)
+            $wpdb->prepare("SELECT COUNT(*) FROM `{$wpdb->prefix}slideshows` WHERE `title` = %s", $slideshow_name)
         );
 
         if ($existing_show > 0) {
@@ -255,7 +369,7 @@ class SlideshowAdmin
         }
 
         $wpdb->insert(
-            $table_name,
+            $wpdb->prefix . 'slideshows',
             [
                 'title' => $slideshow_name,
                 'date' => current_time('mysql'),
@@ -280,29 +394,23 @@ class SlideshowAdmin
             ]);
         }
 
-        $slideshow_title = sanitize_text_field(wp_unslash($_POST['title']));
+        // Unslash everything up front
+        $post_data = wp_unslash($_POST);
 
-        if (array_key_exists('slideshow_id', $_POST)) {
-            $slideshow_id = (int) sanitize_text_field($_POST['slideshow_id']);
-        }
+        $show_settings = [
+            'title' => sanitize_text_field($post_data['title']),
+            'layout' => 'no-thumb',
+            'transition' => 'horizontal',
+            'date' => current_time('mysql'),
+            'is_active' => 0,
+            'captions' => 0,
+            'options' => [],
+        ];
 
-        $captions = 0;
-        if (array_key_exists('captions', $_POST)) {
-            $captions = (int) sanitize_text_field($_POST['captions']);
-        }
-
-        $is_active = 0;
-        if (array_key_exists('is_active', $_POST)) {
-            $is_active = (int) sanitize_text_field($_POST['is_active']);
-        }
-
-        $layout = sanitize_text_field($_POST['layout']);
-        $transition = sanitize_text_field($_POST['transition']);
-
-        // TODO: Time, both stay and transition
+        $slideshow_id = (int) sanitize_text_field($post_data['slideshow_id'] ?? 0);
 
         if (empty($slideshow_id)) {
-            $slideshow_id = $this->createCollection($slideshow_title);
+            $slideshow_id = $this->createCollection($show_settings['title']);
         }
 
         if ($slideshow_id === false) {
@@ -312,13 +420,56 @@ class SlideshowAdmin
             ]);
         }
 
-        $table_name = $wpdb->prefix . 'slideshows';
+        // Sanitize data
+        foreach (self::$show_options as $option_name => $option_details) {
+            // Using empty, as all of these should be string values
+            if (!empty($post_data[$option_name])) {
+                if (count($option_details['options']) === 1) {
+                    $value = filter_var(
+                        $post_data[$option_name],
+                        FILTER_VALIDATE_BOOLEAN,
+                        FILTER_NULL_ON_FAILURE
+                    );
+                } else {
+                    $value = sanitize_text_field($post_data[$option_name]);
+                }
 
-        if ($is_active === 1) {
+                if (!$option_details['extended']) {
+                    $show_settings[$option_name] = $value;
+                } else {
+                    $show_settings['options'][$option_name] = $value;
+                }
+            }
+        }
+
+        // Collection default/allowed extended options
+        $default_extended_options = array_reduce(array_keys(self::$show_options), function ($carry, $option) {
+            if (self::$show_options[$option]['extended']) {
+                $default_key = array_search(true, array_column(self::$show_options[$option]['options'], 'default'));
+                $carry[$option] = self::$show_options[$option]['options'][$default_key]['value'];
+            }
+
+            return $carry;
+        }, []);
+
+        // Only allow known values in the form
+        $show_settings['options'] = shortcode_atts($default_extended_options, $show_settings['options']);
+
+        // Get existing show to merge in options
+        $show = self::fetchShow($slideshow_id);
+
+        // Merge in existing extended options. Done after gating options from the form so as
+        // to preserve options manually added to the array
+        $show_settings['options'] = wp_parse_args($show_settings['options'], $show['options']);
+
+        // Finally, serialize the array for storage in the DB
+        $show_settings['options'] = maybe_serialize($show_settings['options']);
+
+        if ($show_settings['is_active']) {
             /* before we are set to the active record */
             /* unmark any currently marked as active */
             $wpdb->update(
-                $table_name,
+                $wpdb->prefix . 'slideshows',
                 [
                     'is_active' => 0,
                 ],
@@ -329,25 +480,19 @@ class SlideshowAdmin
         }
 
         $wpdb->update(
-            $table_name,
-            [
-                'title' => $slideshow_title,
-                'layout' => $layout,
-                'transition' => $transition,
-                'date' => current_time('mysql'),
-                'is_active' => $is_active,
-                'captions' => $captions,
-            ],
+            $wpdb->prefix . 'slideshows',
+            $show_settings,
             [
                 'id' => $slideshow_id,
             ],
             [
-                '%s',
-                '%s',
-                '%s',
-                '%s',
-                '%d',
-                '%d',
+                '%s', // title
+                '%s', // layout
+                '%s', // transition
+                '%s', // date
+                '%d', // is_active
+                '%d', // captions
+                '%s', // options
             ],
             [
                 '%d',
@@ -359,11 +504,10 @@ class SlideshowAdmin
          *
          * We do this to accommodate deletions from the set.
          **/
-        $table_name = $wpdb->prefix . 'slideshow_slides';
         $ret = $wpdb->update(
-            $table_name,
+            $wpdb->prefix . 'slideshow_slides',
             [
-                'slideshow_id' => 0,
+                'slideshow_id' => null,
             ],
             [
                 'slideshow_id' => $slideshow_id,
@@ -383,61 +527,43 @@ class SlideshowAdmin
          * Iterates the slides collection, builds appropraite query
          * Some slides already exist: update; others are new, insert.
          **/
-        $slides = [];
-
-        if (array_key_exists('slides', $_POST)) {
-            $slides = $_POST['slides'];
-        }
+        $slides = $post_data['slides'] ?? [];
 
         foreach ($slides as $s) {
-            $type = sanitize_text_field($s['type']);
-            $slide_id = 0;
-
-            if (array_key_exists('slide_id', $s)) {
-                // don't change the slide's id
-                $slide_id = (int) sanitize_text_field($s['slide_id']);
-            }
+            $type = sanitize_text_field($s['type']) === 'image' ? 'image' : 'text';
+            $slide_id = (int) sanitize_text_field($s['slide_id'] ?? 0);
 
             $data = [
                 'slideshow_id' => $slideshow_id,
-                'text_title' => sanitize_text_field(wp_unslash($s['text_title'])),
+                'text_title' => sanitize_text_field($s['text_title'] ?? ''),
+                'ordering' => (int) sanitize_text_field($s['ordering'] ?? 0),
+                'slide_link' => null, // slide_link may have been deleted - always set to empty if not present
             ];
             $formats = [
+                '%d',
+                '%s',
                 '%d',
                 '%s',
             ];
 
             if ('image' === $type) {
-                $data['post_id'] = (int) sanitize_text_field($s['post_id']);
+                $data['post_id'] = (int) sanitize_text_field($s['post_id'] ?? 0);
                 $formats[] = '%d';
-            } else {  // 'text' === $type
-                $data['text_content'] = sanitize_textarea_field(wp_unslash($s['text_content']));
+            } else {
+                $data['text_content'] = sanitize_textarea_field($s['text_content'] ?? '');
                 $formats[] = '%s';
             }
 
-            if (array_key_exists('ordering', $s) && is_numeric(sanitize_text_field($s['ordering']))) {
-                $data['ordering'] = (int) sanitize_text_field($s['ordering']);
-                $formats[] = '%d';
+            if (is_numeric(sanitize_text_field($s['slide_link'] ?? ''))) {
+                $data['slide_link'] = (int) sanitize_text_field($s['slide_link'] ?? 0);
+            } else {
+                $data['slide_link'] = esc_url_raw($s['slide_link'] ?? '');
             }
-
-            // slide_link may have been deleted - always set to empty if not present
-            $data['slide_link'] = null;
-            $formats[] = '%s';
-
-            if (array_key_exists('slide_link', $s)) {
-                if (is_numeric(sanitize_text_field($s['slide_link']))) {
-                    $data['slide_link'] = (int) sanitize_text_field($s['slide_link']);
-                } else {
-                    $data['slide_link'] = esc_url_raw(wp_unslash($s['slide_link']));
-                }
-            }
-
-            $table_name = $wpdb->prefix . 'slideshow_slides';
 
             if (!empty($slide_id)) {
                 // pre-existing slide - update, do not create
                 $wpdb->update(
-                    $table_name,
+                    $wpdb->prefix . 'slideshow_slides',
                     $data,
                     [
                         'id' => $slide_id,
@@ -449,7 +575,7 @@ class SlideshowAdmin
                 );
             } else {
                 $wpdb->insert(
-                    $table_name,
+                    $wpdb->prefix . 'slideshow_slides',
                     $data,
                     $formats
                 );
@@ -457,8 +583,7 @@ class SlideshowAdmin
         }
 
         // Clean up any orphaned slides
-        $table_name = $wpdb->prefix . 'slideshow_slides';
-        $wpdb->delete($table_name, ['slideshow_id' => 0]);
+        $wpdb->query("DELETE FROM `{$wpdb->prefix}slideshow_slides` WHERE `slideshow_id` IS NULL");
 
         wp_send_json([
             'result' => 'success',
@@ -471,9 +596,11 @@ class SlideshowAdmin
     {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'slideshow_slides';
         $slide_rows = $wpdb->get_results(
-            $wpdb->prepare("SELECT * FROM `$table_name` WHERE `slideshow_id` = %d ORDER BY `ordering`", $slideshow_id)
+            $wpdb->prepare(
+                "SELECT * FROM `{$wpdb->prefix}slideshow_slides` WHERE `slideshow_id` = %d ORDER BY `ordering`",
+                $slideshow_id
+            )
         );
 
         $slides = [];
@@ -535,27 +662,29 @@ class SlideshowAdmin
     {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'slideshows';
-        $show = $wpdb->get_row($wpdb->prepare("SELECT * FROM `$table_name` WHERE `id` = %d", $slideshow_id));
+        $show = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM `{$wpdb->prefix}slideshows` WHERE `id` = %d",
+            $slideshow_id
+        ));
 
         if (empty($show)) {
             return null;
         }
 
         return [
-            'slides' => self::fetchSlides($slideshow_id, $image_size),
-            'is_active' => $show->is_active,
-            'captions' => $show->captions,
+            'id' => (int) $show->id,
+            'title' => $show->title,
             'layout' => $show->layout,
             'transition' => $show->transition,
-            'time' => $show->time,
+            'is_active' => (int) $show->is_active,
+            'captions' => (int) $show->captions,
+            'options' => maybe_unserialize($show->options ?? []),
+            'slides' => self::fetchSlides($slideshow_id, $image_size),
         ];
     }
 
     public function fetchShowAjax()
     {
-        global $wpdb;
-
         if (check_ajax_referer($this->slug, false, false) === false) {
             wp_send_json([
                 'result' => 'failed',
@@ -587,11 +716,8 @@ class SlideshowAdmin
 
         $slideshow_id = (int) sanitize_text_field($_POST['slideshow_id']);
 
-        $table_name = $wpdb->prefix . 'slideshow_slides';
-        $wpdb->delete($table_name, ['slideshow_id' => $slideshow_id], ['%d']);
-
-        $table_name = $wpdb->prefix . 'slideshows';
-        $wpdb->delete($table_name, ['id' => $slideshow_id], ['%d']);
+        $wpdb->delete($wpdb->prefix . 'slideshow_slides', ['slideshow_id' => $slideshow_id], ['%d']);
+        $wpdb->delete($wpdb->prefix . 'slideshows', ['id' => $slideshow_id], ['%d']);
 
         wp_send_json([
             'result' => 'success',

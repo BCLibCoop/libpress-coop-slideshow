@@ -261,21 +261,29 @@ textarea.slideshow-text-slide-content {
 *
 **/
 
-.slideshow-control {
+.form-wrap .slideshow-control {
   width: 33%;
   float: left;
 }
 
-.slideshow-control label.input-label {
+.form-wrap .slideshow-control.single {
+  width: unset;
+}
+
+.form-wrap .slideshow-control.has-image {
+  margin-top: 0;
+}
+
+.form-wrap .slideshow-control label.input-label {
   font-weight: bold;
 }
 
-.slideshow-control-annotation,
-.slideshow-control-img {
+.form-wrap .slideshow-control-description,
+.form-wrap .slideshow-control-img {
   padding-left: 23px;
 }
 
-.slideshow-control-annotation {
+.form-wrap .slideshow-control-description {
   color: #999;
   width: 65%;
 }
