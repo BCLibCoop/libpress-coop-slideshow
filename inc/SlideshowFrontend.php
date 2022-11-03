@@ -131,10 +131,14 @@ class SlideshowFrontend
     public function slideshowShortcode()
     {
         if ($this->show) {
+            $has_text_slides = in_array('text', array_column($this->show->slides, 'type'));
+
             $show_options = [
                 'wrapAround' => true,
-                'pageDots' => ($this->show->layout === 'no-thumb'),
+                // 'pageDots' => ($this->show->layout === 'no-thumb'),
+                'pageDots' => false,
                 'fade' => ($this->show->transition === 'fade'),
+                'setGallerySize' => false,
             ];
 
             switch ($this->show->options['coop_pause'] ?? '') {
@@ -179,6 +183,7 @@ class SlideshowFrontend
                 'before'
             );
         }
+
         ob_start();
         require 'views/shortcode.php';
         return ob_get_clean();

@@ -1,13 +1,44 @@
+.hero-carousel {
+  padding-bottom: 30%;
+}
+
 .hero-carousel.flickity-enabled .slide {
   /* Only show first slide while loading */
-  display: block;
+  display: flex;
+}
+
+.hero-carousel.has-text-slides {
+  padding-bottom: 45%;
+}
+
+@media screen and (min-width: 640px) {
+  .hero-carousel.has-text-slides {
+    padding-bottom: 30%;
+  }
+}
+
+.hero-carousel .flickity-viewport {
+  position: absolute;
+  width: 100%;
 }
 
 .hero-carousel .slide {
   display: none;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
 }
 
 .hero-carousel .slide:first-child {
+  display: flex;
+}
+
+.hero-carousel .slide.image > .slide-inner {
+  line-height: 0;
+}
+
+.hero-carousel .slide.image > .slide-inner > a {
   display: block;
 }
 
@@ -17,13 +48,19 @@
 }
 
 .hero-carousel .slide.text {
-  /* height: 288px; */
-  height: 100%;
   width: 100%;
-  padding: 3.5rem;
   overflow: hidden;
+  padding: 0 5% 5% 5%;
   background-image: radial-gradient(ellipse farthest-corner at center top, #ffffff 0%, #cccccc 100%);
   background-color: #eee;
+}
+
+.hero-carousel .slide.text > * {
+  max-width: 100%;
+}
+
+.hero-carousel .slide.text a {
+  display: block;
 }
 
 .hero-carousel .slide.text h2 {
@@ -33,7 +70,6 @@
 }
 
 .hero-carousel .slide.text p {
-  margin: 0;
   text-shadow: 0px 2px 7px #999;
 }
 

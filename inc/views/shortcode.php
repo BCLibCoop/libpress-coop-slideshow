@@ -1,12 +1,11 @@
 <?php if (!empty($this->show) && !empty($this->show->slides)) : ?>
-    <div class="hero row <?= esc_attr($this->show->layout) ?>" role="banner">
-        <div class="hero-carousel carousel-<?= esc_attr($this->show->layout) ?>">
+    <div class="hero row" role="banner">
+        <div class="hero-carousel carousel-<?= esc_attr($this->show->layout) ?> <?= $has_text_slides ? 'has-text-slides' : '' ?>">
             <?php foreach ($this->show->slides as $slide) : ?>
                 <div class="slide <?= esc_attr($slide['type']) ?>">
                     <div class="slide-inner">
                         <?php if (!empty($slide['slide_permalink'])) : ?>
-                            <a href="<?= $slide['slide_permalink'] ?>"
-                                class="<?= $slide['type'] === 'text' ? 'fit' : '' ?>">
+                            <a href="<?= $slide['slide_permalink'] ?>">
                         <?php endif; ?>
 
                         <?php if ($slide['type'] === 'image') : ?>
@@ -15,7 +14,7 @@
                                 title="<?= esc_attr($slide['text_title']) ?>"
                             >
                         <?php elseif ($slide['type'] === 'text') : ?>
-                            <h2 class="<?= empty($slide['slide_permalink']) ? 'fit' : '' ?>">
+                            <h2 class="fit">
                                 <?= htmlspecialchars($slide['text_title']) ?>
                             </h2>
                             <p><?= htmlspecialchars($slide['text_content']) ?></p>

@@ -7,7 +7,7 @@
       const $flickity = $(".hero-carousel");
 
       $flickity.on("ready.flickity change.flickity", function () {
-        fitty(".fit");
+        fitty(".fit", { maxSize: 48, minSize: 22 });
       });
 
       $flickity.flickity(window.coopSlideshowOptions);
