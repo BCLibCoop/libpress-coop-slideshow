@@ -221,7 +221,6 @@
         self.slideshow_id = show.id;
 
         $('#slideshow-is-active-collection').prop('checked', show.is_active);
-        $('#slideshow-time').val(show.time); // TODO: New timing info
 
         $('input[name="slideshow-captions"]').prop('checked', show.captions);
 
@@ -240,8 +239,6 @@
 
           self.placeSlide(slide, $row);
         });
-
-        self.calculateRuntime();
       });
     },
 
@@ -417,22 +414,6 @@
       }
     },
 
-    calculateRuntime: function () {
-      var $children = $('.thumbbox').children();
-      var msg = 'There must be slides before calculating the runtime.';
-      var count = $children.length;
-
-      if (count) {
-        var time = parseInt($('#slideshow-time').val(), 10) / 1000;
-        var net = count * time; // slideshow cycle in seconds
-
-        msg = "There are " + count + " slides in this slideshow. Each slide will show for " + time + " seconds. ";
-        msg += "The slideshow will take a total of " + net + " seconds to cycle completely.";
-      }
-
-      $('.slideshow-runtime-information').empty().text(msg);
-    },
-
     saveCollection: function () {
       var $rows = $('.slideshow-collection-row');
 
@@ -596,8 +577,6 @@
       } else {
         $row.after($dropme);
       }
-
-      this.calculateRuntime();
     },
 
     dropInsertThumbnail: function ($row, $dragged) {
@@ -636,7 +615,6 @@
         .addClass('ghosted');
         // .draggable('option', 'disabled', true); // Not making un-dragable
 
-      this.calculateRuntime();
     },
 
     returnToSource: function (event, ui) {
@@ -648,7 +626,6 @@
       }
 
       this.removeSlide($dragged);
-      this.calculateRuntime();
     },
   }
 
