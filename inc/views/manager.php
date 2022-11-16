@@ -57,14 +57,6 @@
                     <?php endfor; ?>
                 </table><!-- .slideshow-sortable-rows -->
 
-                <!-- Runtime Information -->
-                <div id="runtime-signal" class="slideshow-signals">
-                    <img src="<?= $this->sprite ?>" class="signals-sprite reload" alt="" title="recalculate runtime">
-                    <input type="hidden" name="slideshow-time" id="slideshow-time">
-                </div>
-                <h2>Runtime Information</h2>
-                <div class="slideshow-runtime-information"></div>
-
                 <?php require 'add-text-slide.php'; ?>
 
                 <?php require 'slideshow-options.php'; ?>

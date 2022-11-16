@@ -25,8 +25,6 @@
       $('.slideshow-text-slide-cancel-btn').on('click', this.clearTextSlideForm.bind(this));
       $('.slideshow-text-slide-save-btn').on('click', this.addTextOnlySlide.bind(this));
 
-      $('#runtime-signal img.signals-sprite').on('click', this.calculateRuntime.bind(this));
-
       // retrieve the currently active slideshow by default
       this.fetchSelectedSlideshow();
 
@@ -250,7 +248,7 @@
     insertInlineEditToggle: function (opt) {
       // TODO: If everything gets moved into placeSlide, this can probably go along with it
       var imgsrc = $('.slideshow-signals-preload img').attr('src');
-      var $div = $('<div id="runtime-signal" class="slideshow-inline-edit-toggle slideshow-signals" />');
+      var $div = $('<div id="row-signal" class="slideshow-inline-edit-toggle slideshow-signals" />');
       var $img = $('<img class="signals-sprite pencil" src="' + imgsrc + '" />');
 
       if (opt) {

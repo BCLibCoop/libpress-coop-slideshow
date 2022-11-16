@@ -19,7 +19,6 @@ span.placeholder {
   display: none;
 }
 
-#runtime-signal,
 #row-signal {
   z-index: 1000 !important;
   width: 32px;
@@ -30,7 +29,6 @@ span.placeholder {
   float: right;
 }
 
-#runtime-signal img.signals-sprite,
 #row-signal img.signals-sprite {
   z-index: 1200 !important;
   position: relative;
