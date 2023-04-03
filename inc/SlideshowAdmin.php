@@ -8,6 +8,8 @@ class SlideshowAdmin
     protected $slug = 'slideshow';
     protected $sprite = '';
 
+    private static $region_metakey = 'slide_region';
+
     public static $media_sources = [
         'local' => 'Your Slide Images',
         'shared' => 'Shared Slide Images',
@@ -150,6 +152,9 @@ class SlideshowAdmin
 
     public function init()
     {
+        add_filter('attachment_fields_to_edit', [&$this, 'addRegionField'], 10, 2);
+        add_filter('attachment_fields_to_save', [&$this, 'regionFieldSave'], 10, 2);
+
         add_action('wp_ajax_slideshow-fetch-collection', [$this, 'fetchShowAjax']);
         add_action('wp_ajax_slideshow-save-slide-collection', [$this, 'saveCollectionHandler']);
         add_action('wp_ajax_slideshow-delete-slide-collection', [$this, 'deleteCollectionHandler']);
@@ -222,19 +227,21 @@ class SlideshowAdmin
         require 'views/manager.php';
     }
 
+    /**
+     * Fetch images with Media Tag: 'slide'
+     *
+     * This function is not multi-site aware, so blog should be switched
+     * before calling this function to select either the share media instance (blog 1)
+     * or not switched to use the current blog
+     *
+     * @param string $region value of slide_region post meta [default empty, BC, MB, or null to not match on region]
+     *
+     * @return array Returns array of markup-wrapped slide items to be appended to output
+     **/
     public static function fetchSlideImages($region = 'shared')
     {
-        /**
-         * Fetch images with Media Tag: 'slide'
-         *
-         * This function is not multi-site aware, so blog should be switched
-         * before calling this function to select either the share media instance (blog 1)
-         * or not switched to use the current blog
-         *
-         * @param string $region value of slide_region post meta [default empty, BC, MB, or null to not match on region]
-         *
-         * @return array Returns array of markup-wrapped slide items to be appended to output
-         **/
+        $slides = [];
+
         $args = [
             'post_type' => 'attachment',
             'posts_per_page' => -1,
@@ -254,14 +261,23 @@ class SlideshowAdmin
 
             $args['meta_query'] = [
                 [
-                    'key' => 'slide_region',
+                    'key' => static::$region_metakey,
                     'compare' => '=',
                     'value' => $region,
                 ],
             ];
+
+            // If the region is blank, aka "shared" without a province, also
+            // allow for the meta to be entirely unset
+            if ($region === '') {
+                $args['meta_query']['relation'] = 'OR';
+                $args['meta_query'][] = [
+                    'key' => static::$region_metakey,
+                    'compare' => 'NOT EXISTS',
+                ];
+            }
         }
 
-        $slides = [];
         $get_slides = get_posts($args);
 
         if (empty($get_slides)) {
@@ -784,5 +800,57 @@ class SlideshowAdmin
         restore_current_blog();
 
         return $postmeta;
+    }
+
+    /**
+     * Set & saver defaults for custom attachment field slide_region
+     * for Shared Media site (network root) only
+     **/
+
+    public function addRegionField($form_fields, $post)
+    {
+        if (get_current_blog_id() === 1) {
+            $provinces = array_merge(['' => ''], static::$media_sources);
+            unset($provinces['local'], $provinces['shared']);
+
+            $selected = get_post_meta($post->ID, static::$region_metakey, true);
+
+            $inputname = "attachments[{$post->ID}][" . static::$region_metakey . "]";
+
+            $form_fields[static::$region_metakey] = [
+                'label' => 'Slide Region',
+                'input' => 'html',
+                'html' => '<select name="' . $inputname . '" id="' . $inputname . '">',
+                'helps' => 'Which province is this slide for?',
+            ];
+
+            foreach ($provinces as $slug => $province) {
+                $form_fields[static::$region_metakey]['html'] .= sprintf(
+                    '<option value="%s"%s>%s</option>',
+                    $slug,
+                    selected($selected, $slug, false),
+                    $province
+                );
+            }
+
+            $form_fields[static::$region_metakey]['html'] .= '</select>';
+        }
+
+        return $form_fields;
+    }
+
+    public function regionFieldSave($post, $attachment)
+    {
+        $slide_region = sanitize_text_field(trim($attachment[static::$region_metakey]));
+
+        if (in_array($slide_region, array_keys(static::$media_sources))) {
+            // Update the region if it's allowed
+            update_post_meta($post['ID'], static::$region_metakey, $slide_region);
+        } elseif (empty($slide_region)) {
+            // Delete the metakey if it's empty
+            delete_post_meta($post['ID'], static::$region_metakey);
+        }
+
+        return $post;
     }
 }
