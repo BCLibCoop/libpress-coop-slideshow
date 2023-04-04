@@ -3,7 +3,7 @@
         <div class="hero-carousel carousel-<?= esc_attr($this->show->layout) ?> <?= $has_text_slides ? 'has-text-slides' : '' ?>">
             <?php foreach ($this->show->slides as $slide) : ?>
                 <div class="slide <?= esc_attr($slide['type']) ?>">
-                    <div class="slide-inner">
+                    <div class="slide-inner" data-track-content data-content-name="Slideshow">
                         <?php if (!empty($slide['slide_permalink'])) : ?>
                             <a href="<?= $slide['slide_permalink'] ?>">
                         <?php endif; ?>
