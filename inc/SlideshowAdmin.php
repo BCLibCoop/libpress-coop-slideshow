@@ -751,7 +751,6 @@ class SlideshowAdmin
         $image_sizes = [
             'thumbnail',
             'medium',
-            'drag-slide',
             'full',
         ];
 
