@@ -1,17 +1,16 @@
 <?php if (!empty($this->show) && !empty($this->show->slides)) : ?>
-    <div class="hero row" role="banner">
+    <section class="hero row" aria-roledescription="carousel" aria-label="Library Information">
         <div class="hero-carousel carousel-<?= esc_attr($this->show->layout) ?> <?= $has_text_slides ? 'has-text-slides' : '' ?>">
             <?php foreach ($this->show->slides as $slide) : ?>
                 <div class="slide <?= esc_attr($slide['type']) ?>">
                     <div class="slide-inner" data-track-content data-content-name="Slideshow">
                         <?php if (!empty($slide['slide_permalink'])) : ?>
-                            <a href="<?= $slide['slide_permalink'] ?>">
+                            <a href="<?= $slide['slide_permalink'] ?>" target="<?= $slide['slide_target'] ?>">
                         <?php endif; ?>
 
                         <?php if ($slide['type'] === 'image') : ?>
                             <img src="<?= $slide['meta']['sizes']['full']['src'] ?>"
                                 alt="<?= esc_attr($slide['text_title']) ?>"
-                                title="<?= esc_attr($slide['text_title']) ?>"
                             >
                         <?php elseif ($slide['type'] === 'text') : ?>
                             <h2 class="fit">
@@ -45,7 +44,7 @@
                 <?php endforeach; ?>
             </div><!-- end of pager -->
         <?php endif; ?>
-    </div><!-- .hero.row -->
+    </section><!-- .hero.row -->
 <?php else : ?>
     <!-- No Slides/Slideshow Found -->
 <?php endif;

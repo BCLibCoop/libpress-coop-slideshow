@@ -626,6 +626,7 @@ class SlideshowAdmin
                 'id' => $s->id, // Slide ID
                 'slide_link' => $s->slide_link,
                 'slide_permalink' => $s->slide_link,
+                'slide_target' => '', // TODO: Target - https://projects.libraries.coop/task/533
                 'text_title' => wp_unslash($s->text_title),
                 'ordering' => $s->ordering,
             ];

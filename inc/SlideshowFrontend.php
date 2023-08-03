@@ -42,12 +42,19 @@ class SlideshowFrontend
     }
 
     /**
-     * Right now just check for the front page. Should be expanded later to check
-     * for the shortcode.
+     * Check for conditions where we should enqueue the frontend assets
      */
     private function shouldEnqueueAssets()
     {
-        return is_front_page();
+        global $post;
+
+        return (
+            (!empty($this->show) && !empty($this->show->slides))
+            && (
+                is_front_page()
+                || (!empty($post) && has_shortcode($post->post_content, 'coop-slideshow'))
+            )
+        );
     }
 
     public function enqueueAssets()
@@ -64,17 +71,17 @@ class SlideshowFrontend
             /* flickity */
             wp_enqueue_script(
                 'flickity',
-                plugins_url('/assets/js/flickity.pkgd' . $suffix . '.js', dirname(__FILE__)),
+                plugins_url('/assets/js/flickity.pkgd' . $suffix . '.js', COOP_SLIDESHOW_PLUGIN),
                 [
                     'jquery',
                 ],
-                '2.3.0',
+                '2.3.0-accessible',
                 true
             );
 
             wp_enqueue_script(
                 'flickity-fade',
-                plugins_url('/assets/js/flickity-fade.js', dirname(__FILE__)),
+                plugins_url('/assets/js/flickity-fade.js', COOP_SLIDESHOW_PLUGIN),
                 [
                     'flickity',
                 ],
@@ -84,7 +91,7 @@ class SlideshowFrontend
 
             wp_enqueue_script(
                 'fitty',
-                plugins_url('/assets/js/fitty' . $suffix . '.js', dirname(__FILE__)),
+                plugins_url('/assets/js/fitty' . $suffix . '.js', COOP_SLIDESHOW_PLUGIN),
                 [],
                 '2.3.6',
                 true
@@ -92,25 +99,25 @@ class SlideshowFrontend
 
             wp_enqueue_script(
                 'coop-slideshow',
-                plugins_url('/assets/js/coop-slideshow.js', dirname(__FILE__)),
+                plugins_url('/assets/js/coop-slideshow.js', COOP_SLIDESHOW_PLUGIN),
                 [
                     'flickity',
                     'fitty',
                 ],
-                filemtime(dirname(__FILE__) . '/../assets/js/coop-slideshow.js'),
+                filemtime(dirname(COOP_SLIDESHOW_PLUGIN) . '/assets/js/coop-slideshow.js'),
                 true
             );
 
             wp_register_style(
                 'flickity',
-                plugins_url('/assets/css/flickity' . $suffix . '.css', dirname(__FILE__)),
+                plugins_url('/assets/css/flickity' . $suffix . '.css', COOP_SLIDESHOW_PLUGIN),
                 [],
-                '2.3.0'
+                '2.3.0-accessible'
             );
 
             wp_register_style(
                 'flickity-fade',
-                plugins_url('/assets/css/flickity-fade.css', dirname(__FILE__)),
+                plugins_url('/assets/css/flickity-fade.css', COOP_SLIDESHOW_PLUGIN),
                 ['flickity'],
                 '1.0.0'
             );
@@ -118,12 +125,12 @@ class SlideshowFrontend
             /* Global Slideshow Styling */
             wp_enqueue_style(
                 'coop-slideshow',
-                plugins_url('/assets/css/coop-slideshow.css', dirname(__FILE__)),
+                plugins_url('/assets/css/coop-slideshow.css', COOP_SLIDESHOW_PLUGIN),
                 [
                     'flickity',
                     'flickity-fade',
                 ],
-                filemtime(dirname(__FILE__) . '/../assets/css/coop-slideshow.css')
+                filemtime(dirname(COOP_SLIDESHOW_PLUGIN) . '/assets/css/coop-slideshow.css')
             );
         }
     }
