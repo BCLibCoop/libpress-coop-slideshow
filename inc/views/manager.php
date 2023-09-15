@@ -5,11 +5,11 @@
     <hr class="wp-header-end">
 
     <p>
-        This page supports the creation of Slideshows: a series of images / text slides which rotate
-        automatically from one to the next. A slideshow can comprise up to five slides
-        (for best viewing effect). An image suitable for use in the slideshow is 1000 pixels wide x 300
-        pixels high. Images should be prepared under the Media menu, and must be given a Media Tag of:
-        <b>slide</b>.
+        This page supports the creation of Slideshows: a series of up to 5 slide images (or text slides) that rotate
+        automatically from one to the next. Slide dimensions should be 960 x 280 pixels. Ensure that you add metadata
+        in the Media library for a concise Title, appropriate Alt Text, and a Tag of: <b>slide</b>
+        (this will allow your slide to show up on this page for you to add to the slideshow).
+        See the <a href="https://help.libraries.coop/libpress/7-slideshow-overview/">LibPress Manual</a> for more information.
     </p>
 
     <div id="col-container" class="wp-clearfix">
