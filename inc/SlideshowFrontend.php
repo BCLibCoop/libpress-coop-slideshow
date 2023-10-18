@@ -26,19 +26,29 @@ class SlideshowFrontend
 
         self::$instance = $this;
 
+        $this->getShow();
+
+        add_shortcode('coop-slideshow', [$this, 'slideshowShortcode']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueueAssets']);
+    }
+
+    private function getShow($id = null)
+    {
         global $wpdb;
 
+        $id = intval($id);
         $table_name = $wpdb->prefix . 'slideshows';
 
-        // Get the most recent active show by default
-        $slideshow_id = $wpdb->get_var("SELECT `id` FROM $table_name ORDER BY `is_active` DESC, `date` DESC LIMIT 1");
+        if ($id) {
+            $slideshow_id = $wpdb->get_var($wpdb->prepare("SELECT `id` FROM $table_name WHERE `id` = %d LIMIT 1", $id));
+        } else {
+            // Get the most recent active show by default
+            $slideshow_id = $wpdb->get_var("SELECT `id` FROM $table_name ORDER BY `is_active` DESC, `date` DESC LIMIT 1");
+        }
 
         if ($slideshow_id) {
             $this->show = (object) SlideshowAdmin::fetchShow((int) $slideshow_id, null);
         }
-
-        add_shortcode('coop-slideshow', [$this, 'slideshowShortcode']);
-        add_action('wp_enqueue_scripts', [$this, 'enqueueAssets']);
     }
 
     /**
@@ -49,11 +59,8 @@ class SlideshowFrontend
         global $post;
 
         return (
-            (!empty($this->show) && !empty($this->show->slides))
-            && (
-                is_front_page()
-                || (!empty($post) && has_shortcode($post->post_content, 'coop-slideshow'))
-            )
+            (is_front_page() && !empty($this->show) && !empty($this->show->slides))
+            || (!empty($post) && has_shortcode($post->post_content, 'coop-slideshow'))
         );
     }
 
@@ -135,8 +142,13 @@ class SlideshowFrontend
         }
     }
 
-    public function slideshowShortcode()
+    public function slideshowShortcode($attr, $content, $tag)
     {
+        if (!empty($attr['id'])) {
+            $this->show = null;
+            $this->getShow($attr['id']);
+        }
+
         if ($this->show) {
             $has_text_slides = in_array('text', array_column($this->show->slides, 'type'));
 

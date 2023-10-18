@@ -327,13 +327,14 @@ class SlideshowAdmin
         $out[] = '<option value=""></option>';
 
         foreach ($res as $r) {
-            $r->title = empty($r->title) ? "Unnamed Slideshow {$r->id}" : $r->title;
+            $r->title = empty($r->title) ? "Unnamed Slideshow" : $r->title;
 
             $out[] = sprintf(
-                '<option value="%d"%s>%s</option>',
+                '<option value="%d"%s>%s (ID %d)</option>',
                 $r->id,
                 selected($r->is_active, 1, false),
-                wp_unslash($r->title)
+                wp_unslash($r->title),
+                $r->id
             );
         }
 

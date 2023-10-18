@@ -1,5 +1,5 @@
 <?php if (!empty($this->show) && !empty($this->show->slides)) : ?>
-    <section class="hero row" aria-roledescription="carousel" aria-label="Library Information">
+    <section class="hero" aria-roledescription="carousel" aria-label="Library Information">
         <div class="hero-carousel carousel-<?= esc_attr($this->show->layout) ?> <?= $has_text_slides ? 'has-text-slides' : '' ?>">
             <?php foreach ($this->show->slides as $slide) : ?>
                 <div class="slide <?= esc_attr($slide['type']) ?>">
@@ -25,10 +25,10 @@
                     </div>
                 </div><!-- .slide.<?= esc_attr($slide['type']) ?> -->
             <?php endforeach; ?>
-        </div><!-- #slider.row.slider -->
+        </div><!-- #slider.slider -->
 
         <?php if ($this->show->layout !== 'no-thumb') : ?>
-            <div class="row hero-carousel-pager carousel-pager-<?= esc_attr($this->show->layout) ?>">
+            <div class="hero-carousel-pager carousel-pager-<?= esc_attr($this->show->layout) ?>">
                 <?php foreach ($this->show->slides as $slide) : ?>
                     <div class="pager-box slide-index-<?= esc_attr($slide['ordering']) ?>">
                         <div class="thumb <?= esc_attr($slide['type']) ?>">
@@ -44,7 +44,7 @@
                 <?php endforeach; ?>
             </div><!-- end of pager -->
         <?php endif; ?>
-    </section><!-- .hero.row -->
+    </section><!-- .hero -->
 <?php else : ?>
     <!-- No Slides/Slideshow Found -->
 <?php endif;
