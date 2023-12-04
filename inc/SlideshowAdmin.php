@@ -327,7 +327,7 @@ class SlideshowAdmin
         $out[] = '<option value=""></option>';
 
         foreach ($res as $r) {
-            $r->title = empty($r->title) ? "Unnamed Slideshow" : $r->title;
+            $r->title = empty($r->title) ? 'Unnamed Slideshow' : $r->title;
 
             $out[] = sprintf(
                 '<option value="%d"%s>%s (ID %d)</option>',
@@ -386,7 +386,7 @@ class SlideshowAdmin
         }
 
         $wpdb->insert(
-            $wpdb->prefix . 'slideshows',
+            "{$wpdb->prefix}slideshows",
             [
                 'title' => $slideshow_name,
                 'date' => current_time('mysql'),
@@ -424,6 +424,16 @@ class SlideshowAdmin
             'options' => [],
         ];
 
+        $show_settings_format = [
+            '%s', // title
+            '%s', // layout
+            '%s', // transition
+            '%s', // date
+            '%d', // is_active
+            '%d', // captions
+            '%s', // options
+        ];
+
         $slideshow_id = (int) sanitize_text_field($post_data['slideshow_id'] ?? 0);
 
         if (empty($slideshow_id)) {
@@ -446,7 +456,7 @@ class SlideshowAdmin
                         $post_data[$option_name],
                         FILTER_VALIDATE_BOOLEAN,
                         FILTER_NULL_ON_FAILURE
-                    );
+                    ) ? 1 : 0;
                 } else {
                     $value = sanitize_text_field($post_data[$option_name]);
                 }
@@ -482,35 +492,36 @@ class SlideshowAdmin
         // Finally, serialize the array for storage in the DB
         $show_settings['options'] = maybe_serialize($show_settings['options']);
 
-        if ($show_settings['is_active']) {
-            /* before we are set to the active record */
-            /* unmark any currently marked as active */
+        /**
+         * `wpdb::update()` doesn't support a "not equal" condition, so we'll
+         * unset all is_active here if needed, and then the following update
+         * will set the current show as active
+         */
+        if (!empty($show_settings['is_active'])) {
             $wpdb->update(
-                $wpdb->prefix . 'slideshows',
+                "{$wpdb->prefix}slideshows",
                 [
                     'is_active' => 0,
                 ],
                 [
                     'is_active' => 1,
+                ],
+                [
+                    '%d',
+                ],
+                [
+                    '%d',
                 ]
             );
         }
 
         $wpdb->update(
-            $wpdb->prefix . 'slideshows',
+            "{$wpdb->prefix}slideshows",
             $show_settings,
             [
                 'id' => $slideshow_id,
             ],
-            [
-                '%s', // title
-                '%s', // layout
-                '%s', // transition
-                '%s', // date
-                '%d', // is_active
-                '%d', // captions
-                '%s', // options
-            ],
+            $show_settings_format,
             [
                 '%d',
             ]
@@ -521,27 +532,24 @@ class SlideshowAdmin
          *
          * We do this to accommodate deletions from the set.
          **/
-        $ret = $wpdb->update(
-            $wpdb->prefix . 'slideshow_slides',
+        $wpdb->update(
+            "{$wpdb->prefix}slideshow_slides",
             [
                 'slideshow_id' => null,
             ],
             [
                 'slideshow_id' => $slideshow_id,
             ],
-            [
-                '%d',
-            ],
+            null,
             [
                 '%d',
             ]
         );
-        // error_log( 'Releasing slides: updated '.$ret .' where slideshow_id = '.$slideshow_id);
 
         /**
          * Build the update/insert statement foreach
          *
-         * Iterates the slides collection, builds appropraite query
+         * Iterates the slides collection, builds appropriate query
          * Some slides already exist: update; others are new, insert.
          **/
         $slides = $post_data['slides'] ?? [];
@@ -580,7 +588,7 @@ class SlideshowAdmin
             if (!empty($slide_id)) {
                 // pre-existing slide - update, do not create
                 $wpdb->update(
-                    $wpdb->prefix . 'slideshow_slides',
+                    "{$wpdb->prefix}slideshow_slides",
                     $data,
                     [
                         'id' => $slide_id,
@@ -592,7 +600,7 @@ class SlideshowAdmin
                 );
             } else {
                 $wpdb->insert(
-                    $wpdb->prefix . 'slideshow_slides',
+                    "{$wpdb->prefix}slideshow_slides",
                     $data,
                     $formats
                 );
@@ -600,7 +608,12 @@ class SlideshowAdmin
         }
 
         // Clean up any orphaned slides
-        $wpdb->query("DELETE FROM `{$wpdb->prefix}slideshow_slides` WHERE `slideshow_id` IS NULL");
+        $wpdb->delete(
+            "{$wpdb->prefix}slideshow_slides",
+            [
+                'slideshow_id' => null,
+            ]
+        );
 
         wp_send_json([
             'result' => 'success',
@@ -734,8 +747,8 @@ class SlideshowAdmin
 
         $slideshow_id = (int) sanitize_text_field($_POST['slideshow_id']);
 
-        $wpdb->delete($wpdb->prefix . 'slideshow_slides', ['slideshow_id' => $slideshow_id], ['%d']);
-        $wpdb->delete($wpdb->prefix . 'slideshows', ['id' => $slideshow_id], ['%d']);
+        $wpdb->delete("{$wpdb->prefix}slideshow_slides", ['slideshow_id' => $slideshow_id], ['%d']);
+        $wpdb->delete("{$wpdb->prefix}slideshows", ['id' => $slideshow_id], ['%d']);
 
         wp_send_json([
             'result' => 'success',

@@ -448,7 +448,8 @@
         alert('Please ensure your slideshow has a name');
         return false;
       } else {
-        data.title = the_title;
+        // Don't include the IDs in the saved name or else they will just keep growing
+        data.title = the_title.replaceAll(/ \(ID \d+\)/g, '');
       }
 
       if ($('#slideshow-is-active-collection').is(':checked')) {
