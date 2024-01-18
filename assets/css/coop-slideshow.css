@@ -1,27 +1,22 @@
 .hero-carousel {
   padding-bottom: 30%;
 }
-
 .hero-carousel.flickity-enabled .slide {
   /* Only show first slide while loading */
   display: flex;
 }
-
 .hero-carousel.has-text-slides {
   padding-bottom: 45%;
 }
-
 @media screen and (min-width: 640px) {
   .hero-carousel.has-text-slides {
     padding-bottom: 30%;
   }
 }
-
 .hero-carousel .flickity-viewport {
   position: absolute;
   width: 100%;
 }
-
 .hero-carousel .slide {
   display: none;
   width: 100%;
@@ -29,24 +24,19 @@
   justify-content: center;
   align-items: center;
 }
-
 .hero-carousel .slide:first-child {
   display: flex;
 }
-
 .hero-carousel .slide.image > .slide-inner {
   line-height: 0;
 }
-
 .hero-carousel .slide.image > .slide-inner > a {
   display: block;
 }
-
 .hero-carousel .slide.image img {
   max-width: 100%;
   height: auto;
 }
-
 .hero-carousel .slide.text {
   width: 100%;
   overflow: hidden;
@@ -54,31 +44,25 @@
   background-image: radial-gradient(ellipse farthest-corner at center top, #ffffff 0%, #cccccc 100%);
   background-color: #eee;
 }
-
 .hero-carousel .slide.text > * {
   max-width: 100%;
 }
-
 .hero-carousel .slide.text a {
   display: block;
 }
-
 .hero-carousel .slide.text h2 {
   font-size: 4rem;
   margin: 0;
   text-shadow: 0px 2px 7px #999;
 }
-
 .hero-carousel .slide.text p {
   text-shadow: 0px 2px 7px #999;
 }
-
 .hero-carousel .flickity-prev-next-button {
   width: 33px;
   height: 33px;
   opacity: 0.4;
 }
-
 @media screen and (min-width: 768px) {
   .hero-carousel .flickity-prev-next-button {
     opacity: 1;
@@ -86,20 +70,17 @@
 }
 
 .hero-carousel-pager {
-  background-color: #ccc;
+  background-color: var(--libpress-brand-color);
   text-align: center;
 }
-
 .hero-carousel-pager .pager-box {
   display: inline-block;
   border: 2px solid transparent;
   margin: 0;
 }
-
 .hero-carousel-pager .pager-box.is-selected {
   border: 2px solid black;
 }
-
 .hero-carousel-pager .pager-box .thumb {
   width: 50px;
   height: 50px;
