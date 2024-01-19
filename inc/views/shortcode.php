@@ -1,7 +1,7 @@
 <?php if (!empty($this->show) && !empty($this->show->slides)) : ?>
     <section class="hero" aria-roledescription="carousel" aria-label="Library Information">
         <div class="hero-carousel carousel-<?= esc_attr($this->show->layout) ?> <?= $has_text_slides ? 'has-text-slides' : '' ?>">
-            <?php foreach ($this->show->slides as $slide) : ?>
+            <?php foreach ($this->show->slides as $index => $slide) : ?>
                 <div class="slide <?= esc_attr($slide['type']) ?>">
                     <div class="slide-inner" data-track-content data-content-name="Slideshow">
                         <?php if (!empty($slide['slide_permalink'])) : ?>
@@ -11,6 +11,9 @@
                         <?php if ($slide['type'] === 'image') : ?>
                             <img src="<?= $slide['meta']['sizes']['full']['src'] ?>"
                                 alt="<?= esc_attr($slide['text_title']) ?>"
+                                width="<?= $slide['meta']['sizes']['full']['width'] ?>"
+                                height="<?= $slide['meta']['sizes']['full']['height'] ?>"
+                                <?= $index === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>
                             >
                         <?php elseif ($slide['type'] === 'text') : ?>
                             <h2 class="fit">

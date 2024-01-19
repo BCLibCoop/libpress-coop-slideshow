@@ -1,5 +1,6 @@
 .hero-carousel {
   padding-bottom: 30%;
+  position: relative;
 }
 .hero-carousel.flickity-enabled .slide {
   /* Only show first slide while loading */
@@ -19,6 +20,7 @@
 }
 .hero-carousel .slide {
   display: none;
+  position: absolute;
   width: 100%;
   height: 100%;
   justify-content: center;
