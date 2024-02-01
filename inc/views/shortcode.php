@@ -9,11 +9,13 @@
                         <?php endif; ?>
 
                         <?php if ($slide['type'] === 'image') : ?>
-                            <img src="<?= $slide['meta']['sizes']['full']['src'] ?>"
+                            <img
+                                <?= $index === 0 ? '' : 'loading="lazy"' ?>
+                                decoding="async"
+                                src="<?= $slide['meta']['sizes']['full']['src'] ?>"
                                 alt="<?= esc_attr($slide['text_title']) ?>"
                                 width="<?= $slide['meta']['sizes']['full']['width'] ?>"
                                 height="<?= $slide['meta']['sizes']['full']['height'] ?>"
-                                <?= $index === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>
                             >
                         <?php elseif ($slide['type'] === 'text') : ?>
                             <h2 class="fit">
