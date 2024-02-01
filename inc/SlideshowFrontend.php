@@ -115,29 +115,25 @@ class SlideshowFrontend
                 true
             );
 
-            wp_register_style(
+            wp_enqueue_style(
                 'flickity',
                 plugins_url('/assets/css/flickity' . $suffix . '.css', COOP_SLIDESHOW_PLUGIN),
                 [],
                 '2.3.0-accessible'
             );
 
-            wp_register_style(
-                'flickity-fade',
-                plugins_url('/assets/css/flickity-fade.css', COOP_SLIDESHOW_PLUGIN),
-                ['flickity'],
-                '1.0.0'
-            );
+            if (empty($GLOBALS['flickity_fade_enqueued'])) {
+                wp_add_inline_style(
+                    'flickity',
+                    file_get_contents(dirname(COOP_SLIDESHOW_PLUGIN) . '/assets/css/flickity-fade.css')
+                );
+                $GLOBALS['flickity_fade_enqueued'] = true;
+            }
 
             /* Global Slideshow Styling */
-            wp_enqueue_style(
-                'coop-slideshow',
-                plugins_url('/assets/css/coop-slideshow.css', COOP_SLIDESHOW_PLUGIN),
-                [
-                    'flickity',
-                    'flickity-fade',
-                ],
-                filemtime(dirname(COOP_SLIDESHOW_PLUGIN) . '/assets/css/coop-slideshow.css')
+            wp_add_inline_style(
+                'flickity',
+                file_get_contents(dirname(COOP_SLIDESHOW_PLUGIN) . '/assets/css/coop-slideshow.css')
             );
         }
     }
