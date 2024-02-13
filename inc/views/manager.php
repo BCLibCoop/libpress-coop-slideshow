@@ -40,7 +40,7 @@
                     <tr class="head-row">
                         <th></th>
                         <th>
-                            Caption/Title<br/>
+                            Alt Text/Text Slide Title<br/>
                             <span class="slideshow-slide-link-header">Slide Link</span>
                         </th>
                     </tr>
@@ -50,7 +50,7 @@
                             id="dropzone<?= $i ?>">
                             <td class="thumbbox">&nbsp;</td>
                             <td class="slideshow-slide-title">
-                                <div class="slide-title"><span class="placeholder">Caption/Title</span></div>
+                                <div class="slide-title"><span class="placeholder">Alt Text/Text Slide Title</span></div>
                                 <div class="slide-link"><span class="placeholder">Slide Link</span></div>
                             </td>
                         </tr>

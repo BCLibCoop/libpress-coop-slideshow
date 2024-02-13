@@ -134,7 +134,7 @@
     **/
     clearAndReinsertRow: function ($row, skipAppend) {
       // TODO: Extend placeSlide to do placeholders and replace this?
-      var $caption = $('<div class="slide-title"><span class="placeholder">Caption/Title</span></div>');
+      var $caption = $('<div class="slide-title"><span class="placeholder">Alt Text/Text Slide Title</span></div>');
       var $link = $('<div class="slide-link"><span class="placeholder">Slide Link</span></div>');
 
       $row.data('slide-id', '');
@@ -319,7 +319,7 @@
       } else {
         // convert to INLINE-EDITOR
         var $inline_editor = $('<td class="inline-editor slideshow-slide-title" id="inline-editor" />');
-        var $title_edit = $('<input class="slide-title-edit" type="text" id="slide-title-edit" placeholder="Caption/Title (required)" />')
+        var $title_edit = $('<input class="slide-title-edit" type="text" id="slide-title-edit" placeholder="Alt Text/Text Slide Title (required)" />')
           .val($target.find('.slide-title').text());
         var $div_title = $('<div class="slide-title-wrap" />')
           .append($title_edit)
@@ -355,7 +355,7 @@
 
     placeSlide: function (slide, $row) {
       if ($row == null) {
-        // get the first empty row ...
+        // get the first empty row
         $row = this.getFirstEmptyRow();
       }
 
