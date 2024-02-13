@@ -18,7 +18,7 @@
  * @wordpress-plugin
  * Plugin Name:       Coop Slideshow Admin
  * Description:       Slideshow setup configurator
- * Version:           3.3.4
+ * Version:           3.3.5
  * Network:           true
  * Requires at least: 5.2
  * Requires PHP:      7.0
