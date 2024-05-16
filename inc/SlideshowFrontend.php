@@ -83,7 +83,7 @@ class SlideshowFrontend
                     'jquery',
                 ],
                 '2.3.0-accessible',
-                true
+                ['strategy' => 'defer']
             );
 
             wp_enqueue_script(
@@ -93,7 +93,7 @@ class SlideshowFrontend
                     'flickity',
                 ],
                 '1.0.0',
-                true
+                ['strategy' => 'defer']
             );
 
             wp_enqueue_script(
@@ -101,7 +101,7 @@ class SlideshowFrontend
                 plugins_url('/assets/js/fitty' . $suffix . '.js', COOP_SLIDESHOW_PLUGIN),
                 [],
                 '2.3.6',
-                true
+                ['strategy' => 'defer']
             );
 
             wp_enqueue_script(
@@ -112,7 +112,8 @@ class SlideshowFrontend
                     'fitty',
                 ],
                 filemtime(dirname(COOP_SLIDESHOW_PLUGIN) . '/assets/js/coop-slideshow.js'),
-                true
+                // Needs to be in footer to get inline script that the shortcode outputs
+                ['in_footer' => true, 'strategy' => 'defer']
             );
 
             wp_enqueue_style(
@@ -122,19 +123,25 @@ class SlideshowFrontend
                 '2.3.0-accessible'
             );
 
-            if (empty($GLOBALS['flickity_fade_enqueued'])) {
-                wp_add_inline_style(
-                    'flickity',
-                    file_get_contents(dirname(COOP_SLIDESHOW_PLUGIN) . '/assets/css/flickity-fade.css')
-                );
-                $GLOBALS['flickity_fade_enqueued'] = true;
-            }
+            wp_enqueue_style(
+                'flickity-fade',
+                plugins_url('/assets/css/flickity-fade.css', COOP_SLIDESHOW_PLUGIN),
+                ['flickity'],
+                '1.0.0'
+            );
+            wp_style_add_data('flickity-fade', 'path', dirname(COOP_SLIDESHOW_PLUGIN) . '/assets/css/flickity-fade.css');
 
             /* Global Slideshow Styling */
-            wp_add_inline_style(
-                'flickity',
-                file_get_contents(dirname(COOP_SLIDESHOW_PLUGIN) . '/assets/css/coop-slideshow.css')
+            wp_enqueue_style(
+                'coop-slideshow',
+                plugins_url('/assets/css/coop-slideshow.css', COOP_SLIDESHOW_PLUGIN),
+                [
+                    'flickity',
+                    'flickity-fade',
+                ],
+                get_plugin_data(COOP_SLIDESHOW_PLUGIN, false, false)['Version']
             );
+            wp_style_add_data('coop-slideshow', 'path', dirname(COOP_SLIDESHOW_PLUGIN) . '/assets/css/coop-slideshow.css');
         }
     }
 
