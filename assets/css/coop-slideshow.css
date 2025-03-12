@@ -30,14 +30,24 @@
   display: flex;
 }
 .hero-carousel .slide.image > .slide-inner {
+  display: flex;
+  overflow: hidden;
   line-height: 0;
+  width: 100%;
+  height: 100%;
 }
 .hero-carousel .slide.image > .slide-inner > a {
   display: block;
 }
+.hero-carousel .slide.image > .slide-inner > * {
+  width: 100%;
+  align-self: center;
+  justify-self: center;
+}
 .hero-carousel .slide.image img {
   max-width: 100%;
   height: auto;
+  width: 100%;
 }
 .hero-carousel .slide.text {
   width: 100%;
