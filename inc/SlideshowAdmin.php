@@ -855,14 +855,16 @@ class SlideshowAdmin
 
     public function regionFieldSave($post, $attachment)
     {
-        $slide_region = sanitize_text_field(trim($attachment[static::$region_metakey]));
+        if (get_current_blog_id() === 1) {
+            $slide_region = sanitize_text_field(trim($attachment[static::$region_metakey] ?? ''));
 
-        if (in_array($slide_region, array_keys(static::$media_sources))) {
-            // Update the region if it's allowed
-            update_post_meta($post['ID'], static::$region_metakey, $slide_region);
-        } elseif (empty($slide_region)) {
-            // Delete the metakey if it's empty
-            delete_post_meta($post['ID'], static::$region_metakey);
+            if (in_array($slide_region, array_keys(static::$media_sources))) {
+                // Update the region if it's allowed
+                update_post_meta($post['ID'], static::$region_metakey, $slide_region);
+            } elseif (empty($slide_region)) {
+                // Delete the metakey if it's empty
+                delete_post_meta($post['ID'], static::$region_metakey);
+            }
         }
 
         return $post;
