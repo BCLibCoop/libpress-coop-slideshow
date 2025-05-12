@@ -5,7 +5,7 @@
                 <div class="slide <?= esc_attr($slide['type']) ?>">
                     <div class="slide-inner" data-track-content data-content-name="Slideshow">
                         <?php if (!empty($slide['slide_permalink'])) : ?>
-                            <a href="<?= $slide['slide_permalink'] ?>" target="<?= $slide['slide_target'] ?>">
+                            <a href="<?= $slide['slide_permalink'] ?>" <?= !empty($slide['slide_target']) ? "target=\"{$slide['slide_target']}\"" : '' ?>>
                         <?php endif; ?>
 
                         <?php if ($slide['type'] === 'image') : ?>
