@@ -1,3 +1,4 @@
+<?php defined('ABSPATH') || die(1); ?>
 <hr>
 
 <div class="form-wrap">

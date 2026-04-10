@@ -1,4 +1,4 @@
-
+<?php defined('ABSPATH') || die(1); ?>
 <div class="wrap">
 
     <h1 class="wp-heading-inline">Slideshow Collection Manager</h1>
@@ -73,7 +73,7 @@
                 <?php foreach (self::$media_sources as $region_id => $region_name) : ?>
                     <div class="wp-clearfix">
                         <h3><?= $region_name ?></h3>
-                        <div class="slideshow-draggable-items returnable <?= $region_id ?>">
+                        <div class="slideshow-draggable-items returnable <?= esc_attr($region_id) ?>">
                             <?php echo implode("\n", self::fetchSlideImages($region_id)); ?>
                         </div>
                     </div>
@@ -83,6 +83,6 @@
     </div>
 
     <div class="slideshow-signals-preload">
-        <img src="<?= $this->sprite ?>" width="362" height="96">
+        <img src="<?= esc_url($this->sprite) ?>" width="362" height="96">
     </div>
 </div>

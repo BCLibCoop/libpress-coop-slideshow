@@ -1,3 +1,4 @@
+<?php defined('ABSPATH') || die(1); ?>
 <?php if (!empty($this->show) && !empty($this->show->slides)) : ?>
     <section class="hero" aria-roledescription="carousel" aria-label="Library Information">
         <div class="hero-carousel carousel-<?= esc_attr($this->show->layout) ?> <?= $has_text_slides ? 'has-text-slides' : '' ?>">
@@ -5,17 +6,17 @@
                 <div class="slide <?= esc_attr($slide['type']) ?>">
                     <div class="slide-inner" data-track-content data-content-name="Slideshow">
                         <?php if (!empty($slide['slide_permalink'])) : ?>
-                            <a href="<?= $slide['slide_permalink'] ?>" <?= !empty($slide['slide_target']) ? "target=\"{$slide['slide_target']}\"" : '' ?>>
+                            <a href="<?= esc_url($slide['slide_permalink']) ?>" <?= !empty($slide['slide_target']) ? "target=\"{$slide['slide_target']}\"" : '' ?>>
                         <?php endif; ?>
 
                         <?php if ($slide['type'] === 'image') : ?>
                             <img
                                 <?= $index === 0 ? '' : 'loading="lazy"' ?>
                                 decoding="async"
-                                src="<?= $slide['meta']['sizes']['full']['src'] ?>"
+                                src="<?= esc_url($slide['meta']['sizes']['full']['src']) ?>"
                                 alt="<?= esc_attr($slide['text_title']) ?>"
-                                width="<?= $slide['meta']['sizes']['full']['width'] ?>"
-                                height="<?= $slide['meta']['sizes']['full']['height'] ?>"
+                                width="<?= esc_attr($slide['meta']['sizes']['full']['width']) ?>"
+                                height="<?= esc_attr($slide['meta']['sizes']['full']['height']) ?>"
                             >
                         <?php elseif ($slide['type'] === 'text') : ?>
                             <h2 class="fit">
@@ -39,8 +40,8 @@
                         <div class="thumb <?= esc_attr($slide['type']) ?>">
                             <img class="pager-thumb"
                                 alt="<?= esc_attr($slide['text_title']) ?>"
-                                src="<?= $slide['meta']['sizes']['thumbnail']['src'] ??
-                                    plugins_url('/assets/imgs/info-thumb.png', COOP_SLIDESHOW_PLUGIN); ?>"
+                                src="<?= esc_url($slide['meta']['sizes']['thumbnail']['src'] ??
+                                    plugins_url('/assets/imgs/info-thumb.png', COOP_SLIDESHOW_PLUGIN)); ?>"
                                 width="50"
                                 height="50"
                             >
