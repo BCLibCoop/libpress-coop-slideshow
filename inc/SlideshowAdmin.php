@@ -637,12 +637,12 @@ class SlideshowAdmin
 
         foreach ($slide_rows as $s) {
             $slide = [
-                'id' => $s->id, // Slide ID
-                'slide_link' => $s->slide_link,
-                'slide_permalink' => $s->slide_link,
+                'id' => $s->id ?? 0, // Slide ID
+                'slide_link' => $s->slide_link ?? '',
+                'slide_permalink' => $s->slide_link ?? '',
                 'slide_target' => '', // TODO: Target - https://projects.libraries.coop/task/533
-                'text_title' => wp_unslash($s->text_title),
-                'ordering' => $s->ordering,
+                'text_title' => wp_unslash($s->text_title ?? ''),
+                'ordering' => $s->ordering ?? 0,
             ];
 
             // Convert old-style querystring IDs to plain ID
